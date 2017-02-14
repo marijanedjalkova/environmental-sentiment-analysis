@@ -1,0 +1,24 @@
+https://github.com/oxford-cs-deepnlp-2017/lectures - Oxford DeepMind lectures
+
+    Count-based methods:
+    - Define a basis vocabulary C of context words. (e.g. {bit, cute, furry, loud, miaowed, purred, ran, small}.)
+    - Define a word window size w. (e.g. 1)
+    - Count the basis vocabulary words occurring w words to the left or right of each instance of a target word (e.g. cat) in the corpus.
+      (e.g. cute kitten purred)
+    - Form a vector representation of the target word based on these counts. (e.g. kitten = [0, 1, 0, 0, 1, 1, 0, 1])
+      (look at the vocabulary and put 1/0 for every word based on whether it occurs near the target word)
+    - use inner product or cosine as similarity kernel (e.g. sim(kitten, cat) = cosine(kitten, cat) = 0.58)
+    NOTE: normalize
+
+    Neural Embedding Models:
+    - produce embedding matrix (vocab x content) by putting vectors one on top of other
+    - (onehot?)
+    - NOTE: target word predicts context words (? can be used with Grangemouth ?). embed target word. project into vocabulary. softmax.
+    - benefits: easy to learn, highly parallel problem
+
+    Task-based Embedding learning:
+    - get input features to a neural network from words
+    - We can therefore directly train embeddings jointly with the parameters of the
+      network which uses them.
+    - General intuition: learn to classify/predict/generate based on features, but also
+      the features themselves.
