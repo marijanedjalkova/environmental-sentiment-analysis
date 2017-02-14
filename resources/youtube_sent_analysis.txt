@@ -1,0 +1,40 @@
+https://www.youtube.com/watch?v=AJVP96tAWxw - includes Python code
+https://www.youtube.com/watch?v=sxPBv4Skj98 - Professor Dan Jurafsky & Chris Manning. (a whole series)
+
+opinion extraction
+opinion mining
+sentiment mining
+subjectivity analysis
+
+Negation_ add NOT_ to every token between the negation and the next punctuation.
+Boolean Multinomial Naive Bayes: record each word once for every document. Works better
+MaxEnt and SVM might be better than Naive Bayes
+
+sentiment lexicons - e.g.
+  the general inquirer,
+  LLIWC (lots of classes) - not free!
+  MPQA - annotates strength
+  Bing Liu opinion lexicon, pos/neg
+  SentiWordNet
+
+Identifying word polarity :
+  (McKeown):
+    and - same polarity
+    but - opposite polarity
+
+  Turney Algorithm - better performance for +/- detection:
+    extract 2wrd phrases with adjectives
+    define their polarity: co-occurrence (Pointwise Mutual Information - estimated by Altavista)
+    find average
+
+  WordNet - online thesaurus:
+    start from initial seed sets for + and -
+    follow chains of synonyms/antonyms to get to a word
+
+Finding attribute/aspect/target:
+  - e.g., when talking about a hotel, can train a classifier to assign an aspect to a sentence:
+   given the sentence, is the aspect food, decor, service, value or NONE
+
+NOTE: classes are not equally balanced. Severe imbalance can degrade classifier performance
+
+https://www.youtube.com/watch?v=zv16Xyph7Ss - Sentiment Analysis of Social Media
