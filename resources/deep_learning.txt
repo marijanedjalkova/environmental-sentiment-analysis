@@ -32,3 +32,15 @@ https://github.com/oxford-cs-deepnlp-2017/lectures - Oxford DeepMind lectures
         Learning and re-using word vectors is a form of transfer learning. It is particularly
         useful if you have little task-specific training data, or poor coverage of the
         vocabulary (in which case you might not want to fine-tune embeddings).
+
+Neural Language Models:
+  - Feed forward model: x -> h -> y^ : h = g(Vx+c), y^ = Wh+b
+    - 3gram: h = g(V[w(n-1);w(n-2)]+c), y^ = softmax(Wh+b); softmax(u)i = exp(u(i)) / (sum(j)(exp(u(j))))
+        w(i) are onehot vectors, y^ - distributions
+
+  - Recurrent Neural network:
+    - h = g( V[x(n); h(n-1)] + c), y^(n) = Wh(n) + b
+    - can represent unbounded dependencies
+    - compress histories of words into a fixed zies hidden vector
+    - hard to learn
+    - increasing size of hidden layer increases computation and memory quadratically
