@@ -22,7 +22,7 @@ https://github.com/oxford-cs-deepnlp-2017/lectures - Oxford DeepMind lectures
       network which uses them.
     - General intuition: learn to classify/predict/generate based on features, but also
       the features themselves.
-    - BoW Classifiers:
+    - BoW (Bag of Words) Classifiers:
         - want to classify sentences based on a variable number of word respresentations
         - solution: bag of vectors
         - simple to implement and train
@@ -44,3 +44,28 @@ Neural Language Models:
     - compress histories of words into a fixed zies hidden vector
     - hard to learn
     - increasing size of hidden layer increases computation and memory quadratically
+
+TEXT CLASSIFICATION (*lecture 5*):
+
+    - Generative Models: Model the distribution of individual classes and place
+probabilities over both observed data and hidden variables (e.g. N-grams, HMMs, Naive Bayes)
+
+      * Naive Bayes *
+          P(c|d) = P(c)P(d|c) / P(d). Can ignore the denominator because it's independent of c.
+          Can simplify to P(c) *  П(1<=i<=n(d)) P(t(i)|c)
+          P(c) = D(c)/D
+          P(t|c) = ... (** see formula in slides)
+          P(ti|c) = P(tj|c) <- independent of token position -> NAIVE
+          - simple, fast, interpretable; BoW
+          - independence assumptions, sentence structure not taken into account
+
+    - Discriminative models: Learn boundaries between classes. Take data as given and put
+probability over the hidden structure given the data. (e.g. logistic regression, SVMs, Max entropy models)
+
+      * Logistic regression * ( NOTE: maxent in nltk)
+        - If we only need to classify text, do not need full power of generative model
+        - can be binary or multinomial
+        - binary and general functions can be simp-lified to logistic and softmax functions.
+        - * SOFTMAX *: takes output of K distinct linear functions and returns a probability distribution over those outputs
+
+      * Recurrent Neural Networks * can also be used.
