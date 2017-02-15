@@ -22,3 +22,13 @@ https://github.com/oxford-cs-deepnlp-2017/lectures - Oxford DeepMind lectures
       network which uses them.
     - General intuition: learn to classify/predict/generate based on features, but also
       the features themselves.
+    - BoW Classifiers:
+        - want to classify sentences based on a variable number of word respresentations
+        - solution: bag of vectors
+        - simple to implement and train
+        - no notion of words in context
+        - NOTE: Used for sentiment analysis (e.g. tweets)!!!
+
+        Learning and re-using word vectors is a form of transfer learning. It is particularly
+        useful if you have little task-specific training data, or poor coverage of the
+        vocabulary (in which case you might not want to fine-tune embeddings).
