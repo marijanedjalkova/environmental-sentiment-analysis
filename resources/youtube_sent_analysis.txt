@@ -37,7 +37,9 @@ Finding attribute/aspect/target:
 
 NOTE: classes are not equally balanced. Severe imbalance can degrade classifier performance
 
-<<<<<<< HEAD
+https://www.youtube.com/watch?v=o_OZdbCzHUA&t=315s - Twitter Sentiment Analysis, signing up for tweets, tweepy, textblob
+
+
 https://www.youtube.com/watch?v=zv16Xyph7Ss - Sentiment Analysis of Social Media, 2 parts
 https://www.youtube.com/watch?v=ppcNxzio9H4
 Sentiment analysis - is a given piece of text positive, negative or neutral?
@@ -47,8 +49,3 @@ Emotion analysis - what emotion is being expressed in a given piece of text? TOD
   - term sentiment vs acpect sentiment
   - twitter
   - term-level task is performing much better than a message-level task
-=======
-https://www.youtube.com/watch?v=zv16Xyph7Ss - Sentiment Analysis of Social Media
-https://www.youtube.com/watch?v=o_OZdbCzHUA&t=315s - Twitter Sentiment Analysis, signing up for tweets, tweepy, textblob
-
->>>>>>> cb8a77dc1133d22b4ecb64adb70f659751200ae3
