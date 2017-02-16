@@ -1,0 +1,4 @@
+- initial manual analysis and report
+- talk about the specifics of Tweets: informal, short, abbreviations, shortenings, wide array of topics, special strings
+- sentiment lexicons
+- term sentiment vs aspect sentiment
