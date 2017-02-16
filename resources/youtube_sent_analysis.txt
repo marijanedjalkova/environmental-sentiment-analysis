@@ -38,3 +38,5 @@ Finding attribute/aspect/target:
 NOTE: classes are not equally balanced. Severe imbalance can degrade classifier performance
 
 https://www.youtube.com/watch?v=zv16Xyph7Ss - Sentiment Analysis of Social Media
+https://www.youtube.com/watch?v=o_OZdbCzHUA&t=315s - Twitter Sentiment Analysis, signing up for tweets, tweepy, textblob
+
