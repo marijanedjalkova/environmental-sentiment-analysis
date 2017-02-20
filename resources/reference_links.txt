@@ -1,2 +1,6 @@
 https://brainmass.com/file/1578842/web+2.0+social+networks+-+Cooke+%26+Buckley.pdf
 http://dl.acm.org/citation.cfm?id=1531710
+
+http://snap.stanford.edu/soma2010/papers/soma2010_12.pdf - Stanford paper. LDA and the author-topic model.
+
+https://www.quora.com/What-are-some-good-papers-about-topic-modeling-on-Tweets 
