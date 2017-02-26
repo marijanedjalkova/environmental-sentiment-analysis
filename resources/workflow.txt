@@ -1,0 +1,4 @@
+1. Try polarity on St Andrews data:
+	use twitter API to get tweets about St Andrews 
+	use existing polarity tools to make analysis
+	come to a conclusion - do I need to create something of my own or are the existing tools good enough?
