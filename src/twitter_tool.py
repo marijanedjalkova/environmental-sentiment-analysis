@@ -1,10 +1,10 @@
 import tweepy
 import json
+from stream_listener import StreamListener
 
 class TwitterTool:
 
 	def __init__(self):
-		print "Creating twitter tool"
 		self.api = self.get_twitter_api()
 
 	def get_twitter_api(self):
@@ -26,4 +26,14 @@ class TwitterTool:
 			tweets.extend(tweet_batch)
 			ct += 1
 		return tweets
+
+	def stream(self, keywords):
+		stream_listener = StreamListener()
+		stream_listener.set_twitter_tool(self)
+		stream = tweepy.Stream(auth=self.api.auth, listener=stream_listener)
+		stream.filter(track=keywords)
+
+	def fits(self, status):
+		print "fits() is still to be implemented, returning True for now"
+		return True
 
