@@ -1,7 +1,15 @@
 0. [Report] -> initial findings, existing research
 1. Try polarity on St Andrews data:
-	use twitter API to get tweets about St Andrews - done. No way to use coordinates because most of people of not use them. Maybe use user.location ? 
-	use existing polarity tools to make analysis
+	use twitter API to get tweets about St Andrews - [DONE]. No way to use coordinates because most of people of not use them. Maybe use user.location ? 
+	use existing polarity tools to make analysis.
+		- knowledge-based: 
+			- 
+		- statistical:
+		- hybrid: 
 	come to a conclusion - do I need to create something of my own or are the existing tools good enough?
 	[Report] -> findings.
-2. 
+2. Try topic modeling on London data:
+	use Twitter API to get tweets about London - [DONE].
+	use existing topic modeling tools to make analysis
+	[Report] -> conclusion
+
