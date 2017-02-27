@@ -11,4 +11,7 @@ http://snap.stanford.edu/soma2010/papers/soma2010_12.pdf
 https://www.quora.com/What-are-some-good-papers-about-topic-modeling-on-Tweets 
 
 http://www.cs.columbia.edu/~julia/papers/Agarwaletal11.pdf
-	- 
+
+http://thinknook.com/twitter-sentiment-analysis-training-corpus-dataset-2012-09-22/
+	- link to Twitter Sentiment Analysis Dataset
+	
