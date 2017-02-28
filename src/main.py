@@ -1,7 +1,6 @@
 from twitter_tool import TwitterTool
-
+from textBlobClassifier import TextBlobClassifier
 from very_naive_classifier import SimpleClassifier
-
 
 
 def test_twitter():
@@ -16,8 +15,11 @@ def test_twitter():
 
 def main():
 	s = SimpleClassifier()
-	s.train_and_test()
-
+	acc = s.train_and_test()
+	print acc
+	s = TextBlobClassifier()
+	acc2 = s.test()
+	print acc, " vs ", acc2
 
 
 if __name__ == '__main__':
