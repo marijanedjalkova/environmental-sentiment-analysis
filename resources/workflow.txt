@@ -5,7 +5,8 @@
 		- knowledge-based: 
 			- TextBlob - around 60%
 		- statistical:
-			- my own very simple classifier: 62%
+			- My own very simple classifier: 62%
+			- TextBlob's Naive Bayes on text as a whole - 40-70% (~ 1000 tweet training set, slow -> 46%)
 		- hybrid: 
 	come to a conclusion - do I need to create something of my own or are the existing tools good enough?
 	[Report] -> findings.
