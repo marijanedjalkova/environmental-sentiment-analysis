@@ -39,15 +39,12 @@ class SimpleClassifier:
 				polarity = int(row[1])
 				polarity_index = polarity if polarity==1 else -1
 				if index < train_limit:
-					try:
-						words = word_tokenize(text)
-						for w in words:
-							if w in self.dist:
-								self.dist[w] += polarity_index
-							else: 
-								self.dist[w] = polarity_index
-					except UnicodeDecodeError:
-						pass
+					words = word_tokenize(text.decode("utf-8"))
+					for w in words:
+						if w in self.dist:
+							self.dist[w] += polarity_index
+						else: 
+							self.dist[w] = polarity_index
 				elif index < test_limit:
 					predicted = self.get_polarity(text)
 					if predicted == polarity:

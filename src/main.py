@@ -1,5 +1,5 @@
 from twitter_tool import TwitterTool
-from textBlobClassifier import TextBlobClassifier
+from textBlob_classifier import TextBlobClassifier
 from very_naive_classifier import SimpleClassifier
 
 
