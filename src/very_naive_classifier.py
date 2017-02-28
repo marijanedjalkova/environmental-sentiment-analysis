@@ -7,21 +7,14 @@ class SimpleClassifier:
 		self.dist = {}
 
 	def get_bag_of_words(self, string):
-		words = []
-		try:
-			words = word_tokenize(string)
-		except UnicodeDecodeError:
-			pass
+		words = word_tokenize(string.decode("utf-8"))
 		return dict([(word, True) for word in words])
 
 	def get_polarity(self, text):
 		res = 0
-		try:
-			words = word_tokenize(text)
-			for w in words:
-				res += self.dist[w] if w in self.dist else 0
-		except UnicodeDecodeError:
-			pass
+		words = word_tokenize(text.decode("utf-8"))
+		for w in words:
+			res += self.dist[w] if w in self.dist else 0
 		if res <= 0:
 			return 0 
 		return 1
@@ -36,7 +29,6 @@ class SimpleClassifier:
 			next(data, None) # skip headers
 			# format ItemID, Sentiment, SentimentSource, SentimentText
 			# SentimentSource set is ['Sentiment140', 'Kaggle'] - not sure if it matters
-			counter = 0
 			correct = 0
 			for row in data:
 				
