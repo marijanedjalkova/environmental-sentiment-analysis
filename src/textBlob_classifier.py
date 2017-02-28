@@ -3,6 +3,8 @@ from textblob import TextBlob
 import random
 
 class TextBlobClassifier:
+	""" This uses the TextBlob.sentiment module. It predicts values from -1 to 1 for polarity.
+	This means that whatever it predicts, has to be translated into 0 or 1 """
 
 	def get_polarity(self, text):
 		res = 0
@@ -24,9 +26,7 @@ class TextBlobClassifier:
 			next(data, None) # skip headers
 			# format ItemID, Sentiment, SentimentSource, SentimentText
 			# SentimentSource set is ['Sentiment140', 'Kaggle'] - not sure if it matters
-			counter = 0
 			correct = 0
-			error = 0
 			for row in data:
 				
 				index = int(row[0])
@@ -36,17 +36,13 @@ class TextBlobClassifier:
 				text = t
 				
 				polarity = int(row[1])
-				polarity_index = polarity if polarity==1 else -1
 				if index < test_limit:
 					predicted = self.get_polarity(text)
-					if predicted == None:
-						error += 1
-						continue
 					if predicted == polarity:
 						correct += 1
 					continue
 				else:
-					accuracy = correct * 1.0/(test_limit - error) 
+					accuracy = correct * 1.0/test_limit 
 					print accuracy * 100 , "%"
 					return accuracy
 
