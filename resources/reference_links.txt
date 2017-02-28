@@ -14,4 +14,9 @@ http://www.cs.columbia.edu/~julia/papers/Agarwaletal11.pdf
 
 http://thinknook.com/twitter-sentiment-analysis-training-corpus-dataset-2012-09-22/
 	- link to Twitter Sentiment Analysis Dataset
-	
+
+http://www.laurentluce.com/posts/twitter-sentiment-analysis-using-python-and-nltk/
+
+http://streamhacker.com/2010/05/10/text-classification-sentiment-analysis-naive-bayes-classifier/
+
+
