@@ -3,8 +3,9 @@
 	use twitter API to get tweets about St Andrews - [DONE]. No way to use coordinates because most of people of not use them. Maybe use user.location ? 
 	use existing polarity tools to make analysis.
 		- knowledge-based: 
-			- 
+			- TextBlob - around 60%
 		- statistical:
+			- my own very simple classifier: 62%
 		- hybrid: 
 	come to a conclusion - do I need to create something of my own or are the existing tools good enough?
 	[Report] -> findings.
