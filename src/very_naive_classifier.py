@@ -54,6 +54,7 @@ class SimpleClassifier:
 						correct += 1
 					continue
 				else:
+					accuracy = correct * 1.0/(test_limit - train_limit)
 					print correct * 1.0/(test_limit - train_limit) * 100 , "%"
-					return
+					return accuracy
 
