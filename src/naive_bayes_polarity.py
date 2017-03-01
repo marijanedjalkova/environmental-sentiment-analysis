@@ -23,18 +23,21 @@ class NBClassifier:
 			# format ItemID, Sentiment, SentimentSource, SentimentText
 			# SentimentSource set is ['Sentiment140', 'Kaggle'] - not sure if it matters
 			for row in data:
-				
-				index = int(row[0])
-				if index % 10000 == 0:
-					print index
-				text = (row[3]).decode("utf-8")
-                                tokens = self.tokenizer.tokenize(text)
-				polarity = int(row[1]) # 0 or 1
-				if index < self.train_limit:
-					training_data.append((tokens, polarity))
-				else:
-					self.cl = NaiveBayesClassifier(training_data)
-					break
+			        source = row[2]
+                                if source == "Sentiment140":
+                                # don't worry about the fact that you are training on slightly less than train_limit
+                                # Kaggle data only takes about 2% of the whole data, so it doesn't matter much
+				        index = int(row[0])
+				        if index % 10000 == 0:
+					        print index
+				        text = (row[3]).decode("utf-8")
+                                        tokens = self.tokenizer.tokenize(text)
+				        polarity = int(row[1]) # 0 or 1
+				        if index < self.train_limit:
+					        training_data.append((tokens, polarity))
+				        else:
+					        self.cl = NaiveBayesClassifier(training_data)
+					        break
 			print "trained"
 
 	def test(self):
@@ -44,23 +47,33 @@ class NBClassifier:
 			next(data, None) # skip headers
 			correct = 0
 			count = 0
+                        kaggle = 0
 			for row in data:
-				
-				index = int(row[0])
-				if index % 10000 == 0:
-					print index
-				text = (row[3]).decode("utf-8")
-                                tokens = self.tokenizer.tokenize(text)
-				polarity = int(row[1])
-				if self.train_limit < index < self.test_limit:
-					count +=1
-					predicted = self.cl.classify(tokens)
-					if predicted == polarity:
-						correct += 1
-					continue
-				elif index <= self.train_limit:
-					continue
-				else:
-					accuracy = correct * 1.0/(self.test_limit - self.train_limit) 
-					print accuracy * 100 , "%"
-					return accuracy
+				source=row[2]
+                                if source == "Sentiment140":
+				        index = int(row[0])
+				        if index % 10000 == 0:
+					        print index
+				        text = (row[3]).decode("utf-8")
+                                        tokens = self.tokenizer.tokenize(text)
+				        polarity = int(row[1])
+				        if self.train_limit < index < self.test_limit:
+					        count +=1
+					        predicted = self.cl.classify(tokens)
+					        if predicted == polarity:
+						        correct += 1
+					        continue
+				        elif index <= self.train_limit:
+					        continue
+				        else:
+					        accuracy = correct * 1.0/(self.test_limit - self.train_limit - kaggle) 
+					        print accuracy * 100 , "%"
+					        return accuracy
+                                else:
+                                    kaggle += 1
+
+
+if __name__=="__main__":
+        nb = NBClassifier(3000, 100)
+        nb.test()
+
