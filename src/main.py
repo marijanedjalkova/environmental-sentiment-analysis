@@ -1,6 +1,7 @@
 from twitter_tool import TwitterTool
 from textBlob_classifier import TextBlobClassifier
 from very_naive_classifier import SimpleClassifier
+from naive_bayes_polarity import NBClassifier
 
 
 def test_twitter():
@@ -14,12 +15,16 @@ def test_twitter():
 
 
 def main():
-	s = SimpleClassifier()
-	acc = s.train_and_test()
-	print acc
-	s = TextBlobClassifier()
-	acc2 = s.test()
-	print acc, " vs ", acc2
+	 s = SimpleClassifier(500000, 1000)
+	 acc = s.train_and_test()
+	 print acc
+	# s2 = TextBlobClassifier()
+	# acc2 = s2.test()
+	#s3 = NBClassifier()
+	#acc3 = s3.test()
+	#print "Simple: ", acc
+	#print "TextBlob: ", acc2
+	#print "Naive Bayes: ", acc3
 
 
 if __name__ == '__main__':
