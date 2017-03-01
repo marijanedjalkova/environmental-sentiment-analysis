@@ -35,7 +35,7 @@ class NBClassifier:
 			print "trained"
 
 	def test(self):
-
+                self.cl.show_informative_features(15)
 		with open("/cs/home/mn39/Documents/MSciDissertation/resources/Sentiment-Analysis-Dataset.csv") as csvfile:
 			data = csv.reader(csvfile) # 1578615 
 			next(data, None) # skip headers
