@@ -1,12 +1,22 @@
 0. [Report] -> initial findings, existing research
 1. Try polarity on St Andrews data:
-	use twitter API to get tweets about St Andrews - [DONE]. No way to use coordinates because most of people of not use them. Maybe use user.location ? 
+	use twitter API to get tweets about St Andrews - [DONE]. No way to use coordinates because most of people of not use them. Maybe
+	use user.location ? 
 	use existing polarity tools to make analysis.
 		- knowledge-based: 
 			- TextBlob - around 60%.
-		- statistical:
-			- My own very simple classifier: 62% using word_tokenize. Realised that this does not tokenize words correctly. Examples can be seen in most_pos_neg.jpg. NLTK provides own TweetTokenizer. Using that, the structure of the dictionary changed. The most defining features changed, can be seen in most_pos_neg_tw_tokenizer.jpg. The accuracy, however, dropped to 60%.
-			- TextBlob's Naive Bayes on text as a whole - 40-70% (~ 1000 tweet training set, slow -> 46%). Very slow and takes a lot of memory. With TweetTokenizer: cannot do 8k training set (memory error). On 4k training set shows 79% accuracy. Most definitive features can be found in NB4000_tw_tokenizer.jpg. On 6k - 64% accuracy. 5k -> 77%. 3k -> 88%. 3.5k->80%. 2k->69%. So, best is 3k for training data. 
+		- statistical: 
+			[Used Sentiment-Dataset: 50.05% pos, 49.9% neg], maybe replace urls with URL?
+			Sentiment-Dataset consists of tweets from 2 sources, intermingled. The ones from Sentiment140 are okay, but the ones from Kaggle seem to be about movie reviews, so they migth be skewing data. Should not train or test using Kaggle data.
+			- My own very simple classifier: 62% using word_tokenize. Realised that this does not tokenize words correctly.
+			Examples can be seen in most_pos_neg.jpg. NLTK provides own TweetTokenizer. Using that, the structure of the
+			dictionary changed. The most defining features changed, can be seen in most_pos_neg_tw_tokenizer.jpg. The
+			accuracy, however, dropped to 60%.
+			- Naive Bayes - 40-70% (~ 1000 tweet training set, slow -> 46%). Very slow and takes
+			a lot of memory. With TweetTokenizer: cannot do 8k training set (memory error). On 4k training set shows 79%
+			accuracy. Most definitive features can be found in NB4000_tw_tokenizer.jpg. On 6k - 64% accuracy. 5k -> 77%. 3k ->
+			88%. 3.5k->80%. 2k->69%. So, best is 3k for training data. After removing Kaggle data, 88.88% on 3k training.
+			
 		- hybrid: 
 	come to a conclusion - do I need to create something of my own or are the existing tools good enough?
 	[Report] -> findings.
