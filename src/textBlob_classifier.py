@@ -32,8 +32,7 @@ class TextBlobClassifier:
 				index = int(row[0])
 				if index % 10000 == 0:
 					print index
-				t = row[3].strip()
-				text = t
+				text = row[3].strip()
 				
 				polarity = int(row[1])
 				if index < test_limit:
