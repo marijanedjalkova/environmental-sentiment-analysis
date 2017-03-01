@@ -1,13 +1,15 @@
 from nltk import word_tokenize
+from nltk.tokenize import TweetTokenizer
 import csv
 from textblob.classifiers import NaiveBayesClassifier
 
 class NBClassifier:
 
-	def __init__(self):
+	def __init__(self, train_length, test_length):
 		self.dataset_len = 1578615
-		self.train_limit = 100
-		self.test_limit = 110
+		self.train_limit = train_length
+		self.test_limit = train_length + test_length
+                self.tokenizer = TweetTokenizer()
 		self.train()
 
 
@@ -26,9 +28,10 @@ class NBClassifier:
 				if index % 10000 == 0:
 					print index
 				text = (row[3]).decode("utf-8")
+                                tokens = self.tokenizer.tokenize(text)
 				polarity = int(row[1]) # 0 or 1
 				if index < self.train_limit:
-					training_data.append((text, polarity))
+					training_data.append((tokens, polarity))
 				else:
 					self.cl = NaiveBayesClassifier(training_data)
 					break
@@ -47,10 +50,11 @@ class NBClassifier:
 				if index % 10000 == 0:
 					print index
 				text = (row[3]).decode("utf-8")
+                                tokens = self.tokenizer.tokenize(text)
 				polarity = int(row[1])
 				if self.train_limit < index < self.test_limit:
 					count +=1
-					predicted = self.cl.classify(text)
+					predicted = self.cl.classify(tokens)
 					if predicted == polarity:
 						correct += 1
 					continue
