@@ -5,7 +5,8 @@
 	use existing polarity tools to make analysis.
 		- knowledge-based: 
 			- TextBlob - around 60%.
-		- statistical:
+		- statistical: 
+			[Used Sentiment-Dataset: 50.05% pos, 49.9% neg]
 			- My own very simple classifier: 62% using word_tokenize. Realised that this does not tokenize words correctly.
 			Examples can be seen in most_pos_neg.jpg. NLTK provides own TweetTokenizer. Using that, the structure of the
 			dictionary changed. The most defining features changed, can be seen in most_pos_neg_tw_tokenizer.jpg. The
