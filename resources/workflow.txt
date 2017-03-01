@@ -5,7 +5,7 @@
 		- knowledge-based: 
 			- TextBlob - around 60%
 		- statistical:
-			- My own very simple classifier: 62%
+			- My own very simple classifier: 62% using word_tokenize. Realised that this does not tokenize words correctly. Examples can be seen in most_pos_neg.jpg. NLTK provides own TweetTokenizer. Using that, the structure of the dictionary changed. The most defining features changed, can be seen in most_pos_neg_tw_tokenizer.jpg. The accuracy, however, dropped to 60%.
 			- TextBlob's Naive Bayes on text as a whole - 40-70% (~ 1000 tweet training set, slow -> 46%)
 		- hybrid: 
 	come to a conclusion - do I need to create something of my own or are the existing tools good enough?
