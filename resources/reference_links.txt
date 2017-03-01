@@ -19,4 +19,8 @@ http://www.laurentluce.com/posts/twitter-sentiment-analysis-using-python-and-nlt
 
 http://streamhacker.com/2010/05/10/text-classification-sentiment-analysis-naive-bayes-classifier/
 
+http://www.sepln.org/workshops/tass/2014/papers/8.Elhuyar.pdf 
+http://www.atala.org/taln_archives/ateliers/2015/DEFT/deft-2015-long-007.pdf [DONE]
+	- Tweet features necessary for polarity prediction
+	
 
