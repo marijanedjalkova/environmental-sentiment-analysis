@@ -16,7 +16,8 @@
 			a lot of memory. With TweetTokenizer: cannot do 8k training set (memory error). On 4k training set shows 79%
 			accuracy. Most definitive features can be found in NB4000_tw_tokenizer.jpg. On 6k - 64% accuracy. 5k -> 77%. 3k ->
 			88%. 3.5k->80%. 2k->69%. So, best is 3k for training data. After removing Kaggle data, 88.88% on 3k training.
-			
+			Deleting urls and mentions does not affect the accuracy at all. Neither does replacing them with tags. 
+			Removing stopwords reduces the accuracy a bit, to 86.86%. 
 		- hybrid: 
 	come to a conclusion - do I need to create something of my own or are the existing tools good enough?
 	[Report] -> findings.
