@@ -3,6 +3,8 @@ from nltk.tokenize import TweetTokenizer
 import csv
 from textblob.classifiers import NaiveBayesClassifier
 import re
+from nltk.corpus import stopwords
+import string
 
 class NBClassifier:
 
@@ -12,16 +14,20 @@ class NBClassifier:
 		self.test_limit = train_length + test_length
                 self.tokenizer = TweetTokenizer()
                 self.url_pattern = re.compile("(?P<url>https?://[^\s]+)")
+                punctuation = list(string.punctuation)
+                self.stopwds = stopwords.words('english') + punctuation + ['rt', 'via']
                 self.train()
 
         def preprocess_tweet(self, text):
             decoded = text.decode("utf-8")
             tokens = self.tokenizer.tokenize(decoded)
-            for tok in tokens:
+            for index in range(len(tokens)):
+                tok = tokens[index]
                 if tok.startswith('@') and len(tok)>1:#not the 'i am @ the bar' cases
-                    tokens.remove(tok)
+                    tokens[index] = "[MENTION]"
                 if self.url_pattern.match(tok):
-                    tokens.remove(tok)
+                    tokens[index]="[URL]"
+            tokens = [tok for tok in tokens if tok not in self.stopwds]
             return tokens
 
 
@@ -37,7 +43,7 @@ class NBClassifier:
 			        source = row[2]
                                 if source == "Sentiment140":
                                 # don't worry about the fact that you are training on slightly less than train_limit
-                                # Kaggle data only takes about 2% of the whole data, so it doesn't matter much
+                                # Kaggle data only takes about 0.02% of the whole data, so it doesn't matter much
 				        index = int(row[0])
 				        if index % 10000 == 0:
 					        print index
@@ -84,6 +90,6 @@ class NBClassifier:
 
 
 if __name__=="__main__":
-        nb = NBClassifier(3000, 100)
+        nb = NBClassifier(4000, 100)
         nb.test()
 
