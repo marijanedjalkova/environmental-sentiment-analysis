@@ -22,5 +22,8 @@ http://streamhacker.com/2010/05/10/text-classification-sentiment-analysis-naive-
 http://www.sepln.org/workshops/tass/2014/papers/8.Elhuyar.pdf 
 http://www.atala.org/taln_archives/ateliers/2015/DEFT/deft-2015-long-007.pdf [DONE]
 	- Tweet features necessary for polarity prediction
+http://www.cs.cmu.edu/~nschneid/twpos-tr.pdf
+	- also talks about features in Tweets, but not too relevant. Shows, however, that the growth of accuracy declines with the number
+	of tweets as the same happens to the number of newly seen tokens.
 	
 
