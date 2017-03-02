@@ -44,31 +44,29 @@ class Bigram_NBClassifier:
             tokens = [tok for tok in tokens if tok not in self.stopwds]
             return tokens
 
+        def bigram_extractor(self, document):
+            features = {}
+            for w in bigrams(document):
+                features[w]=True
+            return features
 
 	def train(self):
-
 		training_data = []
 		with open("/cs/home/mn39/Documents/MSciDissertation/resources/Sentiment-Analysis-Dataset.csv") as csvfile:
 			data = csv.reader(csvfile) # 1578615 
 			next(data, None) # skip headers
 			# format ItemID, Sentiment, SentimentSource, SentimentText
-			# SentimentSource set is ['Sentiment140', 'Kaggle'] - not sure if it matters
 			for row in data:
 			        source = row[2]
                                 if source == "Sentiment140":
-                                # don't worry about the fact that you are training on slightly less than train_limit
-                                # Kaggle data only takes about 0.02% of the whole data, so it doesn't matter much
 				        index = int(row[0])
 				        if index % 10000 == 0:
 					        print index
-                                        self.bigram_features_sgl(row[3])
-                                        return
-                                        tokens = self.preprocess_tweet(row[3])
 				        polarity = int(row[1]) # 0 or 1
 				        if index < self.train_limit:
-					        training_data.append((tokens, polarity))
-				        else:
-					        self.cl = NaiveBayesClassifier(training_data)
+				                training_data.append((self.preprocess_tweet(row[3]), polarity))
+                                        else:
+                                                self.cl = NaiveBayesClassifier(training_data, feature_extractor = self.bigram_extractor)
 					        break
 			print "trained"
 
@@ -86,8 +84,7 @@ class Bigram_NBClassifier:
 				        index = int(row[0])
 				        if index % 10000 == 0:
 					        print index
-				        text = (row[3]).decode("utf-8")
-                                        tokens = self.tokenizer.tokenize(text)
+                                        tokens = self.preprocess_tweet(row[3])
 				        polarity = int(row[1])
 				        if self.train_limit < index < self.test_limit:
 					        count +=1
@@ -106,7 +103,6 @@ class Bigram_NBClassifier:
 
 
 if __name__=="__main__":
-        nb = Bigram_NBClassifier(4000, 100)
-        
-        #nb.test()
+        nb = Bigram_NBClassifier(100000, 1000)
+        nb.test()
 
