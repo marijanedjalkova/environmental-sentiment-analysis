@@ -6,7 +6,7 @@
 		- knowledge-based: 
 			- TextBlob - around 60%.
 		- statistical: 
-			[Used Sentiment-Dataset: 50.05% pos, 49.9% neg], maybe replace urls with URL?
+			[Used Sentiment-Dataset: 50.05% pos, 49.9% neg]
 			Sentiment-Dataset consists of tweets from 2 sources, intermingled. The ones from Sentiment140 are okay, but the ones from Kaggle seem to be about movie reviews, so they migth be skewing data. Should not train or test using Kaggle data.
 			- My own very simple classifier: 62% using word_tokenize. Realised that this does not tokenize words correctly.
 			Examples can be seen in most_pos_neg.jpg. NLTK provides own TweetTokenizer. Using that, the structure of the
@@ -18,6 +18,8 @@
 			88%. 3.5k->80%. 2k->69%. So, best is 3k for training data. After removing Kaggle data, 88.88% on 3k training.
 			Deleting urls and mentions does not affect the accuracy at all. Neither does replacing them with tags. 
 			Removing stopwords reduces the accuracy a bit, to 86.86%. 
+			- Bigram Naive Bayes - above 70% accuracy, much faster than the default one and can train on much more data.
+			Tested on preprocessed tweets. Most popular bigrams can be seen in most_definitive_bigrams.jpg.
 		- hybrid: 
 	come to a conclusion - do I need to create something of my own or are the existing tools good enough?
 	[Report] -> findings.
