@@ -5,11 +5,12 @@ from textblob.classifiers import NaiveBayesClassifier
 import re
 from nltk.corpus import stopwords
 import string
-from nltk import bigrams, trigrams
+from nltk import ngrams
 
 class Bigram_NBClassifier:
 
-	def __init__(self, train_length, test_length):
+	def __init__(self, n, train_length, test_length):
+                self.n = n
 		self.dataset_len = 1578615
 		self.train_limit = train_length
 		self.test_limit = train_length + test_length
@@ -31,9 +32,9 @@ class Bigram_NBClassifier:
             tokens = [tok for tok in tokens if tok not in self.stopwds]
             return tokens
 
-        def bigram_extractor(self, document):
+        def ngram_extractor(self, document):
             features = {}
-            for w in trigrams(document):
+            for w in ngrams(document, self.n):
                 features[w]=True
             return features
 
@@ -53,7 +54,7 @@ class Bigram_NBClassifier:
 				        if index < self.train_limit:
 				                training_data.append((self.preprocess_tweet(row[3]), polarity))
                                         else:
-                                                self.cl = NaiveBayesClassifier(training_data, feature_extractor = self.bigram_extractor)
+                                                self.cl = NaiveBayesClassifier(training_data, feature_extractor = self.ngram_extractor)
 					        break
 			print "trained"
 
@@ -90,6 +91,6 @@ class Bigram_NBClassifier:
 
 
 if __name__=="__main__":
-        nb = Bigram_NBClassifier(100000, 1000)
+        nb = Bigram_NBClassifier(1, 100000, 1000)
         nb.test()
 
