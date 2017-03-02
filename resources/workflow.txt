@@ -19,7 +19,10 @@
 			Deleting urls and mentions does not affect the accuracy at all. Neither does replacing them with tags. 
 			Removing stopwords reduces the accuracy a bit, to 86.86%. 
 			- Bigram Naive Bayes - above 70% accuracy, much faster than the default one and can train on much more data.
-			Tested on preprocessed tweets. Most popular bigrams can be seen in most_definitive_bigrams.jpg.
+			Tested on preprocessed tweets. Most popular bigrams can be seen in most_definitive_bigrams.jpg. Trigrams lose in
+			accuracy (about 60%) a bit, the top trigrams include MENTIONs. Important to note that tweets are stripped off the
+			stopwords, so bigrams could cover more than just 2 words. Changed the classifier to be ngram based, depending on
+			the parameter.
 		- hybrid: 
 	come to a conclusion - do I need to create something of my own or are the existing tools good enough?
 	[Report] -> findings.
