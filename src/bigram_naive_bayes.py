@@ -5,7 +5,7 @@ from textblob.classifiers import NaiveBayesClassifier
 import re
 from nltk.corpus import stopwords
 import string
-from nltk import bigrams
+from nltk import bigrams, trigrams
 
 class Bigram_NBClassifier:
 
@@ -18,19 +18,6 @@ class Bigram_NBClassifier:
                 punctuation = list(string.punctuation)
                 self.stopwds = stopwords.words('english') + punctuation + ['rt', 'via']
                 self.train()
-
-        def bigram_features_sgl(self, text):
-            tokens = self.preprocess_tweet(text)
-            return list(bigrams(tokens))
-
-        def bigram_features_mlt(self, tweet_lst):
-            stop_marker = "<S>"
-            merged = [stop_marker]
-            for tweet in tweet_lst:
-                merged.extend(self.preprocess_tweet(tweet))
-                merged.append(stop_marker)
-            return list(bigrams(merged))
-            
 
         def preprocess_tweet(self, text):
             decoded = text.decode("utf-8")
@@ -46,7 +33,7 @@ class Bigram_NBClassifier:
 
         def bigram_extractor(self, document):
             features = {}
-            for w in bigrams(document):
+            for w in trigrams(document):
                 features[w]=True
             return features
 
