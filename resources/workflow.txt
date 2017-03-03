@@ -1,7 +1,7 @@
 0. [Report] -> initial findings, existing research
 1. Try polarity on St Andrews data:
 	use twitter API to get tweets about St Andrews - [DONE]. No way to use coordinates because most of people of not use them. Maybe
-	use user.location ? 
+	use user.location ? Not sensible to try and locate the tweets. Only about 20% of tweets are geotagged. It is possible to estimate the location without tagging, however, it's quite complicated and has legal issues. References in the text file.
 	use existing polarity tools to make analysis.
 		- knowledge-based: 
 			- TextBlob - around 60%.
@@ -23,9 +23,14 @@
 			accuracy (about 60%) a bit, the top trigrams include MENTIONs. Important to note that tweets are stripped off the
 			stopwords, so bigrams could cover more than just 2 words. Changed the classifier to be ngram based, depending on
 			the parameter. Changing text to lowercase except CAPS dropped the accuracy a tiny bit - from 74% to 70% in some
-			cases, but forced it up a little in some cases, too. MaxEntClassifier on bigrams was very slow, does 100 iterations and, after training on 6k tweets, produced 63% accuracy. 1k->50%. Might try more later.
+			cases, but forced it up a little in some cases, too. 
+			MaxEntClassifier on bigrams was very slow, does 100 iterations and, after training on 6k tweets,
+			produced 63% accuracy. 1k->50%. Might try more later. 
+			DecisionTreeClassifier on bigrams: the slowest yet. 800 training, 20 testing: 7 minutes,
+			75% accuracy. Seem to be faster on unigrams. on 200 training, 20 testing 65%. (800, 20): 70%. 
+			(1800, 20) - 80%.
 		- hybrid: 
-	come to a conclusion - do I need to create something of my own or are the existing tools good enough?
+	come to a conclusion - do I need to create something of my own or are the existing tools good enough? - I don't need to create own classifier, but I wil need to create own feature extractor to customize the 
 	[Report] -> findings.
 2. Try topic modeling on London data:
 	use Twitter API to get tweets about London - [DONE].
