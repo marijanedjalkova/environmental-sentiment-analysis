@@ -14,21 +14,21 @@
 			accuracy, however, dropped to 60%.
 			- Naive Bayes - 40-70% (~ 1000 tweet training set, slow -> 46%). Very slow and takes
 			a lot of memory. With TweetTokenizer: cannot do 8k training set (memory error). On 4k training set shows 79%
-			accuracy. Most definitive features can be found in NB4000_tw_tokenizer.jpg. On 6k - 64% accuracy. 5k -> 77%. 3k ->
-			88%. 3.5k->80%. 2k->69%. So, best is 3k for training data. After removing Kaggle data, 88.88% on 3k training.
+			accuracy. Most definitive features can be found in NB4000_tw_tokenizer.jpg. On 6k - 64% accuracy. 5k -> 77%. 3k
+			-> 88%. 3.5k->80%. 2k->69%. So, best is 3k for training data. After removing Kaggle data, 88.88% on 3k training.
 			Deleting urls and mentions does not affect the accuracy at all. Neither does replacing them with tags. 
 			Removing stopwords reduces the accuracy a bit, to 86.86%. 
 			- Bigram Naive Bayes - above 70% accuracy, much faster than the default one and can train on much more data.
 			Tested on preprocessed tweets. Most popular bigrams can be seen in most_definitive_bigrams.jpg. Trigrams lose in
-			accuracy (about 60%) a bit, the top trigrams include MENTIONs. Important to note that tweets are stripped off the
-			stopwords, so bigrams could cover more than just 2 words. Changed the classifier to be ngram based, depending on
-			the parameter. Changing text to lowercase except CAPS dropped the accuracy a tiny bit - from 74% to 70% in some
-			cases, but forced it up a little in some cases, too. 
-			MaxEntClassifier on bigrams was very slow, does 100 iterations and, after training on 6k tweets,
+			accuracy (about 60%) a bit, the top trigrams include MENTIONs. Important to note that tweets are stripped off
+			the stopwords, so bigrams could cover more than just 2 words. Changed the classifier to be ngram based,
+			depending on the parameter. Changing text to lowercase except CAPS dropped the accuracy a tiny bit - from 74% to
+			70% in some cases, but forced it up a little in some cases, too. 
+			- MaxEntClassifier on bigrams was very slow, does 100 iterations and, after training on 6k tweets,
 			produced 63% accuracy. 1k->50%. Might try more later. 
-			DecisionTreeClassifier on bigrams: the slowest yet. 800 training, 20 testing: 7 minutes,
+			- DecisionTreeClassifier on bigrams: the slowest yet. 800 training, 20 testing: 7 minutes,
 			75% accuracy. Seem to be faster on unigrams. on 200 training, 20 testing 65%. (800, 20): 70%. 
-			(1800, 20) - 80%.
+			(1800, 20), 12 mins - 80%. 2k testing - 75%. (2700, 20), 36mins - 80%. Can't do more - exceeds time limits. 
 		- hybrid: 
 	come to a conclusion - do I need to create something of my own or are the existing tools good enough? - I don't need to create own classifier, but I wil need to create own feature extractor to customize the 
 	[Report] -> findings.
@@ -36,4 +36,5 @@
 	use Twitter API to get tweets about London - [DONE].
 	use existing topic modeling tools to make analysis
 	[Report] -> conclusion
+3. Try combining topic modelling and sentiment analysis. There are papers on that.
 
