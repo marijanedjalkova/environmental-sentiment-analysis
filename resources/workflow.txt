@@ -22,7 +22,8 @@
 			Tested on preprocessed tweets. Most popular bigrams can be seen in most_definitive_bigrams.jpg. Trigrams lose in
 			accuracy (about 60%) a bit, the top trigrams include MENTIONs. Important to note that tweets are stripped off the
 			stopwords, so bigrams could cover more than just 2 words. Changed the classifier to be ngram based, depending on
-			the parameter.
+			the parameter. Changing text to lowercase except CAPS dropped the accuracy a tiny bit - from 74% to 70% in some
+			cases, but forced it up a little in some cases, too.
 		- hybrid: 
 	come to a conclusion - do I need to create something of my own or are the existing tools good enough?
 	[Report] -> findings.
