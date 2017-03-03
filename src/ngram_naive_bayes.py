@@ -2,20 +2,27 @@ from nltk.tokenize import TweetTokenizer
 import csv
 from textblob.classifiers import NaiveBayesClassifier, MaxEntClassifier, DecisionTreeClassifier
 import re
+import sys
 import time
 import numpy
 from nltk.corpus import stopwords
 import string
 from nltk import ngrams
 
-class Ngram_NBClassifier:
+class Ngram_Classifier:
 
-	def __init__(self, n, train_length, test_length):
-		self.n = n
+	def __init__(self, classifier_name, n, train_length, test_length):
+                if classifier_name == "NaiveBayes":
+                    self.classifier = NaiveBayesClassifier
+                elif classifier_name == "MaxEntClassifier":
+                    self.classifier = MaxEntClassifier
+                else:
+                    self.classifier = DecisionTreeClassifier
+                self.n = n
 		self.dataset_len = 1578615
 		self.train_limit = train_length
 		self.test_limit = train_length + test_length
-		self.testing_data = []
+                self.testing_data = []
 		self.tokenizer = TweetTokenizer()
 		self.url_pattern = re.compile("(?P<url>https?://[^\s]+)")
 		punctuation = list(string.punctuation)
@@ -60,13 +67,11 @@ class Ngram_NBClassifier:
 					elif index < self.test_limit:
 						self.testing_data.append(row)
 					else:
-						self.cl = NaiveBayesClassifier(training_data, feature_extractor = self.ngram_extractor)
+						self.classifier = self.classifier(training_data, feature_extractor = self.ngram_extractor)
 						break
 			print "trained"
 
 	def test(self):
-		#self.cl.show_informative_features(15)
-		#print self.cl.pseudocode()
 		correct = 0
 		count = 0
 		kaggle = 0
@@ -79,7 +84,7 @@ class Ngram_NBClassifier:
 				tokens = self.preprocess_tweet(row[3])
 				polarity = int(row[1])
 				count +=1
-				predicted = self.cl.classify(tokens)
+				predicted = self.classifier.classify(tokens)
 				if predicted == polarity:
 					correct += 1
 				continue
@@ -89,10 +94,16 @@ class Ngram_NBClassifier:
 		print accuracy * 100 , "%"
 		return accuracy
 
+def main(argv):
+        classifier = argv[0]
+        n = int(argv[1])
+        learn = int(argv[2])
+        test = int(argv[3])
+	s = time.time()
+	nb = Ngram_Classifier(classifier, n, learn, test)
+	nb.test()
+        print "Total time: ",  time.time() - s
 
 if __name__=="__main__":
-	s = time.time()
-	nb = Ngram_NBClassifier(1, 18000, 20)
-	nb.test()
-	print time.time() - s
+        main(sys.argv[1:])
 
