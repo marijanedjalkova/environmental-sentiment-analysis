@@ -29,6 +29,8 @@ class Bigram_NBClassifier:
                     tokens[index] = "[MENTION]"
                 if self.url_pattern.match(tok):
                     tokens[index]="[URL]"
+                if not tok.isupper() and not tok.islower():
+                    tokens[index]=tok.lower()
             tokens = [tok for tok in tokens if tok not in self.stopwds]
             return tokens
 
@@ -91,6 +93,6 @@ class Bigram_NBClassifier:
 
 
 if __name__=="__main__":
-        nb = Bigram_NBClassifier(1, 100000, 1000)
+        nb = Bigram_NBClassifier(2, 60000, 1000)
         nb.test()
 
