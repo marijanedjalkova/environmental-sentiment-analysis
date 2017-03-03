@@ -1,13 +1,14 @@
 from nltk import word_tokenize
 from nltk.tokenize import TweetTokenizer
 import csv
-from textblob.classifiers import NaiveBayesClassifier
+from textblob.classifiers import NaiveBayesClassifier, MaxEntClassifier
 import re
+import numpy
 from nltk.corpus import stopwords
 import string
 from nltk import ngrams
 
-class Bigram_NBClassifier:
+class Ngram_NBClassifier:
 
 	def __init__(self, n, train_length, test_length):
                 self.n = n
@@ -61,7 +62,7 @@ class Bigram_NBClassifier:
 			print "trained"
 
 	def test(self):
-                self.cl.show_informative_features(15)
+                #self.cl.show_informative_features(15)
 		with open("/cs/home/mn39/Documents/MSciDissertation/resources/Sentiment-Analysis-Dataset.csv") as csvfile:
 			data = csv.reader(csvfile) # 1578615 
 			next(data, None) # skip headers
@@ -93,6 +94,6 @@ class Bigram_NBClassifier:
 
 
 if __name__=="__main__":
-        nb = Bigram_NBClassifier(2, 60000, 1000)
+        nb = Ngram_NBClassifier(2, 10000, 1000)
         nb.test()
 
