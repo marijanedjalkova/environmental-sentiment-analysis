@@ -26,4 +26,9 @@ http://www.cs.cmu.edu/~nschneid/twpos-tr.pdf
 	- also talks about features in Tweets, but not too relevant. Shows, however, that the growth of accuracy declines with the number
 	of tweets as the same happens to the number of newly seen tokens.
 	
+	
+https://arstechnica.com/business/2014/03/lack-of-twitter-geotags-cant-stop-researchers-from-getting-location/
+http://observer.com/2015/03/you-dont-have-to-geotag-your-tweets-to-give-away-your-location/
+	- about locating Tweets (do not try to do this, just reference)
+	
 
