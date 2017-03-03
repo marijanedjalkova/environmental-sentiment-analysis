@@ -15,6 +15,7 @@ class Ngram_NBClassifier:
 		self.dataset_len = 1578615
 		self.train_limit = train_length
 		self.test_limit = train_length + test_length
+                self.testing_data = []
                 self.tokenizer = TweetTokenizer()
                 self.url_pattern = re.compile("(?P<url>https?://[^\s]+)")
                 punctuation = list(string.punctuation)
@@ -56,6 +57,8 @@ class Ngram_NBClassifier:
 				        polarity = int(row[1]) # 0 or 1
 				        if index < self.train_limit:
 				                training_data.append((self.preprocess_tweet(row[3]), polarity))
+                                        elif index < self.test_limit:
+                                                self.testing_data.append(row)
                                         else:
                                                 self.cl = NaiveBayesClassifier(training_data, feature_extractor = self.ngram_extractor)
 					        break
@@ -63,37 +66,30 @@ class Ngram_NBClassifier:
 
 	def test(self):
                 #self.cl.show_informative_features(15)
-		with open("/cs/home/mn39/Documents/MSciDissertation/resources/Sentiment-Analysis-Dataset.csv") as csvfile:
-			data = csv.reader(csvfile) # 1578615 
-			next(data, None) # skip headers
-			correct = 0
-			count = 0
-                        kaggle = 0
-			for row in data:
-				source=row[2]
-                                if source == "Sentiment140":
-				        index = int(row[0])
-				        if index % 10000 == 0:
-					        print index
-                                        tokens = self.preprocess_tweet(row[3])
-				        polarity = int(row[1])
-				        if self.train_limit < index < self.test_limit:
-					        count +=1
-					        predicted = self.cl.classify(tokens)
-					        if predicted == polarity:
-						        correct += 1
-					        continue
-				        elif index <= self.train_limit:
-					        continue
-				        else:
-					        accuracy = correct * 1.0/(self.test_limit - self.train_limit - kaggle) 
-					        print accuracy * 100 , "%"
-					        return accuracy
-                                else:
-                                    kaggle += 1
+                correct = 0
+                count = 0
+                kaggle = 0
+                for row in self.testing_data:
+                        source=row[2]
+                        if source == "Sentiment140":
+                                index = int(row[0])
+                                if index % 10000 == 0:
+                                        print index
+                                tokens = self.preprocess_tweet(row[3])
+                                polarity = int(row[1])
+                                count +=1
+                                predicted = self.cl.classify(tokens)
+                                if predicted == polarity:
+                                        correct += 1
+                                continue
+                        else:
+                            kaggle += 1
+                accuracy = correct * 1.0/(self.test_limit - self.train_limit - kaggle) 
+                print accuracy * 100 , "%"
+                return accuracy
 
 
 if __name__=="__main__":
-        nb = Ngram_NBClassifier(2, 10000, 1000)
+        nb = Ngram_NBClassifier(2, 60000, 1000)
         nb.test()
 
