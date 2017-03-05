@@ -35,12 +35,12 @@ class Ngram_Classifier:
 		tokens = self.tokenizer.tokenize(decoded)
 		for index in range(len(tokens)):
 			tok = tokens[index]
-			if tok.startswith('@') and len(tok)>1:#not the 'i am @ the bar' cases
+			if tok.startswith('@') and len(tok)>1: # not the 'i am @ the bar' cases
 				tokens[index] = "[MENTION]"
 			if self.url_pattern.match(tok):
-				tokens[index]="[URL]"
+				tokens[index] = "[URL]"
 			if not tok.isupper() and not tok.islower():
-				tokens[index]=tok.lower()
+				tokens[index] = tok.lower()
 		tokens = [tok for tok in tokens if tok not in self.stopwds]
 		return tokens
 
@@ -70,8 +70,8 @@ class Ngram_Classifier:
 				source = row[2]
 				if source == "Sentiment140":
 					index = int(row[0])
-					if index % 10000 == 0:
-						print index
+					if ((index * 1.0)/self.train_limit * 100) % 25 == 0:
+						print index, "%"
 					polarity = int(row[1]) # 0 or 1
 					if index < self.train_limit:
 						training_data.append((self.preprocess_tweet(row[3]), polarity))
@@ -87,15 +87,16 @@ class Ngram_Classifier:
 		correct = 0
 		count = 0
 		kaggle = 0
+		to_test = len(self.testing_data)
 		for row in self.testing_data:
-			source=row[2]
+			source = row[2]
 			if source == "Sentiment140":
 				index = int(row[0])
-				if index % 10000 == 0:
-					print index
+				if ( (index * 1.0) / to_test * 100) % 25 == 0:
+					print index, "%"
 				tokens = self.preprocess_tweet(row[3])
 				polarity = int(row[1])
-				count +=1
+				count += 1
 				predicted = self.classifier.classify(tokens)
 				if predicted == polarity:
 					correct += 1
