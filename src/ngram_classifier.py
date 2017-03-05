@@ -42,9 +42,6 @@ class Ngram_Classifier:
 			print "Something that is not unicode"
 			raise Exception
 		tokens = self.tokenizer.tokenize(decoded)
-		if is_debug:
-			print tokens
-			print "++++++++++++++++++++++++++++++++++"
 		#tokens = [tok for tok in tokens if tok not in self.stopwds]
 		tokens = [unicode("[MENTION]") if tok.startswith("@") else tok for tok in tokens ]
 		tokens = [unicode("[URL]") if self.url_pattern.match(tok) else tok for tok in tokens ]
@@ -119,11 +116,9 @@ class Ngram_Classifier:
 		to_test = len(self.testing_data)
 		for tweet in self.testing_data:
 			if not tweet.startswith("RT"):
-				print "TWEET: It's", tweet
 				tokens = self.preprocess_tweet(tweet, True)
 				predicted = self.classifier.classify(tokens)
-				#print tweet
-				#print tokens 
+				print tweet
 				print " - predicted ", predicted
 				print "------------------------------------------------"
 
