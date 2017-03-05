@@ -27,21 +27,19 @@ class Ngram_Classifier:
 		self.tokenizer = TweetTokenizer()
 		self.url_pattern = re.compile("(?P<url>https?://[^\s]+)")
 		punctuation = list(string.punctuation)
-		self.stopwds = stopwords.words('english') + punctuation + ['rt', 'via']
+		self.stopwds = stopwords.words('english') + punctuation + ["via"]
 		self.train()
 
-	def preprocess_tweet(self, text):
-		decoded = text.decode("utf-8")
+	def preprocess_tweet(self, text, is_test=False):
+		if isinstance(text, unicode):
+			decoded = text
+		else:
+			decoded = text.decode("utf-8")
 		tokens = self.tokenizer.tokenize(decoded)
-		for index in range(len(tokens)):
-			tok = tokens[index]
-			if tok.startswith('@') and len(tok)>1: # not the 'i am @ the bar' cases
-				tokens[index] = "[MENTION]"
-			if self.url_pattern.match(tok):
-				tokens[index] = "[URL]"
-			if not tok.isupper() and not tok.islower():
-				tokens[index] = tok.lower()
 		tokens = [tok for tok in tokens if tok not in self.stopwds]
+		tokens = ["[MENTION]" if tok.startswith("@") else tok for tok in tokens ]
+		tokens = ["[URL]" if self.url_pattern.match(tok) else tok for tok in tokens ]
+		tokens = [tok.lower() if not tok.isupper() and not tok.islower() else tok for tok in tokens ]
 		return tokens
 
 	def ngram_extractor(self, document):
@@ -60,18 +58,22 @@ class Ngram_Classifier:
 		else:
 			return self.extra
 
+	def need_to_filter(self, tweet_row):
+		source = tweet_row[2]
+		text = tweet_row[3]
+		return source != "Sentiment140" or text.startswith("RT")
+
 	def train(self):
 		training_data = []
 		with open("/cs/home/mn39/Documents/MSciDissertation/resources/Sentiment-Analysis-Dataset.csv") as csvfile:
 			data = csv.reader(csvfile) # 1578615 
 			next(data, None) # skip headers
-			# format ItemID, Sentiment, SentimentSource, SentimentText
+			# format: ItemID, Sentiment, SentimentSource, SentimentText
 			for row in data:
-				source = row[2]
-				if source == "Sentiment140":
-					index = int(row[0])
-					if ((index * 1.0)/self.train_limit * 100) % 25 == 0:
-						print index, "%"
+				index = int(row[0])
+				if ((index * 1.0)/self.train_limit * 100) % 25 == 0:
+					print ((index * 1.0)/self.train_limit * 100), "%"
+				if not self.need_to_filter(row):
 					polarity = int(row[1]) # 0 or 1
 					if index < self.train_limit:
 						training_data.append((self.preprocess_tweet(row[3]), polarity))
@@ -85,18 +87,15 @@ class Ngram_Classifier:
 
 	def test(self):
 		correct = 0
-		count = 0
 		kaggle = 0
 		to_test = len(self.testing_data)
 		for row in self.testing_data:
-			source = row[2]
-			if source == "Sentiment140":
-				index = int(row[0])
-				if ( (index * 1.0) / to_test * 100) % 25 == 0:
-					print index, "%"
-				tokens = self.preprocess_tweet(row[3])
+			index = int(row[0])
+			if ( (index * 1.0) / to_test * 100) % 25 == 0:
+				print ( (index * 1.0) / to_test * 100), "%"
+			if not self.need_to_filter(row):
 				polarity = int(row[1])
-				count += 1
+				tokens = self.preprocess_tweet(row[3])
 				predicted = self.classifier.classify(tokens)
 				if predicted == polarity:
 					correct += 1
@@ -106,6 +105,18 @@ class Ngram_Classifier:
 		accuracy = correct * 1.0/(self.test_limit - self.train_limit - kaggle) 
 		print accuracy * 100 , "%"
 		return accuracy
+
+	def classify_all(self):
+		to_test = len(self.testing_data)
+		for tweet in self.testing_data:
+			tokens = self.preprocess_tweet(tweet, True)
+			predicted = self.classifier.classify(tokens)
+			print tweet
+			print tokens 
+			print " - predicted ", predicted
+			print "------------------------------------------------"
+
+
 
 def main(argv):
 	classifier = argv[0]
