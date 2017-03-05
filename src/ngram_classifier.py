@@ -8,6 +8,7 @@ import numpy
 from nltk.corpus import stopwords
 import string
 from nltk import ngrams
+import unidecode
 
 class Ngram_Classifier:
 
@@ -30,15 +31,23 @@ class Ngram_Classifier:
 		self.stopwds = stopwords.words('english') + punctuation + ["via"]
 		self.train()
 
-	def preprocess_tweet(self, text, is_test=False):
-		if isinstance(text, unicode):
-			decoded = text
-		else:
+	def preprocess_tweet(self, text, is_debug=False):
+		try:
 			decoded = text.decode("utf-8")
+		except UnicodeEncodeError:
+			decoded = unidecode.unidecode(text)
+			decoded = decoded.decode("utf-8")
+		if not isinstance(decoded, unicode):
+			# this should not be happening
+			print "Something that is not unicode"
+			raise Exception
 		tokens = self.tokenizer.tokenize(decoded)
-		tokens = [tok for tok in tokens if tok not in self.stopwds]
-		tokens = ["[MENTION]" if tok.startswith("@") else tok for tok in tokens ]
-		tokens = ["[URL]" if self.url_pattern.match(tok) else tok for tok in tokens ]
+		if is_debug:
+			print tokens
+			print "++++++++++++++++++++++++++++++++++"
+		#tokens = [tok for tok in tokens if tok not in self.stopwds]
+		tokens = [unicode("[MENTION]") if tok.startswith("@") else tok for tok in tokens ]
+		tokens = [unicode("[URL]") if self.url_pattern.match(tok) else tok for tok in tokens ]
 		tokens = [tok.lower() if not tok.isupper() and not tok.islower() else tok for tok in tokens ]
 		return tokens
 
@@ -58,7 +67,7 @@ class Ngram_Classifier:
 		else:
 			return self.extra
 
-	def need_to_filter(self, tweet_row):
+	def need_to_filter(self, tweet_row, is_debug = False):
 		source = tweet_row[2]
 		text = tweet_row[3]
 		return source != "Sentiment140" or text.startswith("RT")
@@ -109,12 +118,14 @@ class Ngram_Classifier:
 	def classify_all(self):
 		to_test = len(self.testing_data)
 		for tweet in self.testing_data:
-			tokens = self.preprocess_tweet(tweet, True)
-			predicted = self.classifier.classify(tokens)
-			print tweet
-			print tokens 
-			print " - predicted ", predicted
-			print "------------------------------------------------"
+			if not tweet.startswith("RT"):
+				print "TWEET: It's", tweet
+				tokens = self.preprocess_tweet(tweet, True)
+				predicted = self.classifier.classify(tokens)
+				#print tweet
+				#print tokens 
+				print " - predicted ", predicted
+				print "------------------------------------------------"
 
 
 
