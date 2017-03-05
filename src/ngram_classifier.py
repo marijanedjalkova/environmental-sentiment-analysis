@@ -11,18 +11,19 @@ from nltk import ngrams
 
 class Ngram_Classifier:
 
-	def __init__(self, classifier_name, n, train_length, test_length):
-                if classifier_name == "NaiveBayes":
-                    self.classifier = NaiveBayesClassifier
-                elif classifier_name == "MaxEntClassifier":
-                    self.classifier = MaxEntClassifier
-                else:
-                    self.classifier = DecisionTreeClassifier
-                self.n = n
+	def __init__(self, classifier_name, n, train_length, test_length, ft_extractor):
+		if classifier_name == "NaiveBayes":
+			self.classifier = NaiveBayesClassifier
+		elif classifier_name == "MaxEntClassifier":
+			self.classifier = MaxEntClassifier
+		else:
+			self.classifier = DecisionTreeClassifier
+		self.n = n
 		self.dataset_len = 1578615
 		self.train_limit = train_length
 		self.test_limit = train_length + test_length
-                self.testing_data = []
+		self.testing_data = []
+		self.ft_extractor_name = ft_extractor
 		self.tokenizer = TweetTokenizer()
 		self.url_pattern = re.compile("(?P<url>https?://[^\s]+)")
 		punctuation = list(string.punctuation)
@@ -49,6 +50,16 @@ class Ngram_Classifier:
 			features[w]=True
 		return features
 
+	def extra(self, document):
+		print "extracting"
+		return {}
+
+	def get_feature_extractor(self):
+		if self.ft_extractor_name == "ngram_extractor":
+			return self.ngram_extractor
+		else:
+			return self.extra
+
 	def train(self):
 		training_data = []
 		with open("/cs/home/mn39/Documents/MSciDissertation/resources/Sentiment-Analysis-Dataset.csv") as csvfile:
@@ -67,7 +78,8 @@ class Ngram_Classifier:
 					elif index < self.test_limit:
 						self.testing_data.append(row)
 					else:
-						self.classifier = self.classifier(training_data, feature_extractor = self.ngram_extractor)
+						ft_extractor = self.get_feature_extractor()
+						self.classifier = self.classifier(training_data, feature_extractor = ft_extractor)
 						break
 			print "trained"
 
@@ -80,7 +92,7 @@ class Ngram_Classifier:
 			if source == "Sentiment140":
 				index = int(row[0])
 				if index % 10000 == 0:
-						print index
+					print index
 				tokens = self.preprocess_tweet(row[3])
 				polarity = int(row[1])
 				count +=1
@@ -95,15 +107,16 @@ class Ngram_Classifier:
 		return accuracy
 
 def main(argv):
-        classifier = argv[0]
-        n = int(argv[1])
-        learn = int(argv[2])
-        test = int(argv[3])
+	classifier = argv[0]
+	n = int(argv[1])
+	learn = int(argv[2])
+	test = int(argv[3])
+	ft_extractor = argv[4]
 	s = time.time()
-	nb = Ngram_Classifier(classifier, n, learn, test)
+	nb = Ngram_Classifier(classifier, n, learn, test, ft_extractor)
 	nb.test()
-        print "Total time: ",  time.time() - s
+	print "Total time: ",  time.time() - s
 
 if __name__=="__main__":
-        main(sys.argv[1:])
+	main(sys.argv[1:])
 
