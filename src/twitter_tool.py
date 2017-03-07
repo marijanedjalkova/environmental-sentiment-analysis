@@ -38,16 +38,38 @@ class TwitterTool:
 		return True
 
 	def extract_text_from_tweets(self, tweets):
-		return [t.text for t in tweets]
+
+		return [t.text for t in tweets if t.lang=="en"]
 
 def main():
-	nc = Ngram_Classifier("NaiveBayes", 2, 30000, 0, "ngram_extractor")
+	nc1 = Ngram_Classifier("NaiveBayes", 2, 250000, 0, "ngram_extractor")
+	training, testing = nc1.get_train_test_sets()
+	nc1.set_data(training, testing)
+	nc1.train()
+	nc2 = Ngram_Classifier("NaiveBayes", 1, 250000, 0, "ngram_extractor")
+	nc2.set_data(training, testing)
+	nc2.train()
+	# nc3 = Ngram_Classifier("DecisionTree", 1, 1800, 0, "ngram_extractor")
+	# nc4 = Ngram_Classifier("DecisionTree", 2, 1800, 0, "ngram_extractor")
+
 	tt = TwitterTool()
-	tweets = tt.search_tweets("standrews", 55)
+	tweets = tt.search_tweets("grangemouth", 100)
 	tweet_list = tt.extract_text_from_tweets(tweets)
 
-	nc.testing_data = tweet_list
-	nc.classify_all()
+	for t in tweet_list:
+		if not t.startswith("RT"):
+			r1 = nc1.classify_one(t)
+			r2 = nc2.classify_one(t)
+			# print "2"
+			# r3 = nc3.classify_one(t)
+			# print "3"
+			# r4 = nc4.classify_one(t)
+			print "Tweet: ", t 
+			if r1==r2:
+				print r1
+			else:
+				print r1, "vs ", r2
+			print "========================================================="
 
 
 if __name__ == '__main__':
