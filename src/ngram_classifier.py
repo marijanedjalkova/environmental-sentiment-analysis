@@ -1,6 +1,8 @@
 from nltk.tokenize import TweetTokenizer
 import csv
 from textblob.classifiers import NaiveBayesClassifier, MaxEntClassifier, DecisionTreeClassifier
+from textblob import TextBlob
+from textblob.np_extractors import ConllExtractor,FastNPExtractor
 import re
 import sys
 import time
@@ -32,15 +34,7 @@ class Ngram_Classifier:
 		#self.train()
 
 	def preprocess_tweet(self, text, is_debug=False):
-		try:
-			decoded = text.decode("utf-8")
-		except UnicodeEncodeError:
-			decoded = unidecode.unidecode(text)
-			decoded = decoded.decode("utf-8")
-		if not isinstance(decoded, unicode):
-			# this should not be happening
-			print "Something that is not unicode"
-			raise Exception
+		decoded = self.preprocess_tweet_text(self, text)
 		tokens = self.tokenizer.tokenize(decoded)
 		tokens = [tok for tok in tokens if tok not in self.stopwds]
 		tokens = [tok for tok in tokens if not tok.startswith("@")]
@@ -50,21 +44,37 @@ class Ngram_Classifier:
 		tokens = [tok.lower() if not tok.isupper() and not tok.islower() else tok for tok in tokens ]
 		return tokens
 
+	def preprocess_tweet_text(self, text):
+		try:
+			decoded = text.decode("utf-8")
+		except UnicodeEncodeError:
+			decoded = unidecode.unidecode(text)
+			decoded = decoded.decode("utf-8")
+		if not isinstance(decoded, unicode):
+			print "Something that is not unicode"
+			raise Exception
+		return decoded
+
 	def ngram_extractor(self, document):
 		features = {}
 		for w in ngrams(document, self.n):
 			features[w]=True
 		return features
 
-	def extra(self, document):
-		print "extracting"
-		return {}
+	def noun_phrase_extractor(self, document):
+		""" This is ridiculously slow and should not be used.
+		Even with ConllExtractor instead of FastNPExtractor"""
+		blob = TextBlob(document, np_extractor=ConllExtractor())
+		return {np: True for np in blob.noun_phrases}
 
 	def get_feature_extractor(self):
 		if self.ft_extractor_name == "ngram_extractor":
 			return self.ngram_extractor
+		elif self.ft_extractor_name == "noun_phrase_extractor":
+			return self.noun_phrase_extractor
 		else:
-			return self.extra
+			print "Unrecognised feature extractor"
+			raise Exception
 
 	def need_to_filter(self, tweet_row, is_debug = False):
 		source = tweet_row[2]
@@ -85,7 +95,7 @@ class Ngram_Classifier:
 				if not self.need_to_filter(row):
 					polarity = int(row[1]) # 0 or 1
 					if index < self.train_limit:
-						training_data.append((self.preprocess_tweet(row[3]), polarity))
+						training_data.append((self.preprocess_tweet_text(row[3]), polarity))
 					elif index < self.test_limit:
 						testing_data.append(row)
 					else:
