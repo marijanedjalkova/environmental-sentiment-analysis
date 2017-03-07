@@ -28,8 +28,8 @@ class Ngram_Classifier:
 		self.tokenizer = TweetTokenizer()
 		self.url_pattern = re.compile("(?P<url>https?://[^\s]+)")
 		punctuation = list(string.punctuation)
-		self.stopwds = stopwords.words('english') + punctuation + ["via", "..."]
-		self.train()
+		self.stopwds = stopwords.words('english') + punctuation + ["via", "...", u'...']
+		#self.train()
 
 	def preprocess_tweet(self, text, is_debug=False):
 		try:
@@ -71,8 +71,9 @@ class Ngram_Classifier:
 		text = tweet_row[3]
 		return source != "Sentiment140" or text.startswith("RT")
 
-	def train(self):
+	def get_train_test_sets(self):
 		training_data = []
+		testing_data = []
 		with open("/cs/home/mn39/Documents/MSciDissertation/resources/Sentiment-Analysis-Dataset.csv") as csvfile:
 			data = csv.reader(csvfile) # 1578615 
 			next(data, None) # skip headers
@@ -86,12 +87,21 @@ class Ngram_Classifier:
 					if index < self.train_limit:
 						training_data.append((self.preprocess_tweet(row[3]), polarity))
 					elif index < self.test_limit:
-						self.testing_data.append(row)
+						testing_data.append(row)
 					else:
-						ft_extractor = self.get_feature_extractor()
-						self.classifier = self.classifier(training_data, feature_extractor = ft_extractor)
-						break
-			print "trained"
+						return training_data, testing_data
+		return training_data, testing_data
+
+	def set_data(self, training_data, testing_data):
+		self.training_data = training_data
+		self.testing_data = testing_data
+
+	def train(self):
+		if not self.training_data:
+			s, t = self.get_train_test_sets()
+			self.set_data(s, t)
+		self.classifier = self.classifier(self.training_data, feature_extractor = self.get_feature_extractor())
+		print "trained"
 
 	def test(self):
 		correct = 0
@@ -126,12 +136,13 @@ class Ngram_Classifier:
 				print " - predicted ", predicted
 				print "------------------------------------------------"
 
-	def classify_one(self, text):
+	def classify_one(self, tweet):
 		if not tweet.startswith("RT"):
 			tokens = self.preprocess_tweet(tweet, True)
-			print tokens
 			predicted = self.classifier.classify(tokens)
 			return predicted
+		print "a retweet"
+		return 0
 
 
 
