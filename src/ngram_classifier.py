@@ -1,6 +1,7 @@
 from nltk.tokenize import TweetTokenizer
 import csv
 from textblob.classifiers import NaiveBayesClassifier, MaxEntClassifier, DecisionTreeClassifier
+from textblob.classifiers import basic_extractor, contains_extractor
 from textblob import TextBlob
 from textblob.np_extractors import ConllExtractor,FastNPExtractor
 import re
@@ -34,8 +35,8 @@ class Ngram_Classifier:
 		#self.train()
 
 	def preprocess_tweet(self, text, is_debug=False):
-		decoded = self.preprocess_tweet_text(text)
-		tokens = self.tokenizer.tokenize(decoded)
+		# text should be decoded by this time
+		tokens = self.tokenizer.tokenize(text)
 		tokens = [tok for tok in tokens if tok not in self.stopwds]
 		tokens = [tok for tok in tokens if not tok.startswith("@")]
 		tokens = [tok for tok in tokens if not self.url_pattern.match(tok)]
@@ -44,7 +45,7 @@ class Ngram_Classifier:
 		tokens = [tok.lower() if not tok.isupper() and not tok.islower() else tok for tok in tokens ]
 		return tokens
 
-	def preprocess_tweet_text(self, text):
+	def decode_text(self, text):
 		try:
 			decoded = text.decode("utf-8")
 		except AttributeError:
@@ -74,6 +75,10 @@ class Ngram_Classifier:
 			return self.ngram_extractor
 		elif self.ft_extractor_name == "noun_phrase_extractor":
 			return self.noun_phrase_extractor
+		elif self.ft_extractor_name == "default":
+			return basic_extractor
+		elif self.ft_extractor_name == "contains":
+			return contains_extractor
 		else:
 			print "Unrecognised feature extractor"
 			raise Exception
@@ -97,7 +102,7 @@ class Ngram_Classifier:
 				if not self.need_to_filter(row):
 					polarity = int(row[1]) # 0 or 1
 					if index < self.train_limit:
-						training_data.append((row[3], polarity))
+						training_data.append((self.decode_text(row[3]), polarity))
 					elif index < self.test_limit:
 						testing_data.append(row)
 					else:
@@ -125,7 +130,7 @@ class Ngram_Classifier:
 				print ( (index * 1.0) / to_test * 100), "%"
 			if not self.need_to_filter(row):
 				polarity = int(row[1])
-				predicted = self.classifier.classify(row[3])
+				predicted = self.classifier.classify(self.decode_text(row[3]))
 				if predicted == polarity:
 					correct += 1
 				continue
@@ -140,7 +145,7 @@ class Ngram_Classifier:
 		print self.classifier.show_informative_features(19)
 		for tweet in self.testing_data:
 			if not tweet.startswith("RT"):
-				predicted = self.classifier.classify(tweet)
+				predicted = self.classifier.classify(self.decode_text(tweet))
 				print tweet
 				print " - predicted ", predicted
 				print "------------------------------------------------"
