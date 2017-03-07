@@ -30,9 +30,11 @@
 			75% accuracy. Seem to be faster on unigrams. on 200 training, 20 testing 65%. (800, 20): 70%. 
 			(1800, 20), 12 mins - 80%. 2k testing - 75%. (2700, 20), 36mins - 80%. Can't do more - exceeds time limits. 
 			
-So after trying the model on the actual tweets, I can say that the dataset is not very convenient and does not represent what is going on on Twitter. Here (http://help.sentiment140.com/for-students/) it says that the tweets were generated automatically and that there is an assumption that positive smileys are used in the positive tweets, and vice versa. I can't agree with it...
+[DATASET ISSUE] So after trying the model on the actual tweets, I can say that the dataset is not very convenient and does not represent what is going on on Twitter. Here (http://help.sentiment140.com/for-students/) it says that the tweets were generated automatically and that there is an assumption that positive smileys are used in the positive tweets, and vice versa. I can't agree with it...
 After trying on 150k training set, bigram Naive Bayes seems to make more sense.
-		- hybrid: 
+
+[NOUN PHRASE EXTRACTORS]: Textblob provides Fast_NP_extractor and ConllExtractor. Should try them as features. The noun phrase extractors are not working very well. They do not extract enough. For example, from "what a lovely day it is right now, going for a walk. I hope to see a lot of sun" only "lovely day" and "what lovely day" are being extracted by each of them corespondingly. 
+ 
 	come to a conclusion - do I need to create something of my own or are the existing tools good enough? - I don't need to create own classifier, but I wil need to create own feature extractor to customize the 
 	[Report] -> findings.
 2. Try topic modeling on London data:
