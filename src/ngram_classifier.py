@@ -28,7 +28,7 @@ class Ngram_Classifier:
 		self.tokenizer = TweetTokenizer()
 		self.url_pattern = re.compile("(?P<url>https?://[^\s]+)")
 		punctuation = list(string.punctuation)
-		self.stopwds = stopwords.words('english') + punctuation + ["via"]
+		self.stopwds = stopwords.words('english') + punctuation + ["via", "..."]
 		self.train()
 
 	def preprocess_tweet(self, text, is_debug=False):
@@ -42,7 +42,9 @@ class Ngram_Classifier:
 			print "Something that is not unicode"
 			raise Exception
 		tokens = self.tokenizer.tokenize(decoded)
-		#tokens = [tok for tok in tokens if tok not in self.stopwds]
+		tokens = [tok for tok in tokens if tok not in self.stopwds]
+		tokens = [tok for tok in tokens if not tok.startswith("@")]
+		tokens = [tok for tok in tokens if not self.url_pattern.match(tok)]
 		tokens = [unicode("[MENTION]") if tok.startswith("@") else tok for tok in tokens ]
 		tokens = [unicode("[URL]") if self.url_pattern.match(tok) else tok for tok in tokens ]
 		tokens = [tok.lower() if not tok.isupper() and not tok.islower() else tok for tok in tokens ]
@@ -114,13 +116,22 @@ class Ngram_Classifier:
 
 	def classify_all(self):
 		to_test = len(self.testing_data)
+		print self.classifier.show_informative_features(19)
 		for tweet in self.testing_data:
 			if not tweet.startswith("RT"):
 				tokens = self.preprocess_tweet(tweet, True)
+				print tokens
 				predicted = self.classifier.classify(tokens)
 				print tweet
 				print " - predicted ", predicted
 				print "------------------------------------------------"
+
+	def classify_one(self, text):
+		if not tweet.startswith("RT"):
+			tokens = self.preprocess_tweet(tweet, True)
+			print tokens
+			predicted = self.classifier.classify(tokens)
+			return predicted
 
 
 
