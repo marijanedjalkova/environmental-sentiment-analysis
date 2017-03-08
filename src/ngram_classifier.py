@@ -31,15 +31,15 @@ class Ngram_Classifier:
 		self.tokenizer = TweetTokenizer()
 		self.url_pattern = re.compile("(?P<url>https?://[^\s]+)")
 		punctuation = list(string.punctuation)
-		self.stopwds = stopwords.words('english') + punctuation + ["via", "...", u'...']
+		self.stopwds = stopwords.words('english') + punctuation + ["via", "...", u'...', '\n', '\t']
 		#self.train()
 
 	def preprocess_tweet(self, text, is_debug=False):
 		# text should be decoded by this time
 		tokens = self.tokenizer.tokenize(text)
 		tokens = [tok for tok in tokens if tok not in self.stopwds]
-		tokens = [tok for tok in tokens if not tok.startswith("@")]
-		tokens = [tok for tok in tokens if not self.url_pattern.match(tok)]
+		#tokens = [tok for tok in tokens if not tok.startswith("@")]
+		#tokens = [tok for tok in tokens if not self.url_pattern.match(tok)]
 		tokens = [unicode("[MENTION]") if tok.startswith("@") else tok for tok in tokens ]
 		tokens = [unicode("[URL]") if self.url_pattern.match(tok) else tok for tok in tokens ]
 		tokens = [tok.lower() if not tok.isupper() and not tok.islower() else tok for tok in tokens ]
@@ -75,10 +75,6 @@ class Ngram_Classifier:
 			return self.ngram_extractor
 		elif self.ft_extractor_name == "noun_phrase_extractor":
 			return self.noun_phrase_extractor
-		elif self.ft_extractor_name == "default":
-			return basic_extractor
-		elif self.ft_extractor_name == "contains":
-			return contains_extractor
 		else:
 			print "Unrecognised feature extractor"
 			raise Exception
