@@ -35,4 +35,7 @@ mattbush paper in the same folder - about topic modeling using Twitter.
 
 http://dl.acm.org/citation.cfm?id=2664561
 	- compares Naive Bayes and SVM for Twitter sentiment analysis, says SVMs are better.
+	
+http://www.ijcaonline.org/archives/volume146/number13/jadav-2016-ijca-910921.pdf
+	- Twitter sentiment analysis paper.
 
