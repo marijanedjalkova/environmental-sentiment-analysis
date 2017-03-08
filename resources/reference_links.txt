@@ -32,3 +32,7 @@ http://observer.com/2015/03/you-dont-have-to-geotag-your-tweets-to-give-away-you
 	- about locating Tweets (do not try to do this, just reference)
 	
 mattbush paper in the same folder - about topic modeling using Twitter.
+
+http://dl.acm.org/citation.cfm?id=2664561
+	- compares Naive Bayes and SVM for Twitter sentiment analysis, says SVMs are better.
+
