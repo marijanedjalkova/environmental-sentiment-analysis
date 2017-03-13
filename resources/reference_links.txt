@@ -45,3 +45,5 @@ http://dl.acm.org/citation.cfm?id=1860679
 http://www.aclweb.org/website/old_anthology/R/R13/R13-1026.pdf
 	- Twitter Part-of-Speech Tagging for All: Overcoming Sparse and Noisy Data
 
+https://www.forbes.com/sites/adelynzhou/2017/02/27/how-artificial-intelligence-is-transforming-enterprise-customer-service/#7e2187371483
+	- NLP in client services
