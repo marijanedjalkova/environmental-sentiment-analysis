@@ -38,4 +38,10 @@ http://dl.acm.org/citation.cfm?id=2664561
 	
 http://www.ijcaonline.org/archives/volume146/number13/jadav-2016-ijca-910921.pdf
 	- Twitter sentiment analysis paper.
+	
+http://dl.acm.org/citation.cfm?id=1860679
+	- Twitter in mass emergency: what NLP techniques can contribute
+
+http://www.aclweb.org/website/old_anthology/R/R13/R13-1026.pdf
+	- Twitter Part-of-Speech Tagging for All: Overcoming Sparse and Noisy Data
 
