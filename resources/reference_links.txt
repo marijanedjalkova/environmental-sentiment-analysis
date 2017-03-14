@@ -47,3 +47,6 @@ http://www.aclweb.org/website/old_anthology/R/R13/R13-1026.pdf
 
 https://www.forbes.com/sites/adelynzhou/2017/02/27/how-artificial-intelligence-is-transforming-enterprise-customer-service/#7e2187371483
 	- NLP in client services
+	
+https://pdfs.semanticscholar.org/6e51/8946c59c8c5d005054af319783b3eba128a9.pdf
+	- Feature Engineering for Text Classification
