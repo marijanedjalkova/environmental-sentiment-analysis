@@ -9,7 +9,7 @@ class TwitterTool:
 		self.api = self.get_twitter_api()
 
 	def get_twitter_api(self):
-		with open("auth_twitter.txt") as f:
+		with open("/cs/home/mn39/Documents/MSciDissertation/src/auth_twitter.txt") as f:
 			d = json.load(f)
 
 		auth = tweepy.OAuthHandler(d["consumer_key"], d["consumer_secret"])
@@ -38,20 +38,14 @@ class TwitterTool:
 		return True
 
 	def extract_text_from_tweets(self, tweets):
-
 		return [t.text for t in tweets if t.lang=="en"]
 
 def main():
-	nc1 = Ngram_Classifier("NaiveBayes", 2, 250000, 0, "ngram_extractor")
+	nc1 = Ngram_Classifier("SVM", 1, 300000, 0, "ngram_extractor")
 	training, testing = nc1.get_train_test_sets()
 	nc1.set_data(training, testing)
 	nc1.train()
-	nc2 = Ngram_Classifier("NaiveBayes", 1, 250000, 0, "ngram_extractor")
-	nc2.set_data(training, testing)
-	nc2.train()
-	# nc3 = Ngram_Classifier("DecisionTree", 1, 1800, 0, "ngram_extractor")
-	# nc4 = Ngram_Classifier("DecisionTree", 2, 1800, 0, "ngram_extractor")
-
+	#nc1.classifier.show_informative_features(15)
 	tt = TwitterTool()
 	tweets = tt.search_tweets("grangemouth", 100)
 	tweet_list = tt.extract_text_from_tweets(tweets)
@@ -59,16 +53,11 @@ def main():
 	for t in tweet_list:
 		if not t.startswith("RT"):
 			r1 = nc1.classify_one(t)
-			r2 = nc2.classify_one(t)
-			# print "2"
+			# r2 = nc2.classify_one(t)
 			# r3 = nc3.classify_one(t)
-			# print "3"
 			# r4 = nc4.classify_one(t)
 			print "Tweet: ", t 
-			if r1==r2:
-				print r1
-			else:
-				print r1, "vs ", r2
+			print r1#, " vs ", r2 #, " vs ", r3, " vs ", r4
 			print "========================================================="
 
 
