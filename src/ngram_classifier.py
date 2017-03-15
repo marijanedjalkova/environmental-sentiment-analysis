@@ -1,9 +1,11 @@
 from nltk.tokenize import TweetTokenizer
 import csv
 from textblob.classifiers import NaiveBayesClassifier, MaxEntClassifier, DecisionTreeClassifier
+from nltk.classify import SklearnClassifier
 from textblob.classifiers import basic_extractor, contains_extractor
 from textblob import TextBlob
 from textblob.np_extractors import ConllExtractor,FastNPExtractor
+from sklearn.svm import SVC, LinearSVC
 import re
 import sys
 import time
@@ -20,6 +22,8 @@ class Ngram_Classifier:
 			self.classifier = NaiveBayesClassifier
 		elif classifier_name == "MaxEntClassifier":
 			self.classifier = MaxEntClassifier
+		elif classifier_name == "SVM":
+			self.classifier = SVC
 		else:
 			self.classifier = DecisionTreeClassifier
 		self.n = n
@@ -31,13 +35,25 @@ class Ngram_Classifier:
 		self.tokenizer = TweetTokenizer()
 		self.url_pattern = re.compile("(?P<url>https?://[^\s]+)")
 		punctuation = list(string.punctuation)
-		self.stopwds = stopwords.words('english') + punctuation + ["via", "...", u'...', '\n', '\t']
-		#self.train()
+		self.stopwds = stopwords.words('english') + punctuation + ["via", u'...', '\n', '\t']
+		self.weird_unicode_chars = [u'\xc2', u'\xab', u'\xbb', u'..', u'\xe2', u"\u2122"]
+
 
 	def preprocess_tweet(self, text, is_debug=False):
 		# text should be decoded by this time
-		tokens = self.tokenizer.tokenize(text)
+		if isinstance(text, unicode):
+			tokens = self.tokenizer.tokenize(text)
+		elif isinstance(text, list):
+			tokens = text
+		elif isinstance(text, str):
+			print "Text is a string and not unicode - weird"
+			raise Exception
+		else:
+			print "Not sure what this is at all: ", type(text), text
+			raise Exception
+
 		tokens = [tok for tok in tokens if tok not in self.stopwds]
+		tokens = [tok for tok in tokens if tok not in self.weird_unicode_chars]
 		#tokens = [tok for tok in tokens if not tok.startswith("@")]
 		#tokens = [tok for tok in tokens if not self.url_pattern.match(tok)]
 		tokens = [unicode("[MENTION]") if tok.startswith("@") else tok for tok in tokens ]
@@ -46,11 +62,12 @@ class Ngram_Classifier:
 		return tokens
 
 	def decode_text(self, text):
+
 		try:
 			decoded = text.decode("utf-8")
 		except AttributeError:
 			print text 
-			print "You are probably tokenizing your test tweet before giving it to slassifier, don't do that"
+			print "You are probably tokenizing your test tweet before giving it to classifier, don't do that"
 			raise Exception
 		except UnicodeEncodeError:
 			decoded = unidecode.unidecode(text)
@@ -61,8 +78,11 @@ class Ngram_Classifier:
 		return decoded
 
 	def ngram_extractor(self, document):
-		tokens = self.preprocess_tweet(document)
-		return {w:True for w in ngrams(tokens, self.n)}
+		# document should be a list of tokens already - i.e. already preprocess_tweet-ed
+		if not isinstance(document, list):
+			print "This should be a list of tokens already - i.e. already preprocess_tweet-ed"
+			raise Exception
+		return {w:True for w in ngrams(document, self.n)}
 
 	def noun_phrase_extractor(self, document):
 		""" This is ridiculously slow and should not be used.
@@ -98,7 +118,7 @@ class Ngram_Classifier:
 				if not self.need_to_filter(row):
 					polarity = int(row[1]) # 0 or 1
 					if index < self.train_limit:
-						training_data.append((self.decode_text(row[3]), polarity))
+						training_data.append((self.preprocess_tweet(self.decode_text(row[3])), polarity))
 					elif index < self.test_limit:
 						testing_data.append(row)
 					else:
@@ -113,8 +133,15 @@ class Ngram_Classifier:
 		if not self.training_data:
 			s, t = self.get_train_test_sets()
 			self.set_data(s, t)
-		self.classifier = self.classifier(self.training_data, feature_extractor = self.get_feature_extractor())
+		if self.classifier != SVC:
+			self.classifier = self.classifier(self.training_data, feature_extractor = self.get_feature_extractor())
+		else:
+			self.classifier = SklearnClassifier(LinearSVC()).train(self.to_featureset(self.training_data))
 		print "trained"
+
+	def to_featureset(self, training_data):
+		return [(self.ngram_extractor(tw), v) for tw, v in training_data]
+
 
 	def test(self):
 		correct = 0
@@ -141,13 +168,15 @@ class Ngram_Classifier:
 		print self.classifier.show_informative_features(19)
 		for tweet in self.testing_data:
 			if not tweet.startswith("RT"):
-				predicted = self.classifier.classify(self.decode_text(tweet))
+				predicted = self.classifier.classify(self.preprocess_tweet(self.decode_text(tweet)))
 				print tweet
 				print " - predicted ", predicted
 				print "------------------------------------------------"
 
 	def classify_one(self, tweet):
-		return self.classifier.classify(tweet)
+		to_classify = self.ngram_extractor(self.preprocess_tweet(self.decode_text(tweet)))
+		print to_classify
+		return self.classifier.classify(to_classify)
 
 
 
