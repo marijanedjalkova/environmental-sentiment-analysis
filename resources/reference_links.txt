@@ -53,3 +53,8 @@ https://pdfs.semanticscholar.org/6e51/8946c59c8c5d005054af319783b3eba128a9.pdf
 	
 http://cs.unb.ca/~ccook1/tist2013-lexnorm.pdf
 	- Text normalization for twitter.
+	
+https://arxiv.org/pdf/1512.01043.pdf
+	- comparison of sentiment analysis tools. Almost finished. Read about hybrid approach.
+http://ac.els-cdn.com/S095070511630137X/1-s2.0-S095070511630137X-main.pdf?_tid=b20940f2-0a5a-11e7-8320-00000aab0f6b&acdnat=1489677210_e856d0f346a9af09309d24d0f21222ec
+	- hybrid approach to sentiment analysis.
