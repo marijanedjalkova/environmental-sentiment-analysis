@@ -40,8 +40,7 @@ corespondingly. They are also very slow and taking several seconds for every sin
 other extractors can be found.
 
 Basic extractor seems to be much slower than the unigram extractor. There is also a contains_extractor. 
-			- LinearSVC cassifier on 300k training set is reasonably fast and gives good results. I think I will go with it.
-	
+			- LinearSVC cassifier on 300k training set extracting unigrams is reasonably fast and gives good results. I think I will go with it. Same thing extracting bigrams makes much less sense, so should stick with unigrams.
  
 	come to a conclusion - do I need to create something of my own or are the existing tools good enough? - I don't need to create own classifier, but I wil need to create own feature extractor to customize the model. Also there is a paper that says that knowledge-based classifiers are better, so I should try them. 
 	[Report] -> findings.
