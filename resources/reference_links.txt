@@ -50,3 +50,6 @@ https://www.forbes.com/sites/adelynzhou/2017/02/27/how-artificial-intelligence-i
 	
 https://pdfs.semanticscholar.org/6e51/8946c59c8c5d005054af319783b3eba128a9.pdf
 	- Feature Engineering for Text Classification
+	
+http://cs.unb.ca/~ccook1/tist2013-lexnorm.pdf
+	- Text normalization for twitter.

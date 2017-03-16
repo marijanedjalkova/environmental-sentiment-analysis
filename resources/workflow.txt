@@ -40,10 +40,26 @@ corespondingly. They are also very slow and taking several seconds for every sin
 other extractors can be found.
 
 Basic extractor seems to be much slower than the unigram extractor. There is also a contains_extractor. 
-			- LinearSVC cassifier on 300k training set is reasonably fast and gives good results. I think I will go with it.
-	
+			- LinearSVC cassifier on 300k training set extracting unigrams is reasonably fast and gives good results. I think I will go with it. Same thing extracting bigrams makes much less sense, so should stick with unigrams.
  
-	come to a conclusion - do I need to create something of my own or are the existing tools good enough? - I don't need to create own classifier, but I wil need to create own feature extractor to customize the model. Also there is a paper that says that knowledge-based classifiers are better, so I should try them. 
+	come to a conclusion - do I need to create something of my own or are the existing tools good enough? - I don't need to create own classifier, but I wil need to create own feature extractor to customize the model. Also there is a paper that says that knowledge-based classifiers are better, so I should try them.
+	At this point some sort of a sentiment analysis tool works. Some things to consider at this point are normalizing slang, for example. Sopme tweets have Scottish slang, so it should ideally be normalized. Also, smileys need attention, as well as irony and sarcasm. 
+	
+	To validate the model somehow, tested against TextBlob's offline sentiment analysis model. (any other tool is not
+	accessible online, for some reason). Textblob's sentiment is measured between -1 and 1, so it is difficult to decide
+	what to do with neutral tweets. The model guesses right about 67% of the 65 tweets (44), and the neutral ones are not
+	counted within those 67%. Of 1000 tweets guesses 40%, and another 40% are neutral.
+	However, some of the judgements the Textblob's sentiment tool makes are incorrect. For example, this
+	tweet: "The rugby club will be open on Saturday (11/03/2017) for 6 nations game \n https://t.co/mtT2Dgk9Vz", which was
+	considered negative by Textblob and positive by my classifier. Also this one: "Late night studio sesh.
+	#stirlingcityradio #morethanahobby #wayoflife @ Grangemouth https://t.co/uw8mSdGwJg". 
+
+	Prteviously sentdex.com was available for these calls but it is inaccessible now. 
+	Attempted to compare to sentiment140. Compared on the basis of 520 tweets. 53 were guessed correctly, however, 453 were 
+	neutral, so it is hard to say whether the model is good. Ideally would try to train a trinary model. 2 tweets could not
+	be processed by sentiment140 due to weird characters. Only 11 tweets were guessed completely incorrectly. Of them 11
+	only 5 were unique. This makes me think that the process of searching through tweets is not perfect.
+	
 	[Report] -> findings.
 2. Try topic modeling on London data:
 	use Twitter API to get tweets about London - [DONE].
