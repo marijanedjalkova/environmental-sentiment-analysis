@@ -125,6 +125,29 @@ class Ngram_Classifier:
 						return training_data, testing_data
 		return training_data, testing_data
 
+
+	def get_train_test_sets2(self):
+		training_data = []
+		testing_data = []
+		with open("/cs/home/mn39/Documents/MSciDissertation/resources/training.1600000.processed.noemoticon.csv") as csvfile:
+			#this file has no headers, nothing to skip
+			#row[0] is sentiment - 0, 2 or 4
+			#row[5] is the tweet
+			data = csv.reader(csvfile)
+			index = 0
+			for row in data:
+				if ((index * 1.0)/self.train_limit * 100) % 25 == 0:
+					print ((index * 1.0)/self.train_limit * 100), "%"
+				polarity = int(row[0])
+				if index < self.train_limit:
+						training_data.append((self.preprocess_tweet(self.decode_text(row[5])), polarity))
+				elif index < self.test_limit:
+						testing_data.append(row)
+					else:
+						return training_data, testing_data
+		return training_data, testing_data
+
+
 	def set_data(self, training_data, testing_data):
 		self.training_data = training_data
 		self.testing_data = testing_data
