@@ -54,11 +54,13 @@ Basic extractor seems to be much slower than the unigram extractor. There is als
 	considered negative by Textblob and positive by my classifier. Also this one: "Late night studio sesh.
 	#stirlingcityradio #morethanahobby #wayoflife @ Grangemouth https://t.co/uw8mSdGwJg". 
 
-	Prteviously sentdex.com was available for these calls but it is inaccessible now. 
+	Previously sentdex.com was available for these calls but it is inaccessible now. 
 	Attempted to compare to sentiment140. Compared on the basis of 520 tweets. 53 were guessed correctly, however, 453 were 
 	neutral, so it is hard to say whether the model is good. Ideally would try to train a trinary model. 2 tweets could not
 	be processed by sentiment140 due to weird characters. Only 11 tweets were guessed completely incorrectly. Of them 11
 	only 5 were unique. This makes me think that the process of searching through tweets is not perfect.
+	
+	Tried another dataset, the actual dataset from sentiment140, but there are no neutral tweets there either.
 	
 	[Report] -> findings.
 2. Try topic modeling on London data:
