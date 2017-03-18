@@ -6,7 +6,7 @@
 		- knowledge-based: 
 			- TextBlob - around 60%.
 		- statistical: 
-			[Used Sentiment-Dataset: 50.05% pos, 49.9% neg]
+			[Used Sentiment-Dataset: 50.05% pos, 49.9% neg] - from thinknook.com
 			Sentiment-Dataset consists of tweets from 2 sources, intermingled. The ones from Sentiment140 are okay, but the ones from Kaggle seem to be about movie reviews, so they migth be skewing data. Should not train or test using Kaggle data.
 			- My own very simple classifier: 62% using word_tokenize. Realised that this does not tokenize words correctly.
 			Examples can be seen in most_pos_neg.jpg. NLTK provides own TweetTokenizer. Using that, the structure of the
@@ -30,7 +30,7 @@
 			75% accuracy. Seem to be faster on unigrams. on 200 training, 20 testing 65%. (800, 20): 70%. 
 			(1800, 20), 12 mins - 80%. 2k testing - 75%. (2700, 20), 36mins - 80%. Can't do more - exceeds time limits. 
 			
-[DATASET ISSUE] So after trying the model on the actual tweets, I can say that the dataset is not very convenient and does not represent what is going on on Twitter. Here (http://help.sentiment140.com/for-students/) it says that the tweets were generated automatically and that there is an assumption that positive smileys are used in the positive tweets, and vice versa. I can't agree with it...
+[DATASET ISSUE] So after trying the model on the actual tweets, I can say that the dataset from thinknook.com is not very convenient and does not represent what is going on on Twitter. Here (http://help.sentiment140.com/for-students/) it says that the tweets were generated automatically and that there is an assumption that positive smileys are used in the positive tweets, and vice versa. I can't agree with it...
 After trying on 150k training set, bigram Naive Bayes seems to make more sense.
 
 [NOUN PHRASE and other EXTRACTORS]: Textblob provides Fast_NP_extractor and ConllExtractor. Should try them as features. The
@@ -54,11 +54,15 @@ Basic extractor seems to be much slower than the unigram extractor. There is als
 	considered negative by Textblob and positive by my classifier. Also this one: "Late night studio sesh.
 	#stirlingcityradio #morethanahobby #wayoflife @ Grangemouth https://t.co/uw8mSdGwJg". 
 
-	Prteviously sentdex.com was available for these calls but it is inaccessible now. 
+	Previously sentdex.com was available for these calls but it is inaccessible now. 
 	Attempted to compare to sentiment140. Compared on the basis of 520 tweets. 53 were guessed correctly, however, 453 were 
 	neutral, so it is hard to say whether the model is good. Ideally would try to train a trinary model. 2 tweets could not
 	be processed by sentiment140 due to weird characters. Only 11 tweets were guessed completely incorrectly. Of them 11
 	only 5 were unique. This makes me think that the process of searching through tweets is not perfect.
+	
+	Tried another dataset, the actual dataset from sentiment140 (http://help.sentiment140.com/for-students/), but there are
+	no neutral tweets there either. I validated the SVM using the test data from the same dataset and it have about 75%
+	accuracy.
 	
 	[Report] -> findings.
 2. Try topic modeling on London data:
