@@ -40,6 +40,8 @@ class Ngram_Classifier:
 
 
 	def preprocess_tweet(self, text, is_debug=False):
+		if not text:
+			return None
 		# text should be decoded by this time
 		if isinstance(text, unicode):
 			tokens = self.tokenizer.tokenize(text)
@@ -62,7 +64,6 @@ class Ngram_Classifier:
 		return tokens
 
 	def decode_text(self, text):
-
 		try:
 			decoded = text.decode("utf-8")
 		except AttributeError:
@@ -72,6 +73,8 @@ class Ngram_Classifier:
 		except UnicodeEncodeError:
 			decoded = unidecode.unidecode(text)
 			decoded = decoded.decode("utf-8")
+		except UnicodeDecodeError:
+			return None 
 		if not isinstance(decoded, unicode):
 			print "Something that is not unicode"
 			raise Exception
@@ -118,12 +121,36 @@ class Ngram_Classifier:
 				if not self.need_to_filter(row):
 					polarity = int(row[1]) # 0 or 1
 					if index < self.train_limit:
-						training_data.append((self.preprocess_tweet(self.decode_text(row[3])), polarity))
+						preprocessed = self.preprocess_tweet(self.decode_text(row[3]))
+						if preprocessed:
+							training_data.append((preprocessed, polarity))
 					elif index < self.test_limit:
 						testing_data.append(row)
 					else:
 						return training_data, testing_data
 		return training_data, testing_data
+
+	def run_through_data(self):
+		""" This outputs the following: 800000, 0, 800000 -> NO NEUTRAL TWEETS """
+		with open("/cs/home/mn39/Documents/MSciDissertation/resources/training.1600000.processed.noemoticon.csv") as csvfile:
+			data = csv.reader(csvfile)
+			index = 0
+			p0 = 0
+			p2 = 0
+			p4 = 0
+			for row in data:
+				index +=1
+				if ((index * 1.0)/1600000 * 100) % 25 == 0:
+					print ((index * 1.0)/1600000 * 100), "%"
+				polarity = int(row[0])
+				if polarity == 0:
+					p0 += 1
+				elif polarity == 2:
+					p2 += 1
+				else:
+					p4 += 1
+			print p0, p2, p4
+			print "done"
 
 
 	def get_train_test_sets2(self):
@@ -134,18 +161,47 @@ class Ngram_Classifier:
 			#row[0] is sentiment - 0, 2 or 4
 			#row[5] is the tweet
 			data = csv.reader(csvfile)
-			index = 0
+			totalIndex = 0
+			trainingPositives = 0
+			trainingNegatives = 0
+			testingPositives = 0
+			testingNegatives = 0
 			for row in data:
-				if ((index * 1.0)/self.train_limit * 100) % 25 == 0:
-					print ((index * 1.0)/self.train_limit * 100), "%"
+				totalIndex += 1
+				if ((totalIndex * 1.0) / 1600000 * 100) % 25 == 0:
+					print ((totalIndex * 1.0) / 1600000 * 100), "%"
 				polarity = int(row[0])
-				if index < self.train_limit:
-						training_data.append((self.preprocess_tweet(self.decode_text(row[5])), polarity))
-				elif index < self.test_limit:
-						testing_data.append(row)
-					else:
+				if self.can_add(polarity, trainingPositives, trainingNegatives, self.train_limit):
+					preprocessed = self.preprocess_tweet(self.decode_text(row[5]))
+					if preprocessed:
+						training_data.append((preprocessed, polarity))
+						if polarity == 4: trainingPositives += 1
+						else: trainingNegatives += 1
+				elif self.can_add(polarity, testingPositives, testingNegatives, self.test_limit):
+					testing_data.append(row)
+					if polarity == 4: testingPositives += 1
+					else: testingNegatives += 1
+				else:
+					if self.data_ready(trainingPositives, trainingNegatives, testingPositives, testingNegatives):
 						return training_data, testing_data
+					else:
+						continue
+			print trainingPositives, trainingNegatives
 		return training_data, testing_data
+
+	def can_add(self, polarity, positives, negatives, goal):
+		""" This is necessary to make training and testing data uniform when it is not sorted automatically. """
+		# print "GOAL BY 2", (goal / 2)
+		# print " is it? ", (polarity == 0 and negatives >= goal / 2)
+		if polarity == 0 and negatives >= goal / 2: 
+			return False
+		if polarity == 4 and positives >= goal / 2:
+			return False
+		return True
+
+	def data_ready(self, trP, trN, teP, teN):
+		""" Checks if we have reached our goals in both training and testing sets """
+		return trP + trN >= self.train_limit and teP + teN >= self.test_limit
 
 
 	def set_data(self, training_data, testing_data):
@@ -191,16 +247,23 @@ class Ngram_Classifier:
 		print self.classifier.show_informative_features(19)
 		for tweet in self.testing_data:
 			if not tweet.startswith("RT"):
-				predicted = self.classifier.classify(self.preprocess_tweet(self.decode_text(tweet)))
+				preprocessed = self.preprocess_tweet(self.decode_text(tweet))
+				if preprocessed:
+					predicted = self.classifier.classify(preprocessed)
+					print " - predicted ", predicted
+				else:
+					print "Could not classify tweet because of decoding problems"
 				print tweet
-				print " - predicted ", predicted
 				print "------------------------------------------------"
 
 	def classify_one(self, tweet):
-		to_classify = self.ngram_extractor(self.preprocess_tweet(self.decode_text(tweet)))
-		print to_classify
-		return self.classifier.classify(to_classify)
-
+		preprocessed = self.preprocess_tweet(self.decode_text(tweet))
+		if preprocessed:
+			to_classify = self.ngram_extractor(self.preprocess_tweet(self.decode_text(tweet)))
+			return self.classifier.classify(to_classify)
+		else:
+			print "Could not classify tweet due to decoding problems"
+			return -2		
 
 
 def main(argv):
