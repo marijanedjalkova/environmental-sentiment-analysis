@@ -158,7 +158,7 @@ class Ngram_Classifier:
 		testing_data = []
 		with open("/cs/home/mn39/Documents/MSciDissertation/resources/training.1600000.processed.noemoticon.csv") as csvfile:
 			#this file has no headers, nothing to skip
-			#row[0] is sentiment - 0, 2 or 4
+			#row[0] is sentiment - 0, 2 or 4, but there are no 2s in this dataset
 			#row[5] is the tweet
 			data = csv.reader(csvfile)
 			totalIndex = 0
@@ -191,8 +191,6 @@ class Ngram_Classifier:
 
 	def can_add(self, polarity, positives, negatives, goal):
 		""" This is necessary to make training and testing data uniform when it is not sorted automatically. """
-		# print "GOAL BY 2", (goal / 2)
-		# print " is it? ", (polarity == 0 and negatives >= goal / 2)
 		if polarity == 0 and negatives >= goal / 2: 
 			return False
 		if polarity == 4 and positives >= goal / 2:
@@ -239,7 +237,32 @@ class Ngram_Classifier:
 			else:
 				kaggle += 1
 		accuracy = correct * 1.0/(self.test_limit - self.train_limit - kaggle) 
-		print accuracy * 100 , "%"
+		print accuracy * 100 , "% "
+		return accuracy
+
+	def test2(self):
+		""" This is for the proper Sentiment140 dataset I am using. I will fix this, I promise"""
+		correct = 0
+		index = 0
+		error = 0
+		for row in self.testing_data:
+			index += 1
+			if ( (index * 1.0) / self.test_limit * 100) % 25 == 0:
+				print ( (index * 1.0) / self.test_limit * 100), "%"
+			polarity = int(row[0])
+			tweet = row[5]
+			preprocessed = self.preprocess_tweet(self.decode_text(tweet))
+			if preprocessed:
+				predicted = self.classifier.classify(self.ngram_extractor(preprocessed))
+				if predicted == polarity:
+					correct += 1
+			else:
+				print "Could not classify tweet because of decoding problems"
+				error += 1
+				print tweet
+		accuracy = correct * 1.0/(self.test_limit - error) 
+		print accuracy * 100 , "% "
+		print "Errors: ", error
 		return accuracy
 
 	def classify_all(self):
@@ -249,7 +272,7 @@ class Ngram_Classifier:
 			if not tweet.startswith("RT"):
 				preprocessed = self.preprocess_tweet(self.decode_text(tweet))
 				if preprocessed:
-					predicted = self.classifier.classify(preprocessed)
+					predicted = self.classifier.classify(self.ngram_extractor(preprocessed))
 					print " - predicted ", predicted
 				else:
 					print "Could not classify tweet because of decoding problems"
@@ -259,7 +282,7 @@ class Ngram_Classifier:
 	def classify_one(self, tweet):
 		preprocessed = self.preprocess_tweet(self.decode_text(tweet))
 		if preprocessed:
-			to_classify = self.ngram_extractor(self.preprocess_tweet(self.decode_text(tweet)))
+			to_classify = self.ngram_extractor(preprocessed)
 			return self.classifier.classify(to_classify)
 		else:
 			print "Could not classify tweet due to decoding problems"
