@@ -61,7 +61,8 @@ Basic extractor seems to be much slower than the unigram extractor. There is als
 	only 5 were unique. This makes me think that the process of searching through tweets is not perfect.
 	
 	Tried another dataset, the actual dataset from sentiment140 (http://help.sentiment140.com/for-students/), but there are
-	no neutral tweets there either.
+	no neutral tweets there either. I validated the SVM using the test data from the same dataset and it have about 75%
+	accuracy.
 	
 	[Report] -> findings.
 2. Try topic modeling on London data:
