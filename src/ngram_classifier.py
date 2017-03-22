@@ -4,7 +4,7 @@ from textblob.classifiers import NaiveBayesClassifier, MaxEntClassifier, Decisio
 from nltk.classify import SklearnClassifier
 from textblob.classifiers import basic_extractor, contains_extractor
 from textblob import TextBlob
-from textblob.np_extractors import ConllExtractor,FastNPExtractor
+from textblob.np_extractors import ConllExtractor, FastNPExtractor
 from sklearn.svm import SVC, LinearSVC
 import re
 import sys
@@ -217,10 +217,13 @@ class Ngram_Classifier:
 		print "trained"
 
 	def to_featureset(self, training_data):
-		return [(self.ngram_extractor(tw), v) for tw, v in training_data]
+		""" Careful, this assumes that feature extractor is ngram extractor """
+		ft_ex = self.get_feature_extractor()
+		return [(ft_ex(tw), v) for tw, v in training_data]
 
 
 	def test(self):
+		""" This is for the data in the first dataset """
 		correct = 0
 		kaggle = 0
 		to_test = len(self.testing_data)
@@ -261,13 +264,12 @@ class Ngram_Classifier:
 				error += 1
 				print tweet
 		accuracy = correct * 1.0/(self.test_limit - error) 
-		print accuracy * 100 , "% "
+		print accuracy * 100 , "% : ", correct, "/", (self.test_limit - error)
 		print "Errors: ", error
 		return accuracy
 
 	def classify_all(self):
-		to_test = len(self.testing_data)
-		print self.classifier.show_informative_features(19)
+		""" Does not validate, just prints out thwe results """
 		for tweet in self.testing_data:
 			if not tweet.startswith("RT"):
 				preprocessed = self.preprocess_tweet(self.decode_text(tweet))
@@ -280,6 +282,7 @@ class Ngram_Classifier:
 				print "------------------------------------------------"
 
 	def classify_one(self, tweet):
+		""" No validation, just prints the result """
 		preprocessed = self.preprocess_tweet(self.decode_text(tweet))
 		if preprocessed:
 			to_classify = self.ngram_extractor(preprocessed)
