@@ -177,15 +177,16 @@ class Ngram_Classifier:
 						training_data.append((preprocessed, polarity))
 						if polarity == 4: trainingPositives += 1
 						else: trainingNegatives += 1
-				elif self.can_add(polarity, testingPositives, testingNegatives, self.test_limit):
+						continue
+				elif self.can_add(polarity, testingPositives, testingNegatives, (self.test_limit - self.train_limit)):
 					testing_data.append(row)
 					if polarity == 4: testingPositives += 1
 					else: testingNegatives += 1
+					continue
 				else:
 					if self.data_ready(trainingPositives, trainingNegatives, testingPositives, testingNegatives):
 						return training_data, testing_data
-					else:
-						continue
+					continue
 			print trainingPositives, trainingNegatives
 		return training_data, testing_data
 
@@ -248,10 +249,11 @@ class Ngram_Classifier:
 		correct = 0
 		index = 0
 		error = 0
+		to_test = len(self.testing_data)
 		for row in self.testing_data:
 			index += 1
-			if ( (index * 1.0) / self.test_limit * 100) % 25 == 0:
-				print ( (index * 1.0) / self.test_limit * 100), "%"
+			if ( (index * 1.0) / to_test * 100) % 25 == 0:
+				print ( (index * 1.0) / to_test * 100), "%"
 			polarity = int(row[0])
 			tweet = row[5]
 			preprocessed = self.preprocess_tweet(self.decode_text(tweet))
@@ -263,8 +265,8 @@ class Ngram_Classifier:
 				print "Could not classify tweet because of decoding problems"
 				error += 1
 				print tweet
-		accuracy = correct * 1.0/(self.test_limit - error) 
-		print accuracy * 100 , "% : ", correct, "/", (self.test_limit - error)
+		accuracy = correct * 1.0/(to_test - error) 
+		print accuracy * 100 , "% : ", correct, "/", (to_test - error)
 		print "Errors: ", error
 		return accuracy
 
