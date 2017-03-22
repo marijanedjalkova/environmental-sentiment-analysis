@@ -2,7 +2,7 @@ import tweepy
 import json
 from stream_listener import StreamListener
 from ngram_classifier import Ngram_Classifier
-from senti140test import *
+from senti140 import *
 from textblob import TextBlob
 
 class TwitterTool:
@@ -51,10 +51,12 @@ class TwitterTool:
 		return (neg_value + pos_value) * 1.0/2, 0.0
 
 def main():
-	nc1 = Ngram_Classifier("SVM", 1, 300000, 0, "ngram_extractor")
-	training, testing = nc1.get_train_test_sets()
+	nc1 = Ngram_Classifier("SVM", 1, 300000, 3000, "ngram_extractor")
+	training, testing = nc1.get_train_test_sets2()
 	nc1.set_data(training, testing)
 	nc1.train()
+	nc1.test2()
+	return
 	#nc1.classifier.show_informative_features(15)
 	tt = TwitterTool()
 	tweets = tt.search_tweets("grangemouth", 100)
@@ -69,7 +71,7 @@ def main():
 			r1 = float(nc1.classify_one(t))
 			overallCount += 1
 			sentiR, sentiAbsolute = tt.get_textblob_polarity(t, 0.0, 1.0)
-			sent140 = get_single_polarity(nc1.preprocess_tweet(nc1.decode_text(t)), 0.0, 1.0)
+			sent140 = get_single_polarity(nc1.preprocess_tweet(nc1.decode_text(t)), 0.0, 4.0)
 			if sent140 ==-2:
 				errors += 1
 				continue
