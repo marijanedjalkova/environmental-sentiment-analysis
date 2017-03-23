@@ -17,7 +17,6 @@ class Ngram_Classifier:
 	def __init__(self, classifier_name, n, train_length, test_length, ft_extractor):
 		self.classifier = self.get_classifier(classifier_name)
 		self.n = n
-		self.dataset_len = 1578615
 		self.train_limit = train_length
 		self.test_limit = train_length + test_length
 		self.testing_data = []
