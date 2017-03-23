@@ -21,12 +21,8 @@ class Ngram_Classifier:
 		self.train_limit = train_length
 		self.test_limit = train_length + test_length
 		self.testing_data = []
-		self.ft_extractor_name = ft_extractor
-		self.tokenizer = TweetTokenizer()
-		self.url_pattern = re.compile("(?P<url>https?://[^\s]+)")
-		punctuation = list(string.punctuation)
-		self.stopwds = stopwords.words('english') + punctuation + ["via", u'...', '\n', '\t']
-		self.weird_unicode_chars = [u'\xc2', u'\xab', u'\xbb', u'..', u'\xe2', u"\u2122"]
+		self.ft_extractor_name = ft_extractor	
+	
 
 	def get_classifier(self, classifier_name):
 		if classifier_name == "NaiveBayes":
@@ -43,11 +39,16 @@ class Ngram_Classifier:
 
 
 	def preprocess_tweet(self, text, is_debug=False):
+		tokenizer = TweetTokenizer()
+		url_pattern = re.compile("(?P<url>https?://[^\s]+)")
+		punctuation = list(string.punctuation)
+		weird_unicode_chars = [u'\xc2', u'\xab', u'\xbb', u'..', u'\xe2', u"\u2122"]
+		stopwds = stopwords.words('english') + punctuation + ["via", u'...', '\n', '\t']
 		if not text:
 			return None
 		# text should be decoded by this time
 		if isinstance(text, unicode):
-			tokens = self.tokenizer.tokenize(text)
+			tokens = tokenizer.tokenize(text)
 		elif isinstance(text, list):
 			tokens = text
 		elif isinstance(text, str):
@@ -57,12 +58,12 @@ class Ngram_Classifier:
 			print "Not sure what this is at all: ", type(text), text
 			raise Exception
 
-		tokens = [tok for tok in tokens if tok not in self.stopwds]
-		tokens = [tok for tok in tokens if tok not in self.weird_unicode_chars]
+		tokens = [tok for tok in tokens if tok not in stopwds]
+		tokens = [tok for tok in tokens if tok not in weird_unicode_chars]
 		#tokens = [tok for tok in tokens if not tok.startswith("@")]
-		#tokens = [tok for tok in tokens if not self.url_pattern.match(tok)]
+		#tokens = [tok for tok in tokens if not url_pattern.match(tok)]
 		tokens = [unicode("[MENTION]") if tok.startswith("@") else tok for tok in tokens ]
-		tokens = [unicode("[URL]") if self.url_pattern.match(tok) else tok for tok in tokens ]
+		tokens = [unicode("[URL]") if url_pattern.match(tok) else tok for tok in tokens ]
 		tokens = [tok.lower() if not tok.isupper() and not tok.islower() else tok for tok in tokens ]
 		return tokens
 
