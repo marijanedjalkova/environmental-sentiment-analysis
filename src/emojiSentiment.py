@@ -8,7 +8,10 @@ class EmojiSentiment():
 		self.sentiment = self.get_data_online()
 
 	def get_sentiment(self, character):
-		return self.sentiment[character]
+		if character in self.sentiment:
+			return self.sentiment[character]
+		print "cannot find {}".format(character)
+		return None
 
 	def write_out(self):
 		if self.sentiment:
@@ -24,8 +27,6 @@ class EmojiSentiment():
 		data = r.text 
 		data = data.replace("\t", "").replace("\r", "").replace("\n", "")
 		soup = BeautifulSoup(data)
-		#table = soup.find(lambda tag: tag.name=='table' and tag.has_key('id') and tag['id']=="myTable")
-		#table = soup.find(lambda tag: tag.name=='table')
 		table = soup.find('table', { "id" : "myTable" })
 		rows = table.findAll("tr")
 		rows = rows[1:]
