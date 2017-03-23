@@ -1,31 +1,21 @@
 from nltk.tokenize import TweetTokenizer
-import csv
-from textblob.classifiers import NaiveBayesClassifier, MaxEntClassifier, DecisionTreeClassifier
-from nltk.classify import SklearnClassifier
-from textblob.classifiers import basic_extractor, contains_extractor
+from nltk.corpus import stopwords
+from nltk import ngrams
 from textblob import TextBlob
-from textblob.np_extractors import ConllExtractor, FastNPExtractor
+# from textblob.classifiers import NaiveBayesClassifier, MaxEntClassifier, DecisionTreeClassifier
+from textblob.classifiers import basic_extractor, contains_extractor
 from sklearn.svm import SVC, LinearSVC
 import re
 import sys
+import csv
 import time
-import numpy
-from nltk.corpus import stopwords
 import string
-from nltk import ngrams
 import unidecode
 
 class Ngram_Classifier:
 
 	def __init__(self, classifier_name, n, train_length, test_length, ft_extractor):
-		if classifier_name == "NaiveBayes":
-			self.classifier = NaiveBayesClassifier
-		elif classifier_name == "MaxEntClassifier":
-			self.classifier = MaxEntClassifier
-		elif classifier_name == "SVM":
-			self.classifier = SVC
-		else:
-			self.classifier = DecisionTreeClassifier
+		self.classifier = self.get_classifier(classifier_name)
 		self.n = n
 		self.dataset_len = 1578615
 		self.train_limit = train_length
@@ -37,6 +27,19 @@ class Ngram_Classifier:
 		punctuation = list(string.punctuation)
 		self.stopwds = stopwords.words('english') + punctuation + ["via", u'...', '\n', '\t']
 		self.weird_unicode_chars = [u'\xc2', u'\xab', u'\xbb', u'..', u'\xe2', u"\u2122"]
+
+	def get_classifier(self, classifier_name):
+		if classifier_name == "NaiveBayes":
+			from textblob.classifiers import NaiveBayesClassifier
+			return NaiveBayesClassifier
+		elif classifier_name == "MaxEntClassifier":
+			from textblob.classifiers import MaxEntClassifier
+			return MaxEntClassifier
+		elif classifier_name == "SVM":
+			return SVC
+		else:
+			from textblob.classifiers import DecisionTreeClassifier
+			return DecisionTreeClassifier
 
 
 	def preprocess_tweet(self, text, is_debug=False):
@@ -90,6 +93,7 @@ class Ngram_Classifier:
 	def noun_phrase_extractor(self, document):
 		""" This is ridiculously slow and should not be used.
 		Even with FastNPExtractor ConllExtractor instead of ConllExtractor"""
+		from textblob.np_extractors import ConllExtractor, FastNPExtractor
 		blob = TextBlob(document, np_extractor=ConllExtractor())
 		return {np: True for np in blob.noun_phrases}
 
@@ -214,6 +218,7 @@ class Ngram_Classifier:
 		if self.classifier != SVC:
 			self.classifier = self.classifier(self.training_data, feature_extractor = self.get_feature_extractor())
 		else:
+			from nltk.classify import SklearnClassifier
 			self.classifier = SklearnClassifier(LinearSVC()).train(self.to_featureset(self.training_data))
 		print "trained"
 
