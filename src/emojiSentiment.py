@@ -1,11 +1,16 @@
 from BeautifulSoup import BeautifulSoup 
 import requests 
 import json
+import os
 
 class EmojiSentiment():
 
 	def __init__(self, ):
-		self.sentiment = self.get_data_online()
+		if os.path.isfile("../resources/emoji_sentiment.txt"):
+			self.sentiment = self.get_data_locally()
+		else:
+			self.sentiment = self.get_data_online()
+			self.write_out()
 
 	def get_sentiment(self, character):
 		if character in self.sentiment:
@@ -18,15 +23,13 @@ class EmojiSentiment():
 			json.dump(self.sentiment, open("../resources/emoji_sentiment.txt",'w'))
 
 	def get_data_locally(self):
-		self.sentiment = json.load(open("../resources/emoji_sentiment.txt"))
+		return json.load(open("../resources/emoji_sentiment.txt"))
 
 	def get_data_online(self):
 		res = {}
 		url = "http://kt.ijs.si/data/Emoji_sentiment_ranking/index.html"
 		r = requests.get(url)
-		data = r.text 
-		data = data.replace("\t", "").replace("\r", "").replace("\n", "")
-		soup = BeautifulSoup(data)
+		soup = BeautifulSoup(r.text)
 		table = soup.find('table', { "id" : "myTable" })
 		rows = table.findAll("tr")
 		rows = rows[1:]
@@ -36,9 +39,6 @@ class EmojiSentiment():
 			score = float(cells[8].text) 
 			res[code] = score 
 		return res
-
-
-
 
 if __name__ == '__main__':
 	es = EmojiSentiment()
