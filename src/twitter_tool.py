@@ -5,6 +5,13 @@ from ngram_classifier import Ngram_Classifier
 from senti140 import *
 from textblob import TextBlob
 
+from nltk.tokenize import TweetTokenizer
+import re
+from nltk.corpus import stopwords
+import unidecode
+import string
+from emojiSentiment import *
+
 class TwitterTool:
 
 	def __init__(self):
@@ -19,15 +26,21 @@ class TwitterTool:
 		return tweepy.API(auth, wait_on_rate_limit=True)
 
 	def search_tweets(self, query, n):
+		print "starting search"
 		tweets = tweet_batch = self.api.search(q=query, count=n)
 		ct = 1
+		print "after tweets"
 		while len(tweets) < n and ct < 100:
 			tweet_batch = self.api.search(q=query, 
 									 count=n - len(tweets),
 									 max_id=tweet_batch.max_id)
 			tweets.extend(tweet_batch)
 			ct += 1
+			print ct
 		return tweets
+
+	def short_search(self, query, n):
+		return self.api.search(q=query, count=n)
 
 	def stream(self, keywords):
 		stream_listener = StreamListener()
@@ -51,12 +64,11 @@ class TwitterTool:
 		return (neg_value + pos_value) * 1.0/2, 0.0
 
 def main():
-	nc1 = Ngram_Classifier("SVM", 1, 300000, 3000, "ngram_extractor")
+	nc1 = Ngram_Classifier("SVM", 1, 50, 3000, "ngram_extractor")
 	training, testing = nc1.get_train_test_sets2()
 	nc1.set_data(training, testing)
 	nc1.train()
-	nc1.test2()
-	return
+
 	#nc1.classifier.show_informative_features(15)
 	tt = TwitterTool()
 	tweets = tt.search_tweets("grangemouth", 100)
@@ -91,6 +103,22 @@ def main():
 	print "Erorrs: ", errors
 	for n in notes: print n
 
+def main2():
+	nc1 = Ngram_Classifier("SVM", 1, 0, 0, "ngram_extractor")
+	tt = TwitterTool()
+	tweets = tt.short_search("fencing emoticon", 8)
+	tweet_list = tt.extract_text_from_tweets(tweets)
+	for t in tweet_list: 
+		p = nc1.preprocess_tweet(t)
+		print "preprocessed: "
+		print p
+		es = EmojiSentiment()
+		stringified = "0x" + repr(p[0])[-6:-1]
+		print stringified
+		s = es.get_sentiment(stringified)
+		print s
+		print "-----------------------------------------"
+
 
 if __name__ == '__main__':
-	main()
+	main2()
