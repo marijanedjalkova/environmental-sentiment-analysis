@@ -64,12 +64,12 @@ class TwitterTool:
 		return (neg_value + pos_value) * 1.0/2, 0.0
 
 def main():
-	nc1 = Ngram_Classifier("SVM", 1, 50, 3000, "ngram_extractor")
+	nc1 = Ngram_Classifier("SVM", 1, 500000, 3000, "ngram_extractor")
 	training, testing = nc1.get_train_test_sets2()
 	nc1.set_data(training, testing)
 	nc1.train()
+	nc1.test2()
 
-	#nc1.classifier.show_informative_features(15)
 	tt = TwitterTool()
 	tweets = tt.search_tweets("grangemouth", 100)
 	tweet_list = tt.extract_text_from_tweets(tweets)
@@ -100,7 +100,7 @@ def main():
 	print "Correct: ", correctCount
 	print "Precision: ", correctCount * 100.0/overallCount, "%"
 	print "About right: ", neutralCount
-	print "Erorrs: ", errors
+	print "Errors: ", errors
 	for n in notes: print n
 
 def main2():
@@ -121,4 +121,4 @@ def main2():
 
 
 if __name__ == '__main__':
-	main2()
+	main()
