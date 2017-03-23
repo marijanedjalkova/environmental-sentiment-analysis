@@ -2,7 +2,6 @@ from nltk.tokenize import TweetTokenizer
 from nltk.corpus import stopwords
 from nltk import ngrams
 from textblob import TextBlob
-# from textblob.classifiers import NaiveBayesClassifier, MaxEntClassifier, DecisionTreeClassifier
 from textblob.classifiers import basic_extractor, contains_extractor
 from sklearn.svm import SVC, LinearSVC
 import re
@@ -39,6 +38,7 @@ class Ngram_Classifier:
 
 
 	def preprocess_tweet(self, text, is_debug=False):
+		""" By this point the tweet should be decoded. This tokenizes the tweet and throws away the garbage. """
 		tokenizer = TweetTokenizer()
 		url_pattern = re.compile("(?P<url>https?://[^\s]+)")
 		punctuation = list(string.punctuation)
@@ -68,6 +68,7 @@ class Ngram_Classifier:
 		return tokens
 
 	def decode_text(self, text):
+		""" Takes in a row text. Returns None only if it cannot possibly work with it. """
 		try:
 			decoded = text.decode("utf-8")
 		except AttributeError:
@@ -85,7 +86,8 @@ class Ngram_Classifier:
 		return decoded
 
 	def ngram_extractor(self, document):
-		# document should be a list of tokens already - i.e. already preprocess_tweet-ed
+		""" Document should be a list of tokens already - i.e. already preprocess_tweet-ed.
+		Returns a feature dict. """
 		if not isinstance(document, list):
 			print "This should be a list of tokens already - i.e. already preprocess_tweet-ed"
 			raise Exception
@@ -108,11 +110,13 @@ class Ngram_Classifier:
 			raise Exception
 
 	def need_to_filter(self, tweet_row, is_debug = False):
+		""" Use this on the old dataset - Sentiment-Analysis-Dataset.csv, to filter out retweets and Kaggle. """
 		source = tweet_row[2]
 		text = tweet_row[3]
 		return source != "Sentiment140" or text.startswith("RT")
 
 	def get_train_test_sets(self):
+		""" Works with the first dataset - Sentiment-Analysis-Dataset.csv. The data here is already shuffled. """
 		training_data = []
 		testing_data = []
 		with open("/cs/home/mn39/Documents/MSciDissertation/resources/Sentiment-Analysis-Dataset.csv") as csvfile:
@@ -159,6 +163,8 @@ class Ngram_Classifier:
 
 
 	def get_train_test_sets2(self):
+		""" Works with the second dataset - training.1600000.processed.noemoticon.csv
+		The data is not shuffled, so have to watch the balance in data. """
 		training_data = []
 		testing_data = []
 		with open("/cs/home/mn39/Documents/MSciDissertation/resources/training.1600000.processed.noemoticon.csv") as csvfile:
@@ -251,7 +257,7 @@ class Ngram_Classifier:
 		return accuracy
 
 	def test2(self):
-		""" This is for the proper Sentiment140 dataset I am using. I will fix this, I promise"""
+		""" This is for the second dataset - training.1600000.processed.noemoticon.csv. I will fix code repetition, I promise"""
 		correct = 0
 		index = 0
 		error = 0
