@@ -12,6 +12,7 @@ import string
 import unidecode
 
 class Ngram_Classifier:
+	ERROR = -2
 
 	def __init__(self, classifier_name, n, train_length, test_length, ft_extractor):
 		self.classifier = self.get_classifier(classifier_name)
@@ -246,7 +247,7 @@ class Ngram_Classifier:
 				print ( (index * 1.0) / to_test * 100), "%"
 			if not self.need_to_filter(row):
 				polarity = int(row[1])
-				predicted = self.classifier.classify(self.decode_text(row[3]))
+				predicted = self.classify_one(row[3], True)
 				if predicted == polarity:
 					correct += 1
 				continue
@@ -268,42 +269,36 @@ class Ngram_Classifier:
 				print ( (index * 1.0) / to_test * 100), "%"
 			polarity = int(row[0])
 			tweet = row[5]
-			preprocessed = self.preprocess_tweet(self.decode_text(tweet))
-			if preprocessed:
-				predicted = self.classifier.classify(self.ngram_extractor(preprocessed))
-				if predicted == polarity:
-					correct += 1
-			else:
-				print "Could not classify tweet because of decoding problems"
+			predicted = self.classify_one(tweet, True)
+			if predicted == Ngram_Classifier.ERROR:
 				error += 1
-				print tweet
+			if predicted == polarity:
+				correct += 1
 		accuracy = correct * 1.0/(to_test - error) 
 		print accuracy * 100 , "% : ", correct, "/", (to_test - error)
 		print "Errors: ", error
 		return accuracy
 
-	def classify_all(self):
-		""" Does not validate, just prints out thwe results """
+	def classify_all(self, toDecode):
+		""" Does not validate, just prints out the results """
 		for tweet in self.testing_data:
 			if not tweet.startswith("RT"):
-				preprocessed = self.preprocess_tweet(self.decode_text(tweet))
-				if preprocessed:
-					predicted = self.classifier.classify(self.ngram_extractor(preprocessed))
-					print " - predicted ", predicted
-				else:
-					print "Could not classify tweet because of decoding problems"
+				predicted = self.classify_one(tweet, toDecode)
+				print " - predicted ", predicted
 				print tweet
 				print "------------------------------------------------"
 
-	def classify_one(self, tweet):
+	def classify_one(self, tweet, toDecode=False):
 		""" No validation, just prints the result """
-		preprocessed = self.preprocess_tweet(self.decode_text(tweet))
+		if toDecode:
+			tweet = self.decode_text(tweet)
+		preprocessed = self.preprocess_tweet(tweet)
 		if preprocessed:
 			to_classify = self.ngram_extractor(preprocessed)
 			return self.classifier.classify(to_classify)
 		else:
 			print "Could not classify tweet due to decoding problems"
-			return -2		
+			return Ngram_Classifier.ERROR		
 
 
 def main(argv):
