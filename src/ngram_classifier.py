@@ -82,21 +82,13 @@ class Ngram_Classifier:
 			raise Exception
 		return decoded
 
-	def ngram_extractor_original(self, document):
-		""" Document should be a list of tokens already - i.e. already preprocess_tweet-ed.
-		Returns a feature dict. """
-		if not isinstance(document, list):
-			print "This should be a list of tokens already - i.e. already preprocess_tweet-ed"
-			raise Exception
-		return {w:True for w in ngrams(document, self.n)}
-
 	def ngram_extractor(self, document):
 		""" Document takes a raw tweet.
 		Returns a feature dict. """
 		tokens = self.preprocess_tweet(document)
 		if tokens:
 			return {w:True for w in ngrams(tokens, self.n)}
-		return {}
+		return None
 
 	def noun_phrase_extractor(self, document):
 		""" This is ridiculously slow and should not be used.
