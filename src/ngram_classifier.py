@@ -120,12 +120,14 @@ class Ngram_Classifier:
 		""" Works with the first dataset - Sentiment-Analysis-Dataset.csv. The data here is already shuffled. """
 		training_data = []
 		testing_data = []
+
 		with open("/cs/home/mn39/Documents/MSciDissertation/resources/Sentiment-Analysis-Dataset.csv") as csvfile:
 			data = csv.reader(csvfile) # 1578615 
 			next(data, None) # skip headers
 			# format: ItemID, Sentiment, SentimentSource, SentimentText
+			index = 0
 			for row in data:
-				index = int(row[0])
+				index += 1
 				if ((index * 1.0)/self.train_limit * 100) % 25 == 0:
 					print ((index * 1.0)/self.train_limit * 100), "%"
 				if not self.need_to_filter(row):
@@ -158,6 +160,51 @@ class Ngram_Classifier:
 					p4 += 1
 			print "done"
 
+	def get_train_test_sets_unified(self, filename, polarity_index, tweet_index, positive_value):
+		""" Works with any dataset 
+		The data is not shuffled, so have to watch the balance in data. """
+		training_data = []
+		testing_data = []
+		file_length = 0
+
+		# this is just for counter, maybe remove this later
+		with open(filename) as csvfile:
+			data = csv.reader(csvfile)
+			file_length = len(list(data))
+		print "file file_length", file_length
+
+		with open(filename) as csvfile:
+			#this file has no headers, nothing to skip
+			#row[0] is sentiment - 0, 2 or 4, but there are no 2s in this dataset
+			#row[5] is the tweet
+			data = csv.reader(csvfile)
+			totalIndex = 0
+			trainingPositives = 0
+			trainingNegatives = 0
+			testingPositives = 0
+			testingNegatives = 0
+			for row in data:
+				totalIndex += 1
+				if ((totalIndex * 1.0) / file_length * 100) % 25 == 0:
+					print ((totalIndex * 1.0) / file_length * 100), "%"
+				polarity = int(row[polarity_index])
+				if self.can_add(polarity, trainingPositives, trainingNegatives, self.train_limit):
+					featureset = self.extract_features(row[tweet_index])
+					if featureset:
+						training_data.append((featureset, polarity))
+						if polarity == positive_value: trainingPositives += 1
+						else: trainingNegatives += 1
+					continue
+				elif self.can_add(polarity, testingPositives, testingNegatives, (self.test_limit - self.train_limit)):
+					testing_data.append(row)
+					if polarity == positive_value: testingPositives += 1
+					else: testingNegatives += 1
+					continue
+				else:
+					if self.data_ready(trainingPositives, trainingNegatives, testingPositives, testingNegatives):
+						break
+			print trainingPositives, trainingNegatives, " and done "
+		return training_data, testing_data
 
 	def get_train_test_sets2(self):
 		""" Works with the second dataset - training.1600000.processed.noemoticon.csv
@@ -197,6 +244,7 @@ class Ngram_Classifier:
 					if self.data_ready(trainingPositives, trainingNegatives, testingPositives, testingNegatives):
 						break
 			print trainingPositives, trainingNegatives
+
 		return training_data, testing_data
 
 	def can_add(self, polarity, positives, negatives, goal):
@@ -213,11 +261,12 @@ class Ngram_Classifier:
 
 
 	def set_data(self, training_data, testing_data):
+		print len(training_data), "training data is being set"
 		self.training_data = training_data
 		self.testing_data = testing_data
 
 	def train(self):
-		if not self.training_data:
+		if self.training_data is None:
 			s, t = self.get_train_test_sets()
 			self.set_data(s, t)
 		if self.classifier != SVC:
@@ -231,7 +280,6 @@ class Ngram_Classifier:
 		""" Careful, this assumes that feature extractor is ngram extractor """
 		ft_ex = self.get_feature_extractor()
 		return [(ft_ex(tw), v) for tw, v in training_data if ft_ex(tw)]
-
 
 	def test(self):
 		""" This is for the data in the first dataset """
