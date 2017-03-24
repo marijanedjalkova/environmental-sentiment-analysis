@@ -39,7 +39,7 @@ class Ngram_Classifier:
 
 	def preprocess_tweet(self, text, is_debug=False):
 		""" By this point the tweet should be decoded. This tokenizes the tweet and throws away the garbage. """
-		tokenizer = TweetTokenizer()
+		tokenizer = TweetTokenizer(preserve_case=False, strip_handles=True, reduce_len=True)
 		url_pattern = re.compile("(?P<url>https?://[^\s]+)")
 		punctuation = list(string.punctuation)
 		weird_unicode_chars = [u'\xc2', u'\xab', u'\xbb', u'..', u'\xe2', u"\u2122"]
