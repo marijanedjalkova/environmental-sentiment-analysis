@@ -47,16 +47,16 @@ class Ngram_Classifier:
 		if not text:
 			return None
 		# text should be decoded by this time
-		if isinstance(text, unicode):
-			tokens = tokenizer.tokenize(text)
-		elif isinstance(text, list):
-			tokens = text
-		elif isinstance(text, str):
-			print "Text is a string and not unicode - weird"
-			raise Exception
-		else:
-			print "Not sure what this is at all: ", type(text), text
-			raise Exception
+		#if isinstance(text, unicode):
+		tokens = tokenizer.tokenize(text)
+		# elif isinstance(text, list):
+		# 	tokens = text
+		# elif isinstance(text, str):
+		# 	print "Text is a string and not unicode - weird"
+		# 	raise Exception
+		# else:
+		# 	print "Not sure what this is at all: ", type(text), text
+		# 	raise Exception
 
 		tokens = [tok for tok in tokens if tok not in stopwds]
 		tokens = [tok for tok in tokens if tok not in weird_unicode_chars]
@@ -85,7 +85,7 @@ class Ngram_Classifier:
 			raise Exception
 		return decoded
 
-	def ngram_extractor(self, document):
+	def ngram_extractor_original(self, document):
 		""" Document should be a list of tokens already - i.e. already preprocess_tweet-ed.
 		Returns a feature dict. """
 		if not isinstance(document, list):
@@ -93,12 +93,22 @@ class Ngram_Classifier:
 			raise Exception
 		return {w:True for w in ngrams(document, self.n)}
 
+	def ngram_extractor(self, document):
+		""" Document takes a raw tweet.
+		Returns a feature dict. """
+		tokens = self.preprocess_tweet(document)
+		return {w:True for w in ngrams(tokens, self.n)}
+
 	def noun_phrase_extractor(self, document):
 		""" This is ridiculously slow and should not be used.
 		Even with FastNPExtractor ConllExtractor instead of ConllExtractor"""
 		from textblob.np_extractors import ConllExtractor, FastNPExtractor
 		blob = TextBlob(document, np_extractor=ConllExtractor())
 		return {np: True for np in blob.noun_phrases}
+
+	def extract_features(self, document):
+		extractor = self.get_feature_extractor()
+		return extractor(document)
 
 	def get_feature_extractor(self):
 		if self.ft_extractor_name == "ngram_extractor":
@@ -130,9 +140,7 @@ class Ngram_Classifier:
 				if not self.need_to_filter(row):
 					polarity = int(row[1]) # 0 or 1
 					if index < self.train_limit:
-						preprocessed = self.preprocess_tweet(self.decode_text(row[3]))
-						if preprocessed:
-							training_data.append((preprocessed, polarity))
+						training_data.append((self.extract_features(row[3]), polarity))
 					elif index < self.test_limit:
 						testing_data.append(row)
 					else:
@@ -179,12 +187,10 @@ class Ngram_Classifier:
 					print ((totalIndex * 1.0) / 1600000 * 100), "%"
 				polarity = int(row[0])
 				if self.can_add(polarity, trainingPositives, trainingNegatives, self.train_limit):
-					preprocessed = self.preprocess_tweet(self.decode_text(row[5]))
-					if preprocessed:
-						training_data.append((preprocessed, polarity))
-						if polarity == 4: trainingPositives += 1
-						else: trainingNegatives += 1
-						continue
+					training_data.append((self.extract_features(row[5]), polarity))
+					if polarity == 4: trainingPositives += 1
+					else: trainingNegatives += 1
+					continue
 				elif self.can_add(polarity, testingPositives, testingNegatives, (self.test_limit - self.train_limit)):
 					testing_data.append(row)
 					if polarity == 4: testingPositives += 1
@@ -222,7 +228,7 @@ class Ngram_Classifier:
 			self.classifier = self.classifier(self.training_data, feature_extractor = self.get_feature_extractor())
 		else:
 			from nltk.classify import SklearnClassifier
-			self.classifier = SklearnClassifier(LinearSVC()).train(self.to_featureset(self.training_data))
+			self.classifier = SklearnClassifier(LinearSVC()).train(self.training_data)
 		print "trained"
 
 	def to_featureset(self, training_data):
