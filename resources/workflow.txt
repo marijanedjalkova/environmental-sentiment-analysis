@@ -64,6 +64,9 @@ Basic extractor seems to be much slower than the unigram extractor. There is als
 	no neutral tweets there either. I validated the SVM using the test data from the same dataset and it have about 75%
 	accuracy.
 	
+	Redesigned the classifier, now the extractor does all the preprocessing, too. Using customised TwitterTokenizer improves 
+	the accuracy a little, now it is 79% for 500000 training set.
+	
 	[Report] -> findings.
 2. Try topic modeling on London data:
 	use Twitter API to get tweets about London - [DONE].
