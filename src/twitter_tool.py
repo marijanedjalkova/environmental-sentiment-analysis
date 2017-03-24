@@ -48,10 +48,6 @@ class TwitterTool:
 		stream = tweepy.Stream(auth=self.api.auth, listener=stream_listener)
 		stream.filter(track=keywords)
 
-	def fits(self, status):
-		print "fits() is still to be implemented, returning True for now"
-		return True
-
 	def extract_text_from_tweets(self, tweets):
 		return [t.text for t in tweets if t.lang=="en"]
 
@@ -66,10 +62,11 @@ class TwitterTool:
 def main():
 	nc1 = Ngram_Classifier("SVM", 1, 500000, 3000, "ngram_extractor")
 	training, testing = nc1.get_train_test_sets2()
+	print "Train and test sets ready"
 	nc1.set_data(training, testing)
 	nc1.train()
 	nc1.test2()
-
+	return
 	tt = TwitterTool()
 	tweets = tt.search_tweets("grangemouth", 100)
 	tweet_list = tt.extract_text_from_tweets(tweets)
