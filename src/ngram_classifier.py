@@ -206,47 +206,6 @@ class Ngram_Classifier:
 			print trainingPositives, trainingNegatives, " and done "
 		return training_data, testing_data
 
-	def get_train_test_sets2(self):
-		""" Works with the second dataset - training.1600000.processed.noemoticon.csv
-		The data is not shuffled, so have to watch the balance in data. """
-		training_data = []
-		testing_data = []
-
-		with open("/cs/home/mn39/Documents/MSciDissertation/resources/training.1600000.processed.noemoticon.csv") as csvfile:
-			#this file has no headers, nothing to skip
-			#row[0] is sentiment - 0, 2 or 4, but there are no 2s in this dataset
-			#row[5] is the tweet
-			data = csv.reader(csvfile)
-			print "Read the data in"
-			totalIndex = 0
-			trainingPositives = 0
-			trainingNegatives = 0
-			testingPositives = 0
-			testingNegatives = 0
-			for row in data:
-				totalIndex += 1
-				if ((totalIndex * 1.0) / 1600000 * 100) % 25 == 0:
-					print ((totalIndex * 1.0) / 1600000 * 100), "%"
-				polarity = int(row[0])
-				if self.can_add(polarity, trainingPositives, trainingNegatives, self.train_limit):
-					featureset = self.extract_features(row[5])
-					if featureset:
-						training_data.append((featureset, polarity))
-						if polarity == 4: trainingPositives += 1
-						else: trainingNegatives += 1
-					continue
-				elif self.can_add(polarity, testingPositives, testingNegatives, (self.test_limit - self.train_limit)):
-					testing_data.append(row)
-					if polarity == 4: testingPositives += 1
-					else: testingNegatives += 1
-					continue
-				else:
-					if self.data_ready(trainingPositives, trainingNegatives, testingPositives, testingNegatives):
-						break
-			print trainingPositives, trainingNegatives
-
-		return training_data, testing_data
-
 	def can_add(self, polarity, positives, negatives, goal):
 		""" This is necessary to make training and testing data uniform when it is not sorted automatically. """
 		if polarity == 0 and negatives >= goal / 2: 
