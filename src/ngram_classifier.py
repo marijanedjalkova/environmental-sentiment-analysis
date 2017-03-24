@@ -38,25 +38,18 @@ class Ngram_Classifier:
 
 
 	def preprocess_tweet(self, text, is_debug=False):
-		""" By this point the tweet should be decoded. This tokenizes the tweet and throws away the garbage. """
+		""" This tokenizes the tweet and throws away the garbage. """
 		tokenizer = TweetTokenizer(preserve_case=False, strip_handles=True, reduce_len=True)
 		url_pattern = re.compile("(?P<url>https?://[^\s]+)")
-		punctuation = list(string.punctuation)
-		weird_unicode_chars = [u'\xc2', u'\xab', u'\xbb', u'..', u'\xe2', u"\u2122"]
-		stopwds = stopwords.words('english') + punctuation + ["via", u'...', '\n', '\t']
-		if not text:
-			return None
-		# text should be decoded by this time
-		if isinstance(text, unicode):
+		weird_unicode_chars = [u'\xc2', u'\xab', u'\xbb', u'..', u'\xe2', u"\u2122"] + ["via", u'...', '\n', '\t']
+		stopwds = stopwords.words('english') + list(string.punctuation) + weird_unicode_chars
+		try:
 			tokens = tokenizer.tokenize(text)
-		elif isinstance(text, list):
-			tokens = text
-		elif isinstance(text, str):
-			print "Text is a string and not unicode - weird"
-			raise Exception
-		else:
-			print "Not sure what this is at all: ", type(text), text
-			raise Exception
+		except UnicodeDecodeError:
+			decoded = self.decode_text(text)
+			if not decoded:
+				return None
+			tokens = tokenizer.tokenize(decoded)
 
 		tokens = [tok for tok in tokens if tok not in stopwds]
 		tokens = [tok for tok in tokens if tok not in weird_unicode_chars]
@@ -76,16 +69,20 @@ class Ngram_Classifier:
 			print "You are probably tokenizing your test tweet before giving it to classifier, don't do that"
 			raise Exception
 		except UnicodeEncodeError:
+			print "UnicodeEncodeError"
 			decoded = unidecode.unidecode(text)
 			decoded = decoded.decode("utf-8")
 		except UnicodeDecodeError:
+			print "UnicodeDecodeError, returning None for text"
+			print text
+			# type of text is always string, and the text is, indeed, incomprehensible
 			return None 
 		if not isinstance(decoded, unicode):
 			print "Something that is not unicode"
 			raise Exception
 		return decoded
 
-	def ngram_extractor(self, document):
+	def ngram_extractor_original(self, document):
 		""" Document should be a list of tokens already - i.e. already preprocess_tweet-ed.
 		Returns a feature dict. """
 		if not isinstance(document, list):
@@ -93,12 +90,24 @@ class Ngram_Classifier:
 			raise Exception
 		return {w:True for w in ngrams(document, self.n)}
 
+	def ngram_extractor(self, document):
+		""" Document takes a raw tweet.
+		Returns a feature dict. """
+		tokens = self.preprocess_tweet(document)
+		if tokens:
+			return {w:True for w in ngrams(tokens, self.n)}
+		return {}
+
 	def noun_phrase_extractor(self, document):
 		""" This is ridiculously slow and should not be used.
 		Even with FastNPExtractor ConllExtractor instead of ConllExtractor"""
 		from textblob.np_extractors import ConllExtractor, FastNPExtractor
 		blob = TextBlob(document, np_extractor=ConllExtractor())
 		return {np: True for np in blob.noun_phrases}
+
+	def extract_features(self, document):
+		extractor = self.get_feature_extractor()
+		return extractor(document)
 
 	def get_feature_extractor(self):
 		if self.ft_extractor_name == "ngram_extractor":
@@ -130,9 +139,9 @@ class Ngram_Classifier:
 				if not self.need_to_filter(row):
 					polarity = int(row[1]) # 0 or 1
 					if index < self.train_limit:
-						preprocessed = self.preprocess_tweet(self.decode_text(row[3]))
-						if preprocessed:
-							training_data.append((preprocessed, polarity))
+						featureset = self.extract_features(row[3])
+						if featureset:
+							training_data.append((featureset, polarity))
 					elif index < self.test_limit:
 						testing_data.append(row)
 					else:
@@ -163,11 +172,13 @@ class Ngram_Classifier:
 		The data is not shuffled, so have to watch the balance in data. """
 		training_data = []
 		testing_data = []
+
 		with open("/cs/home/mn39/Documents/MSciDissertation/resources/training.1600000.processed.noemoticon.csv") as csvfile:
 			#this file has no headers, nothing to skip
 			#row[0] is sentiment - 0, 2 or 4, but there are no 2s in this dataset
 			#row[5] is the tweet
 			data = csv.reader(csvfile)
+			print "Read the data in"
 			totalIndex = 0
 			trainingPositives = 0
 			trainingNegatives = 0
@@ -179,12 +190,12 @@ class Ngram_Classifier:
 					print ((totalIndex * 1.0) / 1600000 * 100), "%"
 				polarity = int(row[0])
 				if self.can_add(polarity, trainingPositives, trainingNegatives, self.train_limit):
-					preprocessed = self.preprocess_tweet(self.decode_text(row[5]))
-					if preprocessed:
-						training_data.append((preprocessed, polarity))
+					featureset = self.extract_features(row[5])
+					if featureset:
+						training_data.append((featureset, polarity))
 						if polarity == 4: trainingPositives += 1
 						else: trainingNegatives += 1
-						continue
+					continue
 				elif self.can_add(polarity, testingPositives, testingNegatives, (self.test_limit - self.train_limit)):
 					testing_data.append(row)
 					if polarity == 4: testingPositives += 1
@@ -192,8 +203,7 @@ class Ngram_Classifier:
 					continue
 				else:
 					if self.data_ready(trainingPositives, trainingNegatives, testingPositives, testingNegatives):
-						return training_data, testing_data
-					continue
+						break
 			print trainingPositives, trainingNegatives
 		return training_data, testing_data
 
@@ -222,13 +232,13 @@ class Ngram_Classifier:
 			self.classifier = self.classifier(self.training_data, feature_extractor = self.get_feature_extractor())
 		else:
 			from nltk.classify import SklearnClassifier
-			self.classifier = SklearnClassifier(LinearSVC()).train(self.to_featureset(self.training_data))
+			self.classifier = SklearnClassifier(LinearSVC()).train(self.training_data)
 		print "trained"
 
 	def to_featureset(self, training_data):
 		""" Careful, this assumes that feature extractor is ngram extractor """
 		ft_ex = self.get_feature_extractor()
-		return [(ft_ex(tw), v) for tw, v in training_data]
+		return [(ft_ex(tw), v) for tw, v in training_data if ft_ex(tw)]
 
 
 	def test(self):
@@ -285,15 +295,10 @@ class Ngram_Classifier:
 
 	def classify_one(self, tweet, toDecode=False):
 		""" No validation, just prints the result """
-		if toDecode:
-			tweet = self.decode_text(tweet)
-		preprocessed = self.preprocess_tweet(tweet)
-		if preprocessed:
-			to_classify = self.ngram_extractor(preprocessed)
-			return self.classifier.classify(to_classify)
-		else:
-			print "Could not classify tweet due to decoding problems"
-			return Ngram_Classifier.ERROR		
+		featureset = self.extract_features(tweet)
+		if featureset:
+			return self.classifier.classify(featureset)
+		return Ngram_Classifier.ERROR		
 
 
 def main(argv):
