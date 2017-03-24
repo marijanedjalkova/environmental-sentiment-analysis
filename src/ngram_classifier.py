@@ -243,7 +243,7 @@ class Ngram_Classifier:
 	def test(self):
 		""" This is for the data in the first dataset """
 		correct = 0
-		kaggle = 0
+		error = 0
 		to_test = len(self.testing_data)
 		for row in self.testing_data:
 			index = int(row[0])
@@ -256,23 +256,23 @@ class Ngram_Classifier:
 					correct += 1
 				continue
 			else:
-				kaggle += 1
-		accuracy = correct * 1.0/(self.test_limit - self.train_limit - kaggle) 
+				error += 1
+		accuracy = correct * 1.0/(self.test_limit - self.train_limit - error) 
 		print accuracy * 100 , "% "
 		return accuracy
 
-	def test2(self):
-		""" This is for the second dataset - training.1600000.processed.noemoticon.csv. I will fix code repetition, I promise"""
+	def test_unified(self, polarity_index, tweet_index):
+		""" This is for any data """
 		correct = 0
-		index = 0
 		error = 0
+		index = 0
 		to_test = len(self.testing_data)
 		for row in self.testing_data:
 			index += 1
 			if ( (index * 1.0) / to_test * 100) % 25 == 0:
 				print ( (index * 1.0) / to_test * 100), "%"
-			polarity = int(row[0])
-			tweet = row[5]
+			polarity = int(row[polarity_index])
+			tweet = row[tweet_index]
 			predicted = self.classify_one(tweet, True)
 			if predicted == Ngram_Classifier.ERROR:
 				error += 1
