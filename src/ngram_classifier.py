@@ -145,7 +145,6 @@ class Ngram_Classifier:
 			data = csv.reader(csvfile)
 			index = 0
 			p0 = 0
-			p2 = 0
 			p4 = 0
 			for row in data:
 				index +=1
@@ -154,11 +153,8 @@ class Ngram_Classifier:
 				polarity = int(row[0])
 				if polarity == 0:
 					p0 += 1
-				elif polarity == 2:
-					p2 += 1
 				else:
 					p4 += 1
-			print p0, p2, p4
 			print "done"
 
 
