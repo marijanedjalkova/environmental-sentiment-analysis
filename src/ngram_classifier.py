@@ -4,12 +4,14 @@ from nltk import ngrams
 from textblob import TextBlob
 from textblob.classifiers import basic_extractor, contains_extractor
 from sklearn.svm import SVC, LinearSVC
+from emojiSentiment import *
 import re
 import sys
 import csv
 import time
 import string
 import unidecode
+import preprocessor 
 
 class Ngram_Classifier:
 	ERROR = -2
@@ -54,8 +56,31 @@ class Ngram_Classifier:
 		tokens = [tok for tok in tokens if tok not in weird_unicode_chars]
 		#tokens = [tok for tok in tokens if not tok.startswith("@")]
 		#tokens = [tok for tok in tokens if not url_pattern.match(tok)]
-		tokens = [unicode("[MENTION]") if tok.startswith("@") else tok for tok in tokens ]
-		tokens = [unicode("[URL]") if url_pattern.match(tok) else tok for tok in tokens ]
+		tokens = [unicode("$MENTION$") if tok.startswith("@") else tok for tok in tokens ]
+		tokens = [unicode("$URL$") if url_pattern.match(tok) else tok for tok in tokens ]
+		tokens = [tok.lower() if not tok.isupper() and not tok.islower() else tok for tok in tokens ]
+		return tokens
+
+	def preprocess_tweet2(self, text, is_debug=False):
+		""" This tokenizes the tweet and throws away the garbage. """
+		tokenizer = TweetTokenizer(preserve_case=False, strip_handles=True, reduce_len=True)
+		url_pattern = re.compile("(?P<url>https?://[^\s]+)")
+		weird_unicode_chars = [u'\xc2', u'\xab', u'\xbb', u'..', u'\xe2', u"\u2122"] + ["via", u'...', '\n', '\t']
+		stopwds = stopwords.words('english') + list(string.punctuation) + weird_unicode_chars
+		try:
+			tokens = tokenizer.tokenize(text)
+		except UnicodeDecodeError:
+			decoded = self.decode_text(text)
+			if not decoded:
+				return None
+			tokens = tokenizer.tokenize(decoded)
+
+		tokens = [tok for tok in tokens if tok not in stopwds]
+		tokens = [tok for tok in tokens if tok not in weird_unicode_chars]
+		#tokens = [tok for tok in tokens if not tok.startswith("@")]
+		#tokens = [tok for tok in tokens if not url_pattern.match(tok)]
+		tokens = [unicode("$MENTION$") if tok.startswith("@") else tok for tok in tokens ]
+		tokens = [unicode("$URL$") if url_pattern.match(tok) else tok for tok in tokens ]
 		tokens = [tok.lower() if not tok.isupper() and not tok.islower() else tok for tok in tokens ]
 		return tokens
 
@@ -89,6 +114,45 @@ class Ngram_Classifier:
 			return {w:True for w in ngrams(tokens, self.n)}
 		return None
 
+	def preprocessing_extractor(self, document):
+		""" Takes a raw tweet. Uses preprocessor. """
+		res = {}
+		# take out weird stuff 
+		parsed = preprocessor.parse(document)
+		if parsed.urls:
+			res["$URL$"] = True 
+		if parsed.mentions:
+			res["$MENTION$"] = True 
+		if parsed.emojis:
+			for em in parsed.emojis:
+				e = em.match.decode("utf-8") 
+				stringified = "0x" + repr(e[0])[-6:-1]
+				s = EmojiSentiment().get_sentiment(stringified)
+				if s:
+					if "$EMOJI$" in res:
+						res["$EMOJI$"] += s 
+					else:
+						res["$EMOJI$"] = s
+		if parsed.hashtags:
+			for h in parsed.hashtags:
+				word = h.match[1:]
+				if not "$HASHTAG$" in res:
+					res["$HASHTAG$"] = []
+				res["$HASHTAG$"].append(word)
+
+		preprocessor.set_options(preprocessor.OPT.URL, preprocessor.OPT.EMOJI, preprocessor.OPT.MENTION)
+		cleaned = preprocessor.clean(document)
+		# send the rest to preprocess 
+		tokens = self.preprocess_tweet(cleaned)
+		if tokens:
+			ns = ngrams(tokens, self.n)
+			for n in ns:
+				res[n] = True
+		if not res:
+			return None
+		return res
+
+
 	def noun_phrase_extractor(self, document):
 		""" This is ridiculously slow and should not be used.
 		Even with FastNPExtractor ConllExtractor instead of ConllExtractor"""
@@ -103,6 +167,8 @@ class Ngram_Classifier:
 	def get_feature_extractor(self):
 		if self.ft_extractor_name == "ngram_extractor":
 			return self.ngram_extractor
+		elif self.ft_extractor_name == "preprocessing_extractor":
+			return self.preprocessing_extractor
 		elif self.ft_extractor_name == "noun_phrase_extractor":
 			return self.noun_phrase_extractor
 		else:
@@ -159,7 +225,6 @@ class Ngram_Classifier:
 					else:
 						if self.data_ready(trainingPositives, trainingNegatives, testingPositives, testingNegatives):
 							break
-			print trainingPositives, trainingNegatives, " and done with extracting."
 		return training_data, testing_data
 
 	def can_add(self, polarity, positives, negatives, goal, positive_value, negative_value):
@@ -227,7 +292,7 @@ class Ngram_Classifier:
 				print "------------------------------------------------"
 
 	def classify_one(self, tweet, toDecode=False):
-		""" No validation, just prints the result """
+		""" No validation, just returns the result """
 		featureset = self.extract_features(tweet)
 		if featureset:
 			return self.classifier.classify(featureset)
