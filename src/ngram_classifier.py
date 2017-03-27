@@ -130,24 +130,28 @@ class Ngram_Classifier:
 				next(data, None) # skip headers
 			# format: ItemID, Sentiment, SentimentSource, SentimentText
 			index = 0
+			changed = True
 			trainingPositives = 0
 			trainingNegatives = 0
 			testingPositives = 0
 			testingNegatives = 0
 			for row in data:
-				if round(((index * 1.0)/to_collect * 100), 4) % 25 == 0:
+				if round(((index * 1.0)/to_collect * 100), 4) % 25 == 0 and changed:
 					print round(((index * 1.0)/to_collect * 100), 4), "%"
+					changed = False
 				if self.pass_filter(row):
 					polarity = int(row[polarity_index]) # 0 or 1
 					if self.can_add(polarity, trainingPositives, trainingNegatives, self.train_limit, positive_value, negative_value):
 						featureset = self.extract_features(row[tweet_index])
 						if featureset:
 							index += 1
+							changed = True
 							training_data.append((featureset, polarity))
 							if polarity == positive_value: trainingPositives += 1
 							else: trainingNegatives += 1
 					elif self.can_add(polarity, testingPositives, testingNegatives, (self.test_limit), positive_value, negative_value):
 						index += 1
+						changed = True
 						testing_data.append(row)
 						if polarity == positive_value: testingPositives += 1
 						else: testingNegatives += 1
