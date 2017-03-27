@@ -110,10 +110,12 @@ class Ngram_Classifier:
 			raise Exception
 
 	def pass_filter(self, tweet_row, is_debug = False):
-		""" Use this on the old dataset - Sentiment-Analysis-Dataset.csv, to filter out retweets and Kaggle. """
+		""" This was initally designed for the old dataset 
+		- Sentiment-Analysis-Dataset.csv, to filter out retweets and Kaggle.
+		Can also be used on the new one """
 		source = tweet_row[2]
 		text = tweet_row[3]
-		return source == "Sentiment140" and not text.startswith("RT")
+		return source != "Kaggle" and not text.startswith("RT")
 
 	def run_through_data(self):
 		""" This outputs the following: 800000, 0, 800000 -> NO NEUTRAL TWEETS """
