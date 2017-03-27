@@ -60,13 +60,15 @@ class TwitterTool:
 		return (neg_value + pos_value) * 1.0/2, 0.0
 
 def main():
+	csv_filename1 = "/cs/home/mn39/Documents/MSciDissertation/resources/Sentiment-Analysis-Dataset.csv"
+	csv_filename2 = "/cs/home/mn39/Documents/MSciDissertation/resources/training.1600000.processed.noemoticon.csv"
+
 	nc1 = Ngram_Classifier("SVM", 1, 500000, 3000, "ngram_extractor")
-	training, testing = nc1.get_train_test_sets2()
-	print "Train and test sets ready"
+	training, testing = nc1.get_train_test_sets(csv_filename2, 0, 5, 4, 0)
 	nc1.set_data(training, testing)
 	nc1.train()
-	nc1.test2()
-	return
+	nc1.test(0, 5)
+
 	tt = TwitterTool()
 	tweets = tt.search_tweets("grangemouth", 100)
 	tweet_list = tt.extract_text_from_tweets(tweets)
@@ -80,7 +82,7 @@ def main():
 			r1 = float(nc1.classify_one(t))
 			overallCount += 1
 			sentiR, sentiAbsolute = tt.get_textblob_polarity(t, 0.0, 1.0)
-			sent140 = get_single_polarity(nc1.preprocess_tweet(nc1.decode_text(t)), 0.0, 4.0)
+			sent140 = get_single_polarity(nc1.preprocess_tweet(t), 0.0, 4.0)
 			if sent140 ==-2:
 				errors += 1
 				continue
