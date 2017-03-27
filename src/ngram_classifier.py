@@ -117,24 +117,6 @@ class Ngram_Classifier:
 		text = tweet_row[3]
 		return source != "Kaggle" and not text.startswith("RT")
 
-	def run_through_data(self):
-		""" This outputs the following: 800000, 0, 800000 -> NO NEUTRAL TWEETS """
-		with open("/cs/home/mn39/Documents/MSciDissertation/resources/training.1600000.processed.noemoticon.csv") as csvfile:
-			data = csv.reader(csvfile)
-			index = 0
-			p0 = 0
-			p4 = 0
-			for row in data:
-				index +=1
-				if ((index * 1.0)/1600000 * 100) % 25 == 0:
-					print ((index * 1.0)/1600000 * 100), "%"
-				polarity = int(row[0])
-				if polarity == 0:
-					p0 += 1
-				else:
-					p4 += 1
-			print "done"
-
 	def get_train_test_sets(self, filename, polarity_index, tweet_index, positive_value, negative_value, skip_header=False):
 		""" Works with the first dataset - Sentiment-Analysis-Dataset.csv. The data here is already shuffled. """
 		training_data = []
