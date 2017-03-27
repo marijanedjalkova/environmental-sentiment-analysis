@@ -18,7 +18,7 @@ class Ngram_Classifier:
 		self.classifier = self.get_classifier(classifier_name)
 		self.n = n
 		self.train_limit = train_length
-		self.test_limit = train_length + test_length
+		self.test_limit = test_length
 		self.testing_data = []
 		self.ft_extractor_name = ft_extractor	
 	
@@ -116,32 +116,6 @@ class Ngram_Classifier:
 		text = tweet_row[3]
 		return source != "Sentiment140" or text.startswith("RT")
 
-	def get_train_test_sets(self):
-		""" Works with the first dataset - Sentiment-Analysis-Dataset.csv. The data here is already shuffled. """
-		training_data = []
-		testing_data = []
-
-		with open("/cs/home/mn39/Documents/MSciDissertation/resources/Sentiment-Analysis-Dataset.csv") as csvfile:
-			data = csv.reader(csvfile) # 1578615 
-			next(data, None) # skip headers
-			# format: ItemID, Sentiment, SentimentSource, SentimentText
-			index = 0
-			for row in data:
-				index += 1
-				if ((index * 1.0)/self.train_limit * 100) % 25 == 0:
-					print ((index * 1.0)/self.train_limit * 100), "%"
-				if not self.need_to_filter(row):
-					polarity = int(row[1]) # 0 or 1
-					if index < self.train_limit:
-						featureset = self.extract_features(row[3])
-						if featureset:
-							training_data.append((featureset, polarity))
-					elif index < self.test_limit:
-						testing_data.append(row)
-					else:
-						return training_data, testing_data
-		return training_data, testing_data
-
 	def run_through_data(self):
 		""" This outputs the following: 800000, 0, 800000 -> NO NEUTRAL TWEETS """
 		with open("/cs/home/mn39/Documents/MSciDissertation/resources/training.1600000.processed.noemoticon.csv") as csvfile:
@@ -160,7 +134,52 @@ class Ngram_Classifier:
 					p4 += 1
 			print "done"
 
-	def get_train_test_sets_unified(self, filename, polarity_index, tweet_index, positive_value):
+	def get_train_test_sets(self, filename, polarity_index, tweet_index, positive_value, negative_value):
+		""" Works with the first dataset - Sentiment-Analysis-Dataset.csv. The data here is already shuffled. """
+		training_data = []
+		testing_data = []
+		file_length = 0
+
+		# this is just for counter, maybe remove this later
+		with open(filename) as csvfile:
+			data = csv.reader(csvfile)
+			file_length = len(list(data))
+		print "file_length", file_length
+
+		with open(filename) as csvfile:
+			data = csv.reader(csvfile) # 1578615 
+			next(data, None) # skip headers
+			# format: ItemID, Sentiment, SentimentSource, SentimentText
+			index = 0
+			trainingPositives = 0
+			trainingNegatives = 0
+			testingPositives = 0
+			testingNegatives = 0
+			for row in data:
+				index += 1
+				print trainingPositives, trainingNegatives, testingPositives, testingNegatives
+				if round(((index * 1.0)/file_length * 100), 4) % 2 == 0:
+					print round(((index * 1.0)/file_length * 100), 4), "%"
+				if not self.need_to_filter(row):
+					polarity = int(row[polarity_index]) # 0 or 1
+					if self.can_add(polarity, trainingPositives, trainingNegatives, self.train_limit, positive_value, negative_value):
+						featureset = self.extract_features(row[tweet_index])
+						if featureset:
+							training_data.append((featureset, polarity))
+							if polarity == positive_value: trainingPositives += 1
+							else: trainingNegatives += 1
+					elif self.can_add(polarity, testingPositives, testingNegatives, (self.test_limit), positive_value, negative_value):
+						testing_data.append(row)
+						if polarity == positive_value: testingPositives += 1
+						else: testingNegatives += 1
+						continue
+					else:
+						if self.data_ready(trainingPositives, trainingNegatives, testingPositives, testingNegatives):
+							break
+			print trainingPositives, trainingNegatives, " and done with extracting."
+		return training_data, testing_data
+
+	def get_train_test_sets_unified(self, filename, polarity_index, tweet_index, positive_value, negative_value):
 		""" Works with any dataset 
 		The data is not shuffled, so have to watch the balance in data. """
 		training_data = []
@@ -171,31 +190,31 @@ class Ngram_Classifier:
 		with open(filename) as csvfile:
 			data = csv.reader(csvfile)
 			file_length = len(list(data))
-		print "file file_length", file_length
+		print "file_length", file_length
 
 		with open(filename) as csvfile:
 			#this file has no headers, nothing to skip
 			#row[0] is sentiment - 0, 2 or 4, but there are no 2s in this dataset
 			#row[5] is the tweet
 			data = csv.reader(csvfile)
-			totalIndex = 0
+			index = 0
 			trainingPositives = 0
 			trainingNegatives = 0
 			testingPositives = 0
 			testingNegatives = 0
 			for row in data:
-				totalIndex += 1
-				if ((totalIndex * 1.0) / file_length * 100) % 25 == 0:
-					print ((totalIndex * 1.0) / file_length * 100), "%"
+				index += 1
+				if round(((index * 1.0)/file_length * 100), 4) % 25 == 0:
+					print round(((index * 1.0)/file_length * 100), 4), "%"
 				polarity = int(row[polarity_index])
-				if self.can_add(polarity, trainingPositives, trainingNegatives, self.train_limit):
+				if self.can_add(polarity, trainingPositives, trainingNegatives, self.train_limit, positive_value, negative_value):
 					featureset = self.extract_features(row[tweet_index])
 					if featureset:
 						training_data.append((featureset, polarity))
 						if polarity == positive_value: trainingPositives += 1
 						else: trainingNegatives += 1
 					continue
-				elif self.can_add(polarity, testingPositives, testingNegatives, (self.test_limit - self.train_limit)):
+				elif self.can_add(polarity, testingPositives, testingNegatives, (self.test_limit), positive_value, negative_value):
 					testing_data.append(row)
 					if polarity == positive_value: testingPositives += 1
 					else: testingNegatives += 1
@@ -206,17 +225,17 @@ class Ngram_Classifier:
 			print trainingPositives, trainingNegatives, " and done "
 		return training_data, testing_data
 
-	def can_add(self, polarity, positives, negatives, goal):
+	def can_add(self, polarity, positives, negatives, goal, positive_value, negative_value):
 		""" This is necessary to make training and testing data uniform when it is not sorted automatically. """
-		if polarity == 0 and negatives >= goal / 2: 
+		if polarity == negative_value and negatives >= goal / 2: 
 			return False
-		if polarity == 4 and positives >= goal / 2:
+		if polarity == positive_value and positives >= goal / 2:
 			return False
 		return True
 
 	def data_ready(self, trP, trN, teP, teN):
 		""" Checks if we have reached our goals in both training and testing sets """
-		return trP + trN >= self.train_limit and teP + teN >= self.test_limit
+		return trP + trN >= self.train_limit and teP + teN >= (self.test_limit)
 
 
 	def set_data(self, training_data, testing_data):
@@ -257,7 +276,7 @@ class Ngram_Classifier:
 				continue
 			else:
 				error += 1
-		accuracy = correct * 1.0/(self.test_limit - self.train_limit - error) 
+		accuracy = correct * 1.0/(self.test_limit - error) 
 		print accuracy * 100 , "% "
 		return accuracy
 
