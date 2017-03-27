@@ -180,56 +180,6 @@ class Ngram_Classifier:
 			print trainingPositives, trainingNegatives, " and done with extracting."
 		return training_data, testing_data
 
-	def get_train_test_sets_unified(self, filename, polarity_index, tweet_index, positive_value, negative_value, skip_header=False):
-		""" Works with any dataset 
-		The data is not shuffled, so have to watch the balance in data. """
-		training_data = []
-		testing_data = []
-		file_length = 0
-
-		# this is just for counter, maybe remove this later
-		with open(filename) as csvfile:
-			data = csv.reader(csvfile)
-			file_length = len(list(data))
-		print "file_length", file_length
-
-		with open(filename) as csvfile:
-			#this file has no headers, nothing to skip
-			#row[0] is sentiment - 0, 2 or 4, but there are no 2s in this dataset
-			#row[5] is the tweet
-			data = csv.reader(csvfile)
-
-			if skip_header:
-				next(data, None) # skip headers
-
-			index = 0
-			trainingPositives = 0
-			trainingNegatives = 0
-			testingPositives = 0
-			testingNegatives = 0
-			for row in data:
-				index += 1
-				if round(((index * 1.0)/file_length * 100), 4) % 25 == 0:
-					print round(((index * 1.0)/file_length * 100), 4), "%"
-				polarity = int(row[polarity_index])
-				if self.can_add(polarity, trainingPositives, trainingNegatives, self.train_limit, positive_value, negative_value):
-					featureset = self.extract_features(row[tweet_index])
-					if featureset:
-						training_data.append((featureset, polarity))
-						if polarity == positive_value: trainingPositives += 1
-						else: trainingNegatives += 1
-					continue
-				elif self.can_add(polarity, testingPositives, testingNegatives, (self.test_limit), positive_value, negative_value):
-					testing_data.append(row)
-					if polarity == positive_value: testingPositives += 1
-					else: testingNegatives += 1
-					continue
-				else:
-					if self.data_ready(trainingPositives, trainingNegatives, testingPositives, testingNegatives):
-						break
-			print trainingPositives, trainingNegatives, " and done "
-		return training_data, testing_data
-
 	def can_add(self, polarity, positives, negatives, goal, positive_value, negative_value):
 		""" This is necessary to make training and testing data uniform when it is not sorted automatically. """
 		if polarity == negative_value and negatives >= goal / 2: 
