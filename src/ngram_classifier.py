@@ -19,7 +19,6 @@ class Ngram_Classifier:
 		self.n = n
 		self.train_limit = train_length
 		self.test_limit = test_length
-		self.testing_data = []
 		self.ft_extractor_name = ft_extractor	
 	
 
@@ -110,11 +109,11 @@ class Ngram_Classifier:
 			print "Unrecognised feature extractor"
 			raise Exception
 
-	def need_to_filter(self, tweet_row, is_debug = False):
+	def pass_filter(self, tweet_row, is_debug = False):
 		""" Use this on the old dataset - Sentiment-Analysis-Dataset.csv, to filter out retweets and Kaggle. """
 		source = tweet_row[2]
 		text = tweet_row[3]
-		return source != "Sentiment140" or text.startswith("RT")
+		return source == "Sentiment140" and not text.startswith("RT")
 
 	def run_through_data(self):
 		""" This outputs the following: 800000, 0, 800000 -> NO NEUTRAL TWEETS """
@@ -134,7 +133,7 @@ class Ngram_Classifier:
 					p4 += 1
 			print "done"
 
-	def get_train_test_sets(self, filename, polarity_index, tweet_index, positive_value, negative_value):
+	def get_train_test_sets(self, filename, polarity_index, tweet_index, positive_value, negative_value, skip_header=False):
 		""" Works with the first dataset - Sentiment-Analysis-Dataset.csv. The data here is already shuffled. """
 		training_data = []
 		testing_data = []
@@ -148,7 +147,8 @@ class Ngram_Classifier:
 
 		with open(filename) as csvfile:
 			data = csv.reader(csvfile) # 1578615 
-			next(data, None) # skip headers
+			if skip_header:
+				next(data, None) # skip headers
 			# format: ItemID, Sentiment, SentimentSource, SentimentText
 			index = 0
 			trainingPositives = 0
@@ -157,10 +157,9 @@ class Ngram_Classifier:
 			testingNegatives = 0
 			for row in data:
 				index += 1
-				print trainingPositives, trainingNegatives, testingPositives, testingNegatives
 				if round(((index * 1.0)/file_length * 100), 4) % 2 == 0:
 					print round(((index * 1.0)/file_length * 100), 4), "%"
-				if not self.need_to_filter(row):
+				if self.pass_filter(row):
 					polarity = int(row[polarity_index]) # 0 or 1
 					if self.can_add(polarity, trainingPositives, trainingNegatives, self.train_limit, positive_value, negative_value):
 						featureset = self.extract_features(row[tweet_index])
@@ -179,7 +178,7 @@ class Ngram_Classifier:
 			print trainingPositives, trainingNegatives, " and done with extracting."
 		return training_data, testing_data
 
-	def get_train_test_sets_unified(self, filename, polarity_index, tweet_index, positive_value, negative_value):
+	def get_train_test_sets_unified(self, filename, polarity_index, tweet_index, positive_value, negative_value, skip_header=False):
 		""" Works with any dataset 
 		The data is not shuffled, so have to watch the balance in data. """
 		training_data = []
@@ -197,6 +196,10 @@ class Ngram_Classifier:
 			#row[0] is sentiment - 0, 2 or 4, but there are no 2s in this dataset
 			#row[5] is the tweet
 			data = csv.reader(csvfile)
+
+			if skip_header:
+				next(data, None) # skip headers
+
 			index = 0
 			trainingPositives = 0
 			trainingNegatives = 0
@@ -244,13 +247,13 @@ class Ngram_Classifier:
 		self.testing_data = testing_data
 
 	def train(self):
+		from nltk.classify import SklearnClassifier
 		if self.training_data is None:
 			s, t = self.get_train_test_sets()
 			self.set_data(s, t)
-		if self.classifier != SVC:
+		if self.classifier != SVC and not isinstance(self.classifier, SklearnClassifier):
 			self.classifier = self.classifier(self.training_data, feature_extractor = self.get_feature_extractor())
 		else:
-			from nltk.classify import SklearnClassifier
 			self.classifier = SklearnClassifier(LinearSVC()).train(self.training_data)
 		print "trained"
 
