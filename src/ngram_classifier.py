@@ -125,10 +125,10 @@ class Ngram_Classifier:
 		to_collect = self.train_limit + self.test_limit
 
 		with open(filename) as csvfile:
-			data = csv.reader(csvfile) # 1578615 
+			data = csv.reader(csvfile) 
 			if skip_header:
 				next(data, None) # skip headers
-			# format: ItemID, Sentiment, SentimentSource, SentimentText
+
 			index = 0
 			changed = True
 			trainingPositives = 0
@@ -149,7 +149,7 @@ class Ngram_Classifier:
 							training_data.append((featureset, polarity))
 							if polarity == positive_value: trainingPositives += 1
 							else: trainingNegatives += 1
-					elif self.can_add(polarity, testingPositives, testingNegatives, (self.test_limit), positive_value, negative_value):
+					elif self.can_add(polarity, testingPositives, testingNegatives, self.test_limit, positive_value, negative_value):
 						index += 1
 						changed = True
 						testing_data.append(row)
@@ -172,11 +172,10 @@ class Ngram_Classifier:
 
 	def data_ready(self, trP, trN, teP, teN):
 		""" Checks if we have reached our goals in both training and testing sets """
-		return trP + trN >= self.train_limit and teP + teN >= (self.test_limit)
+		return trP + trN >= self.train_limit and teP + teN >= self.test_limit
 
 
 	def set_data(self, training_data, testing_data):
-		print len(training_data), "training data is being set"
 		self.training_data = training_data
 		self.testing_data = testing_data
 
@@ -192,12 +191,12 @@ class Ngram_Classifier:
 		print "trained"
 
 	def to_featureset(self, training_data):
-		""" Careful, this assumes that feature extractor is ngram extractor """
+		""" Uses feature extractor to convert a tweet to a dictionary of features. """
 		ft_ex = self.get_feature_extractor()
 		return [(ft_ex(tw), v) for tw, v in training_data if ft_ex(tw)]
 
 	def test(self, polarity_index, tweet_index):
-		""" This is for any data """
+		""" This is for any dataset. """
 		correct = 0
 		error = 0
 		index = 0
