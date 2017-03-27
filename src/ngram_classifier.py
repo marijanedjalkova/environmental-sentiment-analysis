@@ -122,12 +122,7 @@ class Ngram_Classifier:
 		training_data = []
 		testing_data = []
 		file_length = 0
-
-		# this is just for counter, maybe remove this later
-		with open(filename) as csvfile:
-			data = csv.reader(csvfile)
-			file_length = len(list(data))
-		print "file_length", file_length
+		to_collect = self.train_limit + self.test_limit
 
 		with open(filename) as csvfile:
 			data = csv.reader(csvfile) # 1578615 
@@ -140,18 +135,19 @@ class Ngram_Classifier:
 			testingPositives = 0
 			testingNegatives = 0
 			for row in data:
-				index += 1
-				if round(((index * 1.0)/file_length * 100), 4) % 2 == 0:
-					print round(((index * 1.0)/file_length * 100), 4), "%"
+				if round(((index * 1.0)/to_collect * 100), 4) % 25 == 0:
+					print round(((index * 1.0)/to_collect * 100), 4), "%"
 				if self.pass_filter(row):
 					polarity = int(row[polarity_index]) # 0 or 1
 					if self.can_add(polarity, trainingPositives, trainingNegatives, self.train_limit, positive_value, negative_value):
 						featureset = self.extract_features(row[tweet_index])
 						if featureset:
+							index += 1
 							training_data.append((featureset, polarity))
 							if polarity == positive_value: trainingPositives += 1
 							else: trainingNegatives += 1
 					elif self.can_add(polarity, testingPositives, testingNegatives, (self.test_limit), positive_value, negative_value):
+						index += 1
 						testing_data.append(row)
 						if polarity == positive_value: testingPositives += 1
 						else: testingNegatives += 1
