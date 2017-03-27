@@ -136,7 +136,7 @@ class Ngram_Classifier:
 			testingPositives = 0
 			testingNegatives = 0
 			for row in data:
-				if round(((index * 1.0)/to_collect * 100), 4) % 25 == 0 and changed:
+				if changed and round(((index * 1.0)/to_collect * 100), 4) % 25 == 0:
 					print round(((index * 1.0)/to_collect * 100), 4), "%"
 					changed = False
 				if self.pass_filter(row):
@@ -196,28 +196,7 @@ class Ngram_Classifier:
 		ft_ex = self.get_feature_extractor()
 		return [(ft_ex(tw), v) for tw, v in training_data if ft_ex(tw)]
 
-	def test(self):
-		""" This is for the data in the first dataset """
-		correct = 0
-		error = 0
-		to_test = len(self.testing_data)
-		for row in self.testing_data:
-			index = int(row[0])
-			if ( (index * 1.0) / to_test * 100) % 25 == 0:
-				print ( (index * 1.0) / to_test * 100), "%"
-			if not self.need_to_filter(row):
-				polarity = int(row[1])
-				predicted = self.classify_one(row[3], True)
-				if predicted == polarity:
-					correct += 1
-				continue
-			else:
-				error += 1
-		accuracy = correct * 1.0/(self.test_limit - error) 
-		print accuracy * 100 , "% "
-		return accuracy
-
-	def test_unified(self, polarity_index, tweet_index):
+	def test(self, polarity_index, tweet_index):
 		""" This is for any data """
 		correct = 0
 		error = 0
