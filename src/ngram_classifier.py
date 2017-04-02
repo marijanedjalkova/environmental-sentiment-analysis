@@ -65,16 +65,10 @@ class Ngram_Classifier:
 		""" Takes in a row text. Returns None only if it cannot possibly work with it. """
 		try:
 			decoded = text.decode("utf-8")
-		except AttributeError:
-			print text 
-			print "You are probably tokenizing your test tweet before giving it to classifier, don't do that"
-			raise Exception
 		except UnicodeEncodeError:
 			# tweets from Twitter search go here
 			decoded = text.encode('utf8')
 		except UnicodeDecodeError:
-			print "UnicodeDecodeError, returning None for text"
-			print text
 			# type of text is always string, and the text is, indeed, incomprehensible
 			return None 
 		return decoded
