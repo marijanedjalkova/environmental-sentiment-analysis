@@ -24,11 +24,32 @@ def is_in_mentions(mention):
 			return True
 	return False
 
+def is_in_words(word):
+	if word in NOUNS:
+		return True 
+	if word in VERBS:
+		return True 
+	if word in ADJECTIVES:
+		return True
+	if check_other_forms(word):
+		return True 
+	return False
+
+def check_other_forms(word):
+	# check other forms of the same word
+
+def is_is_names(word):
+	return word in NAMES
+
 
 class RB_classifier(object):
 
 	def __init__(self):
-		pass 
+		self.lexicon = self._initialise_lexicon() 
+
+	def _initialise_lexicon(self):
+		return {}
+		# fill it with other forms of the words in given list 
 
 	def classify(self, text):
 		# decode
