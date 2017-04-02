@@ -67,6 +67,27 @@ Basic extractor seems to be much slower than the unigram extractor. There is als
 	Redesigned the classifier, now the extractor does all the preprocessing, too. Using customised TwitterTokenizer improves 
 	the accuracy a little, now it is 79% for 500000 training set.
 	
+	Spent a lot of time on emojis and fixing unicode bugs. Seems to be done. The best model seems to be an SVM based on the
+	second dataset. I am testing it against the testing set from the same data and validating it against sentiment140 
+	request (and textblob, but not directly comparing to that). The latter one is biased. Since we are interested in
+	identifying the negative tweets and do not care about the
+	neutral ones, I return positive value from the senti140 request when the response is neutral. 
+	
+	Here are some results:
+	Training	ngrams,	test		real tweet
+	set, 			accuracy, 	accuracy
+	5k		1,	70%,			62%
+	5k		2,	64%,			70%
+	50k		1,	74%,			65%
+	50k		2,	70%,			78%
+	100k		1,	74%,			65%
+	100k		2,	70%,			87%
+	200k		1,	75%,			70%
+	200k		2,	71%,			81%
+	300k		1,	77%,			55%
+	300k		2,	68%,			84%
+	
+	
 	[Report] -> findings.
 2. Try topic modeling on London data:
 	use Twitter API to get tweets about London - [DONE].
