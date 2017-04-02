@@ -26,17 +26,14 @@ class TwitterTool:
 		return tweepy.API(auth, wait_on_rate_limit=True)
 
 	def search_tweets(self, query, n):
-		print "starting search"
 		tweets = tweet_batch = self.api.search(q=query, count=n)
 		ct = 1
-		print "after tweets"
 		while len(tweets) < n and ct < 100:
 			tweet_batch = self.api.search(q=query, 
 									 count=n - len(tweets),
 									 max_id=tweet_batch.max_id)
 			tweets.extend(tweet_batch)
 			ct += 1
-			print ct
 		return tweets
 
 	def short_search(self, query, n):
@@ -52,22 +49,24 @@ class TwitterTool:
 		return [t.text for t in tweets if t.lang=="en"]
 
 	def get_textblob_polarity(self, tweet_text, neg_value, pos_value):
+		""" Returns pos_value as the first result if the tweet is neutral. """
 		p = TextBlob(tweet_text).sentiment.polarity
 		if p < 0.0:
 			return neg_value, p
 		elif p > 0.0:
 			return pos_value, p
-		return (neg_value + pos_value) * 1.0/2, 0.0
+		#return (neg_value + pos_value) * 1.0/2, 0.0
+		return pos_value, 0.0
 
 def main():
 	csv_filename1 = "/cs/home/mn39/Documents/MSciDissertation/resources/Sentiment-Analysis-Dataset.csv"
 	csv_filename2 = "/cs/home/mn39/Documents/MSciDissertation/resources/training.1600000.processed.noemoticon.csv"
 
-	nc1 = Ngram_Classifier("SVM", 1, 500000, 3000, "ngram_extractor")
+	nc1 = Ngram_Classifier("SVM", 2, 5000, 3000, "preprocessing_extractor")
 	training, testing = nc1.get_train_test_sets(csv_filename2, 0, 5, 4, 0)
 	nc1.set_data(training, testing)
 	nc1.train()
-	nc1.test(0, 5)
+	#nc1.test(0, 5)
 
 	tt = TwitterTool()
 	tweets = tt.search_tweets("grangemouth", 100)
@@ -77,30 +76,46 @@ def main():
 	neutralCount = 0
 	errors = 0
 	notes = []
+	negatives = []
+	not_validated = [] # those that could not be validated
 	for t in tweet_list:
 		if not t.startswith("RT"):
 			r1 = float(nc1.classify_one(t))
-			overallCount += 1
-			sentiR, sentiAbsolute = tt.get_textblob_polarity(t, 0.0, 1.0)
+			if r1 == Ngram_Classifier.ERROR:
+				# has never been here yet
+				errors += 1
+				continue
+			sentiR, sentiAbsolute = tt.get_textblob_polarity(t, 0.0, 4.0)
 			sent140 = get_single_polarity(nc1.preprocess_tweet(t), 0.0, 4.0)
 			if sent140 ==-2:
-				errors += 1
+				not_validated.append((t, r1))
 				continue
 			if r1 == sent140:
 				correctCount += 1
-			elif abs(r1 - sent140) <= 0.5:
+			elif sentiAbsolute == 0:
 				neutralCount += 1
 			else:
 				notes += [(r1, sent140, t)]
+			if r1==0 or sentiR == 0 or sent140==0:
+				negatives.append((r1, sentiR, sent140, t))
 			print "Tweet: ", t 
-			print r1, " vs ", sentiR , " <- ", sentiAbsolute, " vs ", sent140
+			print r1, " vs ", sentiR , " vs ", sent140
 			print "========================================================="
+			overallCount += 1
 	print "Overall: ", overallCount
 	print "Correct: ", correctCount
 	print "Precision: ", correctCount * 100.0/overallCount, "%"
 	print "About right: ", neutralCount
 	print "Errors: ", errors
-	for n in notes: print n
+	#for n in notes: print n
+	for n in negatives:
+		print n[3]
+		print n[0], n[1], n[2]
+		print "###############################"
+	for n in not_validated:
+		print n[0]
+		print n[1]
+		print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 
 def main2():
 	nc1 = Ngram_Classifier("SVM", 1, 0, 0, "ngram_extractor")
