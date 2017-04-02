@@ -33,17 +33,20 @@ class Ngram_Classifier:
 			return MaxEntClassifier
 		elif classifier_name == "SVM":
 			return SVC
-		else:
+		elif classifier_name == "DecisionTree":
 			from textblob.classifiers import DecisionTreeClassifier
 			return DecisionTreeClassifier
+		else:
+			print "Unrecognised classifier"
+			raise Exception
 
 
 	def preprocess_tweet(self, text, is_debug=False):
 		""" This tokenizes the tweet and throws away the garbage. """
 		tokenizer = TweetTokenizer(preserve_case=False, strip_handles=True, reduce_len=True)
 		url_pattern = re.compile("(?P<url>https?://[^\s]+)")
-		weird_unicode_chars = [u'\xc2', u'\xab', u'\xbb', u'..', u'\xe2', u"\u2122"] + ["via", u'...', '\n', '\t']
-		stopwds = stopwords.words('english') + list(string.punctuation) + weird_unicode_chars
+		weird_chars = [u'..', "via", u'...', '\n', '\t']
+		stopwds = stopwords.words('english') + list(string.punctuation) + weird_chars
 		try:
 			tokens = tokenizer.tokenize(text)
 		except (UnicodeDecodeError, UnicodeEncodeError) as e:
