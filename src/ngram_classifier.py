@@ -78,9 +78,6 @@ class Ngram_Classifier:
 			print text
 			# type of text is always string, and the text is, indeed, incomprehensible
 			return None 
-		# if not isinstance(decoded, unicode):
-		# 	print "Something that is not unicode"
-		# 	raise Exception
 		return decoded
 
 	def ngram_extractor(self, document):
