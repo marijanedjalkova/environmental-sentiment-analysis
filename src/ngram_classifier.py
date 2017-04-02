@@ -11,7 +11,6 @@ import sys
 import csv
 import time
 import string
-import unidecode
 import preprocessor 
 
 class Ngram_Classifier:
@@ -96,15 +95,13 @@ class Ngram_Classifier:
 			parsed = preprocessor.parse(document)
 		except (UnicodeDecodeError, UnicodeEncodeError) as e:
 			# Unicode Encode Error for search results
-			print "+++++ Have to decode document "
-			print document #unicode if coming from Twitter
 			document = self.decode_text(document)
 			if not document:
-				print "++++++ Could not decode "
 				return None 
-			print "++++++++++ decoded, look:"
-			print document
-			parsed = preprocessor.parse(document)
+			try:
+				parsed = preprocessor.parse(document)
+			except (UnicodeDecodeError, UnicodeEncodeError) as e:
+				return None
 		if parsed.urls:
 			res["$URL$"] = True 
 		if parsed.mentions:
