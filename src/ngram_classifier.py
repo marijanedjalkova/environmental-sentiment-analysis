@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from nltk.tokenize import TweetTokenizer
 from nltk.corpus import stopwords
 from nltk import ngrams
@@ -46,30 +47,7 @@ class Ngram_Classifier:
 		stopwds = stopwords.words('english') + list(string.punctuation) + weird_unicode_chars
 		try:
 			tokens = tokenizer.tokenize(text)
-		except UnicodeDecodeError:
-			decoded = self.decode_text(text)
-			if not decoded:
-				return None
-			tokens = tokenizer.tokenize(decoded)
-
-		tokens = [tok for tok in tokens if tok not in stopwds]
-		tokens = [tok for tok in tokens if tok not in weird_unicode_chars]
-		#tokens = [tok for tok in tokens if not tok.startswith("@")]
-		#tokens = [tok for tok in tokens if not url_pattern.match(tok)]
-		tokens = [unicode("$MENTION$") if tok.startswith("@") else tok for tok in tokens ]
-		tokens = [unicode("$URL$") if url_pattern.match(tok) else tok for tok in tokens ]
-		tokens = [tok.lower() if not tok.isupper() and not tok.islower() else tok for tok in tokens ]
-		return tokens
-
-	def preprocess_tweet2(self, text, is_debug=False):
-		""" This tokenizes the tweet and throws away the garbage. """
-		tokenizer = TweetTokenizer(preserve_case=False, strip_handles=True, reduce_len=True)
-		url_pattern = re.compile("(?P<url>https?://[^\s]+)")
-		weird_unicode_chars = [u'\xc2', u'\xab', u'\xbb', u'..', u'\xe2', u"\u2122"] + ["via", u'...', '\n', '\t']
-		stopwds = stopwords.words('english') + list(string.punctuation) + weird_unicode_chars
-		try:
-			tokens = tokenizer.tokenize(text)
-		except UnicodeDecodeError:
+		except (UnicodeDecodeError, UnicodeEncodeError) as e:
 			decoded = self.decode_text(text)
 			if not decoded:
 				return None
@@ -93,17 +71,16 @@ class Ngram_Classifier:
 			print "You are probably tokenizing your test tweet before giving it to classifier, don't do that"
 			raise Exception
 		except UnicodeEncodeError:
-			print "UnicodeEncodeError"
-			decoded = unidecode.unidecode(text)
-			decoded = decoded.decode("utf-8")
+			# tweets from Twitter search go here
+			decoded = text.encode('utf8')
 		except UnicodeDecodeError:
 			print "UnicodeDecodeError, returning None for text"
 			print text
 			# type of text is always string, and the text is, indeed, incomprehensible
 			return None 
-		if not isinstance(decoded, unicode):
-			print "Something that is not unicode"
-			raise Exception
+		# if not isinstance(decoded, unicode):
+		# 	print "Something that is not unicode"
+		# 	raise Exception
 		return decoded
 
 	def ngram_extractor(self, document):
@@ -118,7 +95,19 @@ class Ngram_Classifier:
 		""" Takes a raw tweet. Uses preprocessor. """
 		res = {}
 		# take out weird stuff 
-		parsed = preprocessor.parse(document)
+		try:
+			parsed = preprocessor.parse(document)
+		except (UnicodeDecodeError, UnicodeEncodeError) as e:
+			# Unicode Encode Error for search results
+			print "+++++ Have to decode document "
+			print document #unicode if coming from Twitter
+			document = self.decode_text(document)
+			if not document:
+				print "++++++ Could not decode "
+				return None 
+			print "++++++++++ decoded, look:"
+			print document
+			parsed = preprocessor.parse(document)
 		if parsed.urls:
 			res["$URL$"] = True 
 		if parsed.mentions:
