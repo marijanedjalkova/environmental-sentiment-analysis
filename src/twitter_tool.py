@@ -11,6 +11,7 @@ from nltk.corpus import stopwords
 import unidecode
 import string
 from emojiSentiment import *
+from rb_environmental_classifier import *
 
 class TwitterTool:
 
@@ -59,14 +60,15 @@ class TwitterTool:
 		return pos_value, 0.0
 
 def main():
+	""" Tests the general work of the classifiers, tests and validates them """
 	csv_filename1 = "/cs/home/mn39/Documents/MSciDissertation/resources/Sentiment-Analysis-Dataset.csv"
 	csv_filename2 = "/cs/home/mn39/Documents/MSciDissertation/resources/training.1600000.processed.noemoticon.csv"
 
-	nc1 = Ngram_Classifier("SVM", 2, 5000, 3000, "preprocessing_extractor")
+	nc1 = Ngram_Classifier("SVM", 1, 5000, 3000, "preprocessing_extractor")
 	training, testing = nc1.get_train_test_sets(csv_filename2, 0, 5, 4, 0)
 	nc1.set_data(training, testing)
 	nc1.train()
-	#nc1.test(0, 5)
+	nc1.test(0, 5)
 
 	tt = TwitterTool()
 	tweets = tt.search_tweets("grangemouth", 100)
@@ -118,6 +120,7 @@ def main():
 		print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 
 def main2():
+	""" Tests how emojis are processed and evaluated """
 	nc1 = Ngram_Classifier("SVM", 1, 0, 0, "ngram_extractor")
 	tt = TwitterTool()
 	tweets = tt.short_search("fencing emoticon", 8)
@@ -133,6 +136,18 @@ def main2():
 		print s
 		print "-----------------------------------------"
 
+def main3():
+	""" Tests how the RB classifier works in general """
+	rb = RB_classifier()
+	tt = TwitterTool()
+	tweets = tt.search_tweets("grangemouth", 100)
+	tweet_list = tt.extract_text_from_tweets(tweets)
+	for t in tweet_list:
+		if not t.startswith("RT"):
+			print t
+			print rb.classify(t)
+			print "++++++++++++++++++++++++++++++++++++++++++"
+
 
 if __name__ == '__main__':
-	main()
+	main3()
