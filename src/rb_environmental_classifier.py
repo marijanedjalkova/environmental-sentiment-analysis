@@ -28,7 +28,6 @@ class RB_classifier(object):
 	def __init__(self):
 		self.wnl = WordNetLemmatizer()
 		self.stem_lexicon = self._initialise_lexicon() 
-		print self.stem_lexicon
 
 	def _initialise_lexicon(self):
 		""" Finds other forms of the same words and their synonyms and adds to the lexicon """
@@ -55,7 +54,8 @@ class RB_classifier(object):
 		# decode
 		text = text.encode('utf8')
 		# tokenize 
-		some_result = self.parsing(text)
+		res = self.parsing(text)
+		print "after parsing: ", res
 		preprocessor.set_options(preprocessor.OPT.URL, preprocessor.OPT.EMOJI, preprocessor.OPT.MENTION)
 		cleaned = preprocessor.clean(text)
 		tokens = TweetTokenizer().tokenize(cleaned)
@@ -76,17 +76,20 @@ class RB_classifier(object):
 
 
 	def parsing(self, text):
+		res = 0
 		try:
 			parsed = preprocessor.parse(text)
 			if parsed.urls:
 				pass
 			if parsed.mentions:
 				for m in parsed.mentions:
-					if self.is_in_mentions(m.match):
-						pass
+					print m.match[1:]
+					if self.is_in_mentions(m.match[1:]):
+						res += 0.5
 						# well, this should increase the chances by a loooooooot
 			if parsed.emojis:
 				pass
+			return res
 		except (UnicodeDecodeError, UnicodeEncodeError) as e:
 			return 0
 
@@ -127,3 +130,4 @@ if __name__ == '__main__':
 	print r.is_in_mentions("BP")
 	print r.is_in_mentions("BP_abc_efd")
 	print "smoke" in GIVEN_LEXICON['NOUNS']
+	r.classify("@INEOS sucks")
