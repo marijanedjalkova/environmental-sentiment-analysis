@@ -5,6 +5,7 @@ from nltk.stem.wordnet import WordNetLemmatizer
 import re
 
 MENTIONS = ['falkirkcouncil', '^INEOS(_([^\s]+))?$', '^BP(_([^\s]+))?$', 'ICI', 'ScottishEPA']
+ANTI_MENTIONS = ['MadrasRugby'] # if these people are mentioned, thiw reduces the chances of it being a useful tweet
 
 NAMES = ['ineos', 'petroineos', 'bp', 'calachem', 'ici', 'falkirk council', 'sepa']
 
@@ -20,6 +21,8 @@ GIVEN_LEXICON = {'NOUNS': NOUNS, 'VERBS': VERBS, 'ADJECTIVES': ADJECTIVES}
 
 BINGO = 1
 MISS = 0
+
+BIASED = set(['job', 'salary', 'rugby', 'championship'])
 
 
 class RB_classifier(object):
@@ -52,46 +55,84 @@ class RB_classifier(object):
 
 	def classify(self, text):
 		# decode
+		has_ellipsis = self.has_ellipsis(text)
 		text = text.encode('utf8')
-		# tokenize 
-		res = self.parsing(text)
+		# parse to get out emojis, urls and mentions 
+		res = self.parsing(text, has_ellipsis)
 		print "after parsing: ", res
+		#clean out and tokenize
 		preprocessor.set_options(preprocessor.OPT.URL, preprocessor.OPT.EMOJI, preprocessor.OPT.MENTION)
 		cleaned = preprocessor.clean(text)
 		tokens = TweetTokenizer().tokenize(cleaned)
-		# get rid of garbage 
+
 		word_res = self.check_words(tokens)
+		print "word checking returned ", word_res
 		# analyse 
+		res += word_res
+		print "overall result ", res
 		return res
+
+	def has_ellipsis(self, text):
+		# u2026 is a horizontal ellipsis. It usually means a link to another website
+		# i.e. not what we are looking for
+		# inless it is a link to instagram or twitpic
+		if u"\u2026" in text:
+			return True
+		return False
 
 
 	def check_words(self, tokens):
-		valence = 0
+		value = -1
 		for t in tokens:
+			if t in BIASED:
+				# decrease by quite a lot
+				value -= 0.4
+				continue
 			if self.is_in_lexicon(t):
 				# increase by a little 
-				valence += 0.2
+				value += 0.2
 				continue 
-		return valence
+		return value
 
 
-	def parsing(self, text):
+	def parsing(self, text, has_ellipsis):
 		res = 0
 		try:
 			parsed = preprocessor.parse(text)
 			if parsed.urls:
-				pass
+				res += self.check_urls(parsed.urls, has_ellipsis)
 			if parsed.mentions:
-				for m in parsed.mentions:
-					print m.match[1:]
-					if self.is_in_mentions(m.match[1:]):
-						res += 0.5
-						# well, this should increase the chances by a loooooooot
+				res += self.check_names(parsed.mentions)
 			if parsed.emojis:
-				pass
+				res += self.check_emojis(parsed.emojis)
 			return res
 		except (UnicodeDecodeError, UnicodeEncodeError) as e:
 			return 0
+
+	def check_urls(self, urls, has_ellipsis):
+		res = 0
+		# TODO
+		return res
+
+	def check_emojis(self, emojis):
+		res = 0
+		for em in emojis:
+			print em.match 
+		return res
+
+	def check_names(self, mentions):
+		""" Performs checks on all the names in a tweet """
+		res = 0
+		for m in mentions:
+			name = m.match[1:]
+			if self.is_in_mentions(name):
+				res += 0.5
+				# should increase the chances by a lot
+				# but not too much, I guess
+			elif name in ANTI_MENTIONS:
+				res -= 0.5
+		return res
+						
 
 	def is_in_mentions(self, mention):
 		""" Checks if the mention is of someone of interest. """
@@ -121,13 +162,4 @@ class RB_classifier(object):
 
 if __name__ == '__main__':
 	r = RB_classifier()
-	print r.is_in_mentions("INEOS")
-	print r.is_in_mentions("INEOS_abc")
-	print r.is_in_mentions("INEOS_")
-	print r.is_in_mentions("blaneos")
-	print r.is_in_mentions("ici")
-	print r.is_in_mentions("ICI")
-	print r.is_in_mentions("BP")
-	print r.is_in_mentions("BP_abc_efd")
-	print "smoke" in GIVEN_LEXICON['NOUNS']
-	r.classify("@INEOS sucks")
+	r.classify(u"John McNally from @INEOS and Peter Miller from @BP_plc meet in Grangemouth, announcing 199m deal for forties pipeline and Kinneil Terminal")
