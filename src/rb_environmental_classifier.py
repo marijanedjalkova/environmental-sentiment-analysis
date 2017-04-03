@@ -1,5 +1,7 @@
 import preprocessor 
 from nltk.tokenize import TweetTokenizer
+from nltk.corpus import wordnet
+from nltk.stem.wordnet import WordNetLemmatizer
 import re
 
 MENTIONS = ['falkirkcouncil', '^INEOS(_([^\s]+))?$', '^BP(_([^\s]+))?$', 'ICI', 'ScottishEPA']
@@ -22,16 +24,30 @@ MISS = 0
 
 class RB_classifier(object):
 
+
 	def __init__(self):
-		self.lexicon = self._initialise_lexicon() 
+		self.stem_lexicon = self._initialise_lexicon()
+		print self.stem_lexicon 
+
 
 	def _initialise_lexicon(self):
 		""" Finds other forms of the same words and their synonyms and adds to the lexicon """
-		lex = set()
+		wnl = WordNetLemmatizer()
 		stems = set()
+		for pos in GIVEN_LEXICON:
+			for w in GIVEN_LEXICON[pos]:
+				stem = wnl.lemmatize(w)
+				stems.add(stem.encode('utf8'))
+				synonyms = self._get_synonyms(w)
+				for s in synonyms:
+					stem = wnl.lemmatize(s)
+					stems.add(stem.encode('utf8'))
+		return stems
 
-		return lex
-		# fill it with other forms of the words in given list and synonyms
+
+	def _get_synonyms(self, word):
+		syns = wordnet.synsets(word)
+		return [l.name() for s in syns for l in s.lemmas()]
 
 
 	def classify(self, text):
@@ -47,6 +63,7 @@ class RB_classifier(object):
 		# analyse 
 		return res
 
+
 	def check_words(self, tokens):
 		valence = 0
 		for t in tokens:
@@ -55,6 +72,7 @@ class RB_classifier(object):
 				valence += 0.2
 				continue 
 		return valence
+
 
 	def parsing(self, text):
 		try:
@@ -79,6 +97,7 @@ class RB_classifier(object):
 			return True
 		return False
 
+
 	def is_in_lexicon(self, word):
 		if word in NOUNS:
 			return True 
@@ -92,7 +111,10 @@ class RB_classifier(object):
 
 	def check_lexicon(self, word):
 		# check other forms of the same word
-		return word in self.lexicon
+		return self.get_stem(word) in self.stem_lexicon
+
+	def get_stem(self, word):
+		return ''
 
 if __name__ == '__main__':
 	r = RB_classifier()
