@@ -64,24 +64,25 @@ class RB_classifier(object):
 
 	def classify(self, text):
 		# decode
+		print text
 		res = self.check_special_characters(text)
 		text = text.encode('utf8')
 		# parse to get out emojis, urls and mentions 
 		parsing_res = self.parsing(text)
 		res += parsing_res
-		#print "after parsing: ", res
+		print "after parsing: ", res
 		#clean out and tokenize
 		preprocessor.set_options(preprocessor.OPT.URL, preprocessor.OPT.EMOJI, preprocessor.OPT.MENTION)
 		cleaned = preprocessor.clean(text)
 		tokens = TweetTokenizer().tokenize(cleaned)
-
 		word_res = self.check_words(tokens)
-		#print "word checking returned ", word_res
 		# analyse 
 		res += word_res
+		print " after word checking ", res
 		other_meaning = self.check_other_meanings(tokens)
 		res += other_meaning
-		if res > 0:
+		print " after other meaning ", res
+		if res > 0.09:
 			return YES
 		return NO
 
@@ -99,6 +100,8 @@ class RB_classifier(object):
 
 	def check_words(self, tokens):
 		value = 0
+		if 'oil' in tokens and 'refinery' in tokens:
+			value -= 0.25
 		for t in tokens:
 			if self.wnl.lemmatize(t) in BIASED:
 				# decrease by quite a lot
@@ -106,7 +109,7 @@ class RB_classifier(object):
 				continue
 			if self.is_in_lexicon(t):
 				# increase by a little 
-				value += 0.3
+				value += 0.25
 				continue 
 		return value
 
@@ -119,6 +122,10 @@ class RB_classifier(object):
 			index = tokens.index('smell')
 			if index < len(tokens)-2 and tokens[index+1] == 'a' and tokens[index+2] == 'rat':
 				res -= 0.6
+		if 'fire' in tokens:
+			index = tokens.index('fire')
+			if index > 0 and tokens[index-1] == 'under':
+				res -= 0.4
 		return res
 
 
@@ -200,4 +207,12 @@ class RB_classifier(object):
 
 if __name__ == '__main__':
 	r = RB_classifier()
-	print r.classify(u"Ineos plans for fracked gas at Grangemouth under fire  - 400 objections.")
+	print r.classify(u"snowing here now but it's like acid grangemouth pollution snow so doubt it will lie.")
+	print r.classify(u"you been inhaling the fumes fae the grangemouth refinery ya loonbox??")
+	print r.classify(u"Grangemouth oil refinery in all its finery.")
+	print r.classify(u"@INEOS_Shale @F_F_Ryedale Ineos hit with safety notice over accident prevention at Grangemouth... https://www.energyvoice.com/other-news/healthandsafety/128599/ineos-hit-safety-notice-accident-prevention-grangemouth/ ... via @energyvoicenews")
+	print r.classify(u"Ineos hit with safety notice over accident prevention at Grangemouth... Will @Ineosupstream do better at #fracking?")
+	print r.classify(u"Everyone's talking about snow, I'm in Grangemouth with my chemical tan and the snow never lays")
+	print r.classify(u"Day 5 of #365days - sunrise over Grangemouth chemical complex this morning. https://www.instagram.com/p/BO5TdjjAUBO/ ")
+
+
