@@ -67,7 +67,7 @@ class RB_classifier(object):
 		res = check_special_characters(text)
 		text = text.encode('utf8')
 		# parse to get out emojis, urls and mentions 
-		parsing_res = self.parsing(text, has_ellipsis)
+		parsing_res = self.parsing(text)
 		res += parsing_res
 		#print "after parsing: ", res
 		#clean out and tokenize
@@ -87,15 +87,11 @@ class RB_classifier(object):
 		return NO
 
 	def check_special_characters(self, text):
-		has_ellipsis = self.has_ellipsis(text)
-
-	def has_ellipsis(self, text):
-		# u2026 is a horizontal ellipsis. It usually means a link to another website
-		# i.e. not what we are looking for
-		# inless it is a link to instagram or twitpic
+		res = 0
 		if u"\u2026" in text:
-			return True
-		return False
+			# horizontal ellipsis -> news link
+			res -= 0.5
+		if 
 
 
 	def check_words(self, tokens):
@@ -123,13 +119,13 @@ class RB_classifier(object):
 		return res
 
 
-	def parsing(self, text, has_ellipsis):
+	def parsing(self, text):
 		""" Uses preprocessor to extract features from tweets and analyze them """
 		res = 0
 		try:
 			parsed = preprocessor.parse(text)
 			if parsed.urls:
-				res += self.check_urls(parsed.urls, has_ellipsis)
+				res += self.check_urls(parsed.urls)
 			if parsed.mentions:
 				res += self.check_names(parsed.mentions)
 			if parsed.emojis:
@@ -141,8 +137,6 @@ class RB_classifier(object):
 	def check_urls(self, urls, has_ellipsis):
 		""" Processes urls from a tweet """
 		res = 0
-		if has_ellipsis:
-			res -= 0.5
 		for url in urls:
 			res -= 0.5
 			try:
