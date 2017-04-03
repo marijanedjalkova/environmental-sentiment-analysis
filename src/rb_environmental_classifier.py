@@ -70,7 +70,7 @@ class RB_classifier(object):
 		# parse to get out emojis, urls and mentions 
 		parsing_res = self.parsing(text)
 		res += parsing_res
-		print "after parsing: ", res
+
 		#clean out and tokenize
 		preprocessor.set_options(preprocessor.OPT.URL, preprocessor.OPT.EMOJI, preprocessor.OPT.MENTION)
 		cleaned = preprocessor.clean(text)
@@ -78,11 +78,11 @@ class RB_classifier(object):
 		word_res = self.check_words(tokens)
 		# analyse 
 		res += word_res
-		print " after word checking ", res
+
 		other_meaning = self.check_other_meanings(tokens)
 		res += other_meaning
-		print " after other meaning ", res
-		if res > 0.09:
+
+		if res >= 0.1:
 			return YES
 		return NO
 
@@ -214,5 +214,7 @@ if __name__ == '__main__':
 	print r.classify(u"Ineos hit with safety notice over accident prevention at Grangemouth... Will @Ineosupstream do better at #fracking?")
 	print r.classify(u"Everyone's talking about snow, I'm in Grangemouth with my chemical tan and the snow never lays")
 	print r.classify(u"Day 5 of #365days - sunrise over Grangemouth chemical complex this morning. https://www.instagram.com/p/BO5TdjjAUBO/ ")
+	print r.classify(u"what is that horrible smell")
+	print r.classify(u"what is that weird smell")
 
 
