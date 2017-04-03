@@ -89,9 +89,14 @@ Basic extractor seems to be much slower than the unigram extractor. There is als
 	
 	
 	[Report] -> findings.
-2. Try topic modeling on London data:
+2. Try topic modeling [on London data]:
 	use Twitter API to get tweets about London - [DONE].
-	use existing topic modeling tools to make analysis
+	Rule-based classifier seems to be the only solution in my case since there is no training data, and the FC provided
+	a document with keywords they are looking for. 
+	
+	Lexicon: words given + need to do synonyms, other forms of the same words. One option is to make online requests for
+	every word, but that is too slow to do for every word in every tweet. Instead, going to initialise lexicon in the 
+	constructor. Lexicon is going to consist of stems of the given words and their synonyms. 
 	[Report] -> conclusion
 3. Try combining topic modelling and sentiment analysis. There are papers on that.
 
