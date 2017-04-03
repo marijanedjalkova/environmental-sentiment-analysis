@@ -26,28 +26,29 @@ class RB_classifier(object):
 
 
 	def __init__(self):
-		self.stem_lexicon = self._initialise_lexicon()
-		print self.stem_lexicon 
-
+		self.wnl = WordNetLemmatizer()
+		self.stem_lexicon = self._initialise_lexicon() 
+		print self.stem_lexicon
 
 	def _initialise_lexicon(self):
 		""" Finds other forms of the same words and their synonyms and adds to the lexicon """
-		wnl = WordNetLemmatizer()
+		
 		stems = set()
 		for pos in GIVEN_LEXICON:
 			for w in GIVEN_LEXICON[pos]:
-				stem = wnl.lemmatize(w)
-				stems.add(stem.encode('utf8'))
+				stem = self.wnl.lemmatize(w)
+				stems.add(stem)
 				synonyms = self._get_synonyms(w)
 				for s in synonyms:
-					stem = wnl.lemmatize(s)
-					stems.add(stem.encode('utf8'))
+					stem = self.wnl.lemmatize(s)
+					stems.add(stem)
 		return stems
 
 
 	def _get_synonyms(self, word):
+		""" Returns a list of synonyms of a word """
 		syns = wordnet.synsets(word)
-		return [l.name() for s in syns for l in s.lemmas()]
+		return [l.name().encode('utf8') for s in syns for l in s.lemmas()]
 
 
 	def classify(self, text):
@@ -90,6 +91,7 @@ class RB_classifier(object):
 			return 0
 
 	def is_in_mentions(self, mention):
+		""" Checks if the mention is of someone of interest. """
 		for m in MENTIONS:
 			if re.match(m, mention):
 				return True
@@ -99,6 +101,7 @@ class RB_classifier(object):
 
 
 	def is_in_lexicon(self, word):
+		""" Checks if the word has been given initially or shares the stem with a  """
 		if word in NOUNS:
 			return True 
 		if word in VERBS:
@@ -110,11 +113,8 @@ class RB_classifier(object):
 		return False
 
 	def check_lexicon(self, word):
-		# check other forms of the same word
-		return self.get_stem(word) in self.stem_lexicon
-
-	def get_stem(self, word):
-		return ''
+		""" Gets stem of the word and checks if it is in the lexicon """
+		return self.wnl.lemmatize(word) in self.stem_lexicon 
 
 if __name__ == '__main__':
 	r = RB_classifier()
