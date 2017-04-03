@@ -3,6 +3,8 @@ from nltk.tokenize import TweetTokenizer
 from nltk.corpus import wordnet
 from nltk.stem.wordnet import WordNetLemmatizer
 import re
+import urllib2
+from urlparse import urlparse
 
 MENTIONS = ['falkirkcouncil', '^INEOS(_([^\s]+))?$', '^BP(_([^\s]+))?$', 'ICI', 'ScottishEPA']
 ANTI_MENTIONS = ['MadrasRugby'] # if these people are mentioned, thiw reduces the chances of it being a useful tweet
@@ -19,10 +21,17 @@ VERBS = set(['smell', 'stink', 'reek'])
 ADJECTIVES = set(['gross', 'harmful', 'horrible', 'nasty', 'vile', 'foul'])
 GIVEN_LEXICON = {'NOUNS': NOUNS, 'VERBS': VERBS, 'ADJECTIVES': ADJECTIVES}
 
-BINGO = 1
-MISS = 0
+YES = 1
+NO = 0
 
-BIASED = set(['job', 'salary', 'rugby', 'championship'])
+BIASED = set(['job', 'salary', 'rugby', 'championship', 'sell', 'sells'])
+
+class HeadRequest(urllib2.Request):
+    def get_method(self): return "HEAD"
+
+def get_real_url(url):
+    res = urllib2.urlopen(HeadRequest(url))
+    return res.geturl()
 
 
 class RB_classifier(object):
@@ -55,22 +64,30 @@ class RB_classifier(object):
 
 	def classify(self, text):
 		# decode
-		has_ellipsis = self.has_ellipsis(text)
+		res = check_special_characters(text)
 		text = text.encode('utf8')
 		# parse to get out emojis, urls and mentions 
-		res = self.parsing(text, has_ellipsis)
-		print "after parsing: ", res
+		parsing_res = self.parsing(text, has_ellipsis)
+		res += parsing_res
+		#print "after parsing: ", res
 		#clean out and tokenize
 		preprocessor.set_options(preprocessor.OPT.URL, preprocessor.OPT.EMOJI, preprocessor.OPT.MENTION)
 		cleaned = preprocessor.clean(text)
 		tokens = TweetTokenizer().tokenize(cleaned)
 
 		word_res = self.check_words(tokens)
-		print "word checking returned ", word_res
+		#print "word checking returned ", word_res
 		# analyse 
 		res += word_res
-		print "overall result ", res
-		return res
+		other_meaning = self.check_other_meanings(tokens)
+		res += other_meaning
+		print res
+		if res > 0:
+			return YES
+		return NO
+
+	def check_special_characters(self, text):
+		has_ellipsis = self.has_ellipsis(text)
 
 	def has_ellipsis(self, text):
 		# u2026 is a horizontal ellipsis. It usually means a link to another website
@@ -82,7 +99,7 @@ class RB_classifier(object):
 
 
 	def check_words(self, tokens):
-		value = -1
+		value = 0
 		for t in tokens:
 			if t in BIASED:
 				# decrease by quite a lot
@@ -90,12 +107,24 @@ class RB_classifier(object):
 				continue
 			if self.is_in_lexicon(t):
 				# increase by a little 
-				value += 0.2
+				value += 0.3
 				continue 
 		return value
 
+	def check_other_meanings(self, tokens):
+		""" Checks idioms and other things like irony.
+		Irony not implemented yet. """
+		# check irony???
+		res = 0
+		if 'smell' in tokens:
+			index = tokens.index('smell')
+			if tokens[index+1] == 'a' and tokens[index+2] == 'rat':
+				res -= 0.6
+		return res
+
 
 	def parsing(self, text, has_ellipsis):
+		""" Uses preprocessor to extract features from tweets and analyze them """
 		res = 0
 		try:
 			parsed = preprocessor.parse(text)
@@ -110,11 +139,23 @@ class RB_classifier(object):
 			return 0
 
 	def check_urls(self, urls, has_ellipsis):
+		""" Processes urls from a tweet """
 		res = 0
-		# TODO
+		if has_ellipsis:
+			res -= 0.5
+		for url in urls:
+			res -= 0.5
+			try:
+				real_url = get_real_url(url.match)
+				domain = urlparse(real_url).netloc
+				if domain not in ['www.instagram.com', 'twitter.com']:
+					res -= 0.25
+			except urllib2.HTTPError:
+				continue
 		return res
 
 	def check_emojis(self, emojis):
+		""" Processes emojis from a tweet. Not implemented yet. """
 		res = 0
 		for em in emojis:
 			print em.match 
@@ -162,4 +203,4 @@ class RB_classifier(object):
 
 if __name__ == '__main__':
 	r = RB_classifier()
-	r.classify(u"John McNally from @INEOS and Peter Miller from @BP_plc meet in Grangemouth, announcing 199m deal for forties pipeline and Kinneil Terminal")
+	print r.classify(u"why does it always stink in Grangemouth")
