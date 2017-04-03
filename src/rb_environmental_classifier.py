@@ -7,7 +7,7 @@ import urllib2
 from urlparse import urlparse
 
 MENTIONS = ['falkirkcouncil', '^INEOS(_([^\s]+))?$', '^BP(_([^\s]+))?$', 'ICI', 'ScottishEPA']
-ANTI_MENTIONS = ['MadrasRugby'] # if these people are mentioned, thiw reduces the chances of it being a useful tweet
+ANTI_MENTIONS = ['MadrasRugby', 'SCRUMMAGAZINE'] # if these people are mentioned, thiw reduces the chances of it being a useful tweet
 
 NAMES = ['ineos', 'petroineos', 'bp', 'calachem', 'ici', 'falkirk council', 'sepa']
 
@@ -24,7 +24,7 @@ GIVEN_LEXICON = {'NOUNS': NOUNS, 'VERBS': VERBS, 'ADJECTIVES': ADJECTIVES}
 YES = 1
 NO = 0
 
-BIASED = set(['job', 'salary', 'rugby', 'championship', 'sell', 'sells'])
+BIASED = set(['job', 'salary', 'rugby', 'champion', 'sell', 'asset'])
 
 class HeadRequest(urllib2.Request):
     def get_method(self): return "HEAD"
@@ -64,7 +64,7 @@ class RB_classifier(object):
 
 	def classify(self, text):
 		# decode
-		res = check_special_characters(text)
+		res = self.check_special_characters(text)
 		text = text.encode('utf8')
 		# parse to get out emojis, urls and mentions 
 		parsing_res = self.parsing(text)
@@ -81,7 +81,6 @@ class RB_classifier(object):
 		res += word_res
 		other_meaning = self.check_other_meanings(tokens)
 		res += other_meaning
-		print res
 		if res > 0:
 			return YES
 		return NO
@@ -101,7 +100,7 @@ class RB_classifier(object):
 	def check_words(self, tokens):
 		value = 0
 		for t in tokens:
-			if t in BIASED:
+			if self.wnl.lemmatize(t) in BIASED:
 				# decrease by quite a lot
 				value -= 0.4
 				continue
@@ -118,7 +117,7 @@ class RB_classifier(object):
 		res = 0
 		if 'smell' in tokens:
 			index = tokens.index('smell')
-			if tokens[index+1] == 'a' and tokens[index+2] == 'rat':
+			if index < len(tokens)-2 and tokens[index+1] == 'a' and tokens[index+2] == 'rat':
 				res -= 0.6
 		return res
 
@@ -138,7 +137,7 @@ class RB_classifier(object):
 		except (UnicodeDecodeError, UnicodeEncodeError) as e:
 			return 0
 
-	def check_urls(self, urls, has_ellipsis):
+	def check_urls(self, urls):
 		""" Processes urls from a tweet """
 		res = 0
 		for url in urls:
@@ -156,7 +155,7 @@ class RB_classifier(object):
 		""" Processes emojis from a tweet. Not implemented yet. """
 		res = 0
 		for em in emojis:
-			print em.match 
+			continue
 		return res
 
 	def check_names(self, mentions):
@@ -169,7 +168,7 @@ class RB_classifier(object):
 				# should increase the chances by a lot
 				# but not too much, I guess
 			elif name in ANTI_MENTIONS:
-				res -= 0.5
+				res -= 0.7
 		return res
 						
 
@@ -201,4 +200,4 @@ class RB_classifier(object):
 
 if __name__ == '__main__':
 	r = RB_classifier()
-	print r.classify(u"why does it always stink in Grangemouth")
+	print r.classify(u"Ineos plans for fracked gas at Grangemouth under fire  - 400 objections.")
