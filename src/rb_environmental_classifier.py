@@ -87,11 +87,15 @@ class RB_classifier(object):
 		return NO
 
 	def check_special_characters(self, text):
+		""" Special check for unicode characters """
 		res = 0
 		if u"\u2026" in text:
 			# horizontal ellipsis -> news link
 			res -= 0.5
-		if 
+		if u"\u0024" in text or u"\u20AC" in text or u"\u00A3" in text:
+			# currency 
+			res -= 0.6
+		return res
 
 
 	def check_words(self, tokens):
