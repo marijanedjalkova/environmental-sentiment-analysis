@@ -6,19 +6,18 @@ MENTIONS = ['falkirkcouncil', '^INEOS(_([^\s]+))?$', '^BP(_([^\s]+))?$', 'ICI', 
 
 NAMES = ['ineos', 'petroineos', 'bp', 'calachem', 'ici', 'falkirk council', 'sepa']
 
-NOUNS = ['smoke', 'flare', 'smog', 'fume', 'dust', 'asthma', 'idling', 'burn', 'fish', 'egg', 
+NOUNS = set(['smoke', 'flare', 'smog', 'fume', 'dust', 'asthma', 'idling', 'burn', 'fish', 'egg', 
 'smell', 'odour', 'fly', 'rodent', 'vermin', 'insect', 'pest', 'rat', 'mouse', 'cockroach',
 'dirt', 'rubbish', 'dump', 'landfill', 'litter', 'fly-tip', 'disgust', 'danger', 'health',
-'harm', 'pollution', 'oil', 'sewage', 'hydrocarbons', 'flood', 'environment']
+'harm', 'pollution', 'oil', 'sewage', 'hydrocarbons', 'flood', 'environment'])
 
-VERBS = ['smell', 'stink', 'reek']
+VERBS = set(['smell', 'stink', 'reek'])
 
-ADJECTIVES = ['gross', 'harmful', 'horrible', 'nasty', 'vile', 'foul']
+ADJECTIVES = set(['gross', 'harmful', 'horrible', 'nasty', 'vile', 'foul'])
+GIVEN_LEXICON = {'NOUNS': NOUNS, 'VERBS': VERBS, 'ADJECTIVES': ADJECTIVES}
 
 BINGO = 1
 MISS = 0
-
-
 
 
 class RB_classifier(object):
@@ -27,8 +26,13 @@ class RB_classifier(object):
 		self.lexicon = self._initialise_lexicon() 
 
 	def _initialise_lexicon(self):
-		return {}
-		# fill it with other forms of the words in given list 
+		""" Finds other forms of the same words and their synonyms and adds to the lexicon """
+		lex = set()
+		stems = set()
+
+		return lex
+		# fill it with other forms of the words in given list and synonyms
+
 
 	def classify(self, text):
 		# decode
@@ -91,11 +95,13 @@ class RB_classifier(object):
 		return word in self.lexicon
 
 if __name__ == '__main__':
-	print is_in_mentions("INEOS")
-	print is_in_mentions("INEOS_abc")
-	print is_in_mentions("INEOS_")
-	print is_in_mentions("blaneos")
-	print is_in_mentions("ici")
-	print is_in_mentions("ICI")
-	print is_in_mentions("BP")
-	print is_in_mentions("BP_abc_efd")
+	r = RB_classifier()
+	print r.is_in_mentions("INEOS")
+	print r.is_in_mentions("INEOS_abc")
+	print r.is_in_mentions("INEOS_")
+	print r.is_in_mentions("blaneos")
+	print r.is_in_mentions("ici")
+	print r.is_in_mentions("ICI")
+	print r.is_in_mentions("BP")
+	print r.is_in_mentions("BP_abc_efd")
+	print "smoke" in GIVEN_LEXICON['NOUNS']
