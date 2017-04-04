@@ -7,7 +7,7 @@ import urllib2
 from urlparse import urlparse
 
 MENTIONS = ['falkirkcouncil', '^INEOS(_([^\s]+))?$', '^BP(_([^\s]+))?$', 'ICI', 'ScottishEPA']
-ANTI_MENTIONS = ['MadrasRugby', 'SCRUMMAGAZINE'] # if these people are mentioned, thiw reduces the chances of it being a useful tweet
+ANTI_MENTIONS = ['MadrasRugby', 'SCRUMMAGAZINE'] # if these people are mentioned, this reduces the chances of it being a useful tweet
 
 NAMES = ['ineos', 'petroineos', 'bp', 'calachem', 'ici', 'falkirk council', 'sepa']
 
@@ -24,14 +24,15 @@ GIVEN_LEXICON = {'NOUNS': NOUNS, 'VERBS': VERBS, 'ADJECTIVES': ADJECTIVES}
 YES = 1
 NO = 0
 
-BIASED = set(['job', 'salary', 'rugby', 'champion', 'sell', 'asset'])
+ANTI_LEXICON = set(['job', 'salary', 'rugby', 'champion', 'sell', 'asset'])
 
 class HeadRequest(urllib2.Request):
     def get_method(self): return "HEAD"
 
 def get_real_url(url):
-    res = urllib2.urlopen(HeadRequest(url))
-    return res.geturl()
+	""" In tweets, all links come in a t.co format. This method returns the actual link. """
+	res = urllib2.urlopen(HeadRequest(url))
+	return res.geturl()
 
 
 class RB_classifier(object):
@@ -63,6 +64,7 @@ class RB_classifier(object):
 
 
 	def classify(self, text):
+		""" Says YES / NO (1/0) for whether the tweet is needed or no. """
 		# decode
 		print text
 		res = self.check_special_characters(text)
@@ -103,7 +105,7 @@ class RB_classifier(object):
 		if 'oil' in tokens and 'refinery' in tokens:
 			value -= 0.25
 		for t in tokens:
-			if self.wnl.lemmatize(t) in BIASED:
+			if self.wnl.lemmatize(t) in ANTI_LEXICON:
 				# decrease by quite a lot
 				value -= 0.4
 				continue
@@ -118,11 +120,11 @@ class RB_classifier(object):
 		Irony not implemented yet. """
 		# check irony???
 		res = 0
-		if 'smell' in tokens:
+		if 'smell' in tokens: # smell a rat
 			index = tokens.index('smell')
 			if index < len(tokens)-2 and tokens[index+1] == 'a' and tokens[index+2] == 'rat':
 				res -= 0.6
-		if 'fire' in tokens:
+		if 'fire' in tokens: # under fire
 			index = tokens.index('fire')
 			if index > 0 and tokens[index-1] == 'under':
 				res -= 0.4
