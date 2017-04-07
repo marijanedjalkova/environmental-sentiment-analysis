@@ -90,7 +90,14 @@ Some of these posts talk about environmental issues, too, however, it is importa
  \label{fig:multifigtweets}
  \end{figure}
  
- Some of the examples of tweets mentioning environmental issues can be seen in figures \ref{sf:tw1} - \ref{sf:tw5}.
+ Some of the examples of tweets mentioning environmental issues can be seen in figures \ref{sf:tw1} - \ref{sf:tw5}. Overall, several things could be noted when talking about such posts:
+ \begin{itemize}
+     \item Such posts are quite rare, one can find one or two posts every two weeks, on average
+     \item Twitter is more popular among those who prefer to post about the environment publicly then Facebook
+     \item Even when mentioning environment, people use sarcasm and irony a lot, which would make it harder for a natural language processing technique to detect the correct context. In addition, people joke about the possible effects the Grangemouth refinery can have on their health.  
+     \item No processing of social media data has been done by any of the companies causing the environmental disturbances or the Falkirk Council, so, supposedly, not a lot of people prefer to post about any of the problems, especially if they occur often, such as smells.
+     \item People living in the Grangemouth area seem to be used to different environmental issues and are generally unhappy about them.
+ \end{itemize}
 
 \section{Project Objectives}
 \label{sec:objectives}
@@ -101,12 +108,23 @@ The main goal of the project is to create a tool that would act as an additional
 
 The objectives of the project have been outlined initially and separated into two groups: primary objectives and secondary objectives.
 
-\subsection{Primary Objectives}
-\label{sec:primary}
+The \textbf{primary objectives} are the following:
+\begin{itemize}
+    \item Extract the existing data from Twitter. 
+    \item Study the existing text classification techniques, compare them and identify those that could be used for the current project.
+    \item Train a model that recognises negative tweets about Grangemouth.
+\end{itemize}
 
-\subsection{Secondary Objectives}
-\label{sec:secondary}
-
+The \textbf{secondary objectives} of the project build upon the primary ones and expand the performance of the model to also recognise the topic of the tweets:
+\begin{itemize}
+    \item Create a mechanism to send the selected tweets to the Falkirk Council as notifications. 
+    \item Train another model.
+    \item Analyse and compare the models and their effectiveness.
+    \item Create a live tool that will receive a stream of tweets and classify them `on the go'.
+    \item Look into existing studies of detecting irony and sarcasm in text.
+\end{itemize}
 
 \section{Extent of completeness}
 \label{sec:completeness}
+
+All of the primary and secondary objectives have been implemented. The rest of the report will discuss in details the techniques used in this project and how every objective was met. 
