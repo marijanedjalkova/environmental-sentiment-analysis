@@ -18,7 +18,7 @@
 \ifdraftdoc 
 	\usepackage{draftwatermark}				%Sets watermarks up.
 	\SetWatermarkScale{0.3}
-	\SetWatermarkText{\bf Draft: \today}
+	\SetWatermarkText{\textbf Draft: \today}
 \fi
 %
 % Declare figure/table as a subfloat.
@@ -179,7 +179,7 @@
 %
 % New command definitions for my thesis
 %
-\newcommand{\keywords}[1]{\par\noindent{\small{\bf Keywords:} #1}} %Defines keywords small section
+\newcommand{\keywords}[1]{\par\noindent{\small{\textbf Keywords:} #1}} %Defines keywords small section
 \newcommand{\parcial}[2]{\frac{\partial#1}{\partial#2}}                             %Defines a partial operator
 \newcommand{\vectorr}[1]{\mathbf{#1}}                                                        %Defines a bold vector
 \newcommand{\vecol}[2]{\left(                                                                         %Defines a column vector
@@ -221,7 +221,7 @@
  \trivlist
  \item[\hskip\labelsep
        \itshape
-   {\bf\em #1}]\ignorespaces
+   {\textbf\em #1}]\ignorespaces
 }{%
  \addtocounter{proofcount}{-1}
  \popQED\endtrivlist
@@ -323,7 +323,7 @@
 \renewcommand{\contentsname}{Table of Contents}
 \maxtocdepth{subsection}
 \tableofcontents*
-\addtocontents{toc}{\par\nobreak \mbox{}\hfill{\bf Page}\par\nobreak}
+\addtocontents{toc}{\par\nobreak \mbox{}\hfill{\textbf Page}\par\nobreak}
 \clearpage
 %
 \listoftables
