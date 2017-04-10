@@ -140,7 +140,7 @@ def main3():
 	""" Tests how the RB classifier works in general """
 	rb = RB_classifier()
 	tt = TwitterTool()
-	tweets = tt.search_tweets("grangemouth", 999)
+	tweets = tt.search_tweets("grangemouth", 200)
 	tweet_list = tt.extract_text_from_tweets(tweets)
 	for t in tweet_list:
 		if not t.startswith("RT"):
