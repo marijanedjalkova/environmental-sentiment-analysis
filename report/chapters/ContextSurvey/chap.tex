@@ -16,11 +16,11 @@ In a way, Artsrouni's patent defined the direction of the machine translation-re
 
 Gradually, machine translation was announced unsuccessful in the famous ALPAC report \cite{national1966language}, due to the limitations and the irregularities of the natural languages. The classic joke about the translation of ``The spirit is willing but the flesh is weak" into ``The vodka is good but the meat is rotten" appeared \cite{hutchins1995whisky}. It is probably important to note that most of these jokes are merely myths, however, they demonstrate the limitations of mechanical translation without an attempt to recognise the context and, ultimately, the meaning of the text.
 
-Despite the loss of interest in machine translation after the lack of progress and success in the area, the development of research in Natural Language Processing continued. During 1980s, a new wave of research started, which looked into using machine learning for computational linguistics. Machine learning was not possible before that due to the limitations of processing power, however, ever since the 1980s, a big part of the research in Natural Language Processing is based on statistical supervised approach \cite{mcqueen1995applying}, \cite{bergsma2010creating}. The constant increase in computational power due to the Moore's Law allows to process large amounts of data and use it to construct complex language models which could be applied in vast number of areas, such as marketing \cite{goldberg1999automated}, medicine \cite{demner2009can}, and automated translation \cite{brants2007large}.
+Despite the loss of interest in machine translation after the lack of progress and success in the area, the development of research in Natural Language Processing continued. During 1980s, a new wave of research started, which looked into using machine learning for computational linguistics. Machine learning was not possible before that due to the limitations of processing power, however, ever since the 1980s, a big part of the research in Natural Language Processing is based on statistical supervised approach \cite{mcqueen1995applying, bergsma2010creating}. The constant increase in computational power due to the Moore's Law allows to process large amounts of data and use it to construct complex language models which could be applied in vast number of areas, such as marketing \cite{goldberg1999automated}, medicine \cite{demner2009can}, and automated translation \cite{brants2007large}.
 
-The biggest advantage of this approach is the fact that large amount of data can be processed quickly. However, in order to use supervised learning algorithms, all the training data has to be labelled manually. This is often proves to be a tedious, if not impossible, task. Only large companies and research groups can afford to perform manual labelling on a scale which allows to then train complex models. For example, the SNLI corpus created by the Stanford Natural Language Processing Group has 570 000 manually labelled sentences \cite{ferrero2017compilig}. In some cases, this task can be outsourced to the general public, and platforms such as Amazon's Mechanical Turk are becoming increasingly popular \cite{callison2010creating}. However, often deep linguistic knowledge is necessary to perform the labelling correctly. At the same time, some research suggests that, when certain quality and bias control are introduced properly, crowdsourcing can have immense positive impact on Natural Language Processing research \cite{sabou2012crowdsourcing}, \cite{snow2008cheap}.
+The biggest advantage of this approach is the fact that large amount of data can be processed quickly. However, in order to use supervised learning algorithms, all the training data has to be labelled manually. This is often proves to be a tedious, if not impossible, task. Only large companies and research groups can afford to perform manual labelling on a scale which allows to then train complex models. For example, the SNLI corpus created by the Stanford Natural Language Processing Group has 570 000 manually labelled sentences \cite{ferrero2017compilig}. In some cases, this task can be outsourced to the general public, and platforms such as Amazon's Mechanical Turk are becoming increasingly popular \cite{callison2010creating}. However, often deep linguistic knowledge is necessary to perform the labelling correctly. At the same time, some research suggests that, when certain quality and bias control are introduced properly, crowdsourcing can have immense positive impact on Natural Language Processing research \cite{sabou2012crowdsourcing, snow2008cheap}.
 
-The latest research in Natural Language Processing has turned to the semi-supervised and unsupervised methods of learning \cite{liang2005semi}, \cite{turian2010word}. This allows to avoid having to label the training data, however, is much more difficult than supervised learning, and, therefore, the current results are generally less accurate than those given by the supervised models \cite{lapata2005web}.
+The latest research in Natural Language Processing has turned to the semi-supervised and unsupervised methods of learning \cite{liang2005semi, turian2010word}. This allows to avoid having to label the training data, however, is much more difficult than supervised learning, and, therefore, the current results are generally less accurate than those given by the supervised models \cite{lapata2005web}.
 
 The current project focuses mostly on text classification in terms of sentiment and topic. 
 
@@ -33,7 +33,7 @@ The approaches used to construct sentiment analysis models can roughly be divide
 
 The knowledge-based approaches use different ways to store the existing data (called the knowledge base, hence the name of the approach) about the subject, and check for the presence of the words describing that data \cite{chaumartin2007upar7}. The data can be expressed in a variety of ways, for example, with a simple dictionary or with a general-purpose semantic knowledge bases, or on a concept level \cite{cambria2013knowledge}. 
 
-The statistical approaches employ machine learning techniques to construct the models. The researcher needs to extract the correct features and give them to a classifier to learn \cite{cambria2013statistical}. This approach allows to work with large amounts of data. Different techniques are used in this approach, such as the ``bag-of-words" approach, as well as the well known classifiers such as the Support Vector Machines and Naive-Bayes classifiers \cite{mullen2004sentiment}, \cite{tan2009adapting}.
+The statistical approaches employ machine learning techniques to construct the models. The researcher needs to extract the correct features and give them to a classifier to learn \cite{cambria2013statistical}. This approach allows to work with large amounts of data. Different techniques are used in this approach, such as the ``bag-of-words" approach, as well as the well known classifiers such as the Support Vector Machines and Naive-Bayes classifiers \cite{mullen2004sentiment, tan2009adapting}.
 
 The hybrid approaches aim to combine the knowledge-based and statistical approaches \cite{ghiassi2013twitter}. 
 
@@ -42,23 +42,12 @@ Overall, the state-of-the-art statistical models claim to reach accuracy around 
 \section{Topic modelling}
 \label{sec:topic_modelling}
 
-Topic modelling is another area of Natural Language Processing that looks into discovering the topics that occur in a certain document or a collection of documents. This task is far more complex than the task of determining the polarity of a text, and the existing research is all based on statistical models. It is one more tool that allows to extract information from unstructured data and, hence, use the vast amount of data being generated by humans daily. Interestingly enough, topic modelling is not only used on text but also on images, networks and even DNAs \cite{liu2007unsupervised}, \cite{chang2009relational}, \cite{lau2013collocations}. 
+Topic modelling is another area of Natural Language Processing that looks into discovering the topics that occur in a certain document or a collection of documents. This task is far more complex than the task of determining the polarity of a text, and the existing research is all based on statistical models. It is one more tool that allows to extract information from unstructured data and, hence, use the vast amount of data being generated by humans daily. Interestingly enough, topic modelling is not only used on text but also on images, networks and even DNAs \cite{liu2007unsupervised, chang2009relational, lau2013collocations}. 
 
 The main assumption of the topic modelling is that a piece of text that, supposedly, talks about a certain topic will mention words associated with that topic frequently enough. The usual machine learning techniques are used to train different models to recognise certain topics. 
 
 The most common model used for topic modelling is the Latent Dirichlet allocation. The group of scientists that first proposed the model defined LDA as ``is a three-level hierarchical Bayesian model, in which each
 item of a collection is modeled as a finite mixture over an underlying set of topics" \cite{blei2003latent}. Overall, the researchers claim that each document can be assigned a set of topics characterised by a distribution over words, and the name Dirichlet appears in the name of the model because it is assumed that the topics are distributed with a Dirichlet prior probability. 
-
-\section{Twitter Data Analysis}
-\label{sec:twitter_analysis}
-
-Twitter is one of the most popular social media platforms, with 310 million monthly active users and 1.3 billion accounts ever created \cite{twittertcstats}, \cite{twitterbistats}. 
-
-The existence of the Twitter API which allows to request data for analysis makes Twitter attractive for research in different areas, especially Natural Language Processing \cite{twitterapi}. 
-
-At the same time, analysing Twitter text has its own specifics which are defined by the philosophy of the platform. The main rule of Twitter is that posts are no longer than 140 characters, and it defines the style of the posts in a major way. In a way, it even defines the styles in different ways for people speaking different languages, since the linguistic research shows that the amount of information which can fit into 140 characters varies a lot between the different languages. For example, when writing in Chinese, one can express almost twice as much than an English speaker \cite{neubig2013much}. 
-
-
 
 \section{Text classification}
 \label{sec:text_classification}
@@ -71,8 +60,58 @@ At the same time, analysing Twitter text has its own specifics which are defined
 
 <hierarchical clustering>
 
-
 The authors of the ``Latent Dirichlet allocation" paper show how the allocation model could be used to train a Support Vector Machine for document classification \cite{blei2003latent}. In this case, the LDA model is used to reduce the feature set. Often, to train a Support Vector Machine for text documents, the texts are simply split into words and almost all of the words (except the so-called stop words) are then used in a feature vector. However, when working with a large diverse corpora, using all the words creates a very large model, which is sometimes not feasible. The use of the LDA for topic modelling allows to reduce the feature space drastically (by 99.6\% in the paper). The LDA reduced any document to a fixed set of real values, which are the posterior Dirichlet parameters. The results of the experiment showed that the LDA model could be used for fast calculations and classification. 
+
+\section{Twitter Data Analysis}
+\label{sec:twitter_analysis}
+
+Twitter is one of the most popular social media platforms, with 310 million monthly active users and 1.3 billion accounts ever created \cite{twittertcstats}, \cite{twitterbistats}. 
+
+A tweet, as defined by the organisation, is an ``atomic building block of all things [on] Twitter", and could also be called a ``status update" \cite{twitterapi}. A set of actions which can be performed on an existing tweet are the following: 
+\begin{itemize}
+    \item tweet embedding
+    \item reply to a tweet
+    \item like a tweet
+    \item unlike a tweet
+    \item delete a tweet.
+\end{itemize} 
+
+A tweet object, extracted directly from Twitter using Twitter API, has 33 fields, among which are the following: 
+
+\begin{itemize}
+    \item text (String)
+    \item source (String)
+    \item retweeted (Boolean)
+    \item retweet\_count (int)
+    \item lang (String)
+    \item id (Int64)
+    \item favorited (Boolean)
+    \item entities (Entities)
+    \item coordinates (Coordinates).
+\end{itemize}
+
+The Entities object contains information about the URLs mentioned in the text, as well as hashtags and user mentions. All of these things, however, could be parsed out of the text manually. 
+
+The Coordinates object contains information about the geographical coordinates of the user who posted the tweet, as the tweet was being published. However, the coordinates field of a tweet is `nullable', which means that the user can opt out of providing that information. In fact, data shows that only a very small portion of users provides this information \cite{leetaru2013mapping}. The paper says that during the study which was conducted in 2013, only 2.02\% of all tweets included the location data. The researchers have, however, since found ways to locate tweets even if the location data is not included as metadata. A lot of different techniques and heuristics are being used to achieve that goal \cite{leetaru2013mapping, han2014text}.
+
+The existence of the Twitter API which allows to request data for analysis makes Twitter attractive for research in different areas, especially Natural Language Processing \cite{twitterapi}. 
+
+At the same time, analysing Twitter text has its own specifics which are defined by the philosophy of the platform. The main rule of Twitter is that posts are no longer than 140 characters, and it defines the style of the posts in a major way. In a way, it even defines the styles in different ways for people speaking different languages, since the linguistic research shows that the amount of information which can fit into 140 characters varies a lot between the different languages. For example, when writing in Chinese, one can express almost twice as much than an English speaker \cite{neubig2013much}. 
+
+The micro blog format of the platform means that people have to express their thoughts and opinions in a very concise manner. This makes the users try to insert as much meaning --- in terms of both information and emotion --- into one sentence. This means that often the tweets will have a certain aphoristic meaning to them, will try to have a whipping effect. Sharp language, slang, performativity, poetry, scepticism, weird abbreviations, special user inventions like mentions and re-tweets, emojis --- all of these are the the most common tools for expression on Twitter. 
+
+Depending on the goal of the research, it might be necessary to deal with some or all of these specifics. The deepest sentiment analysis will take all of them into account. Most of the modern tools focus on emojis to extract the sentiment of a tweet, because they themselves often hold a certain amount of sentiment, which is relatively easy to extract \cite{novak2015sentiment}. However, dealing with some of the other tools such as slang, abbreviations and mentions is still necessary during the preprocessing of a tweet.
+
+If one was to summarise all the techniques used to reprocess Twitter data, the general procedure would look similar to the following one:
+
+\begin{enumerate}
+    \item Extract the valuable parts of a tweet. These can be the text, the coordinates, information about the poster and whether the tweet has been favourited (if yes, how many times). 
+    \item The tweet is then stripped of all the things that do not constitute natural language. These are the mentions, the URLs, the hashtags and the emojis. These entities do, in fact, hold important information and can then be processed. For example, a study has shown that tweets containing URLs tend to be positive \cite{go2009twitter}. Other tools have polarity extraction mechanisms for emojis \cite{novak2015sentiment}. 
+    \item After the tweet has been `cleaned out', a text analysis can begin. First, the researchers have to deal with abbreviations and slang. It can be useful to extract noun phrases, for which part-of-speech tagging may be necessary. This is quite a complicated procedure, and some researchers choose to work with unigrams or bigrams instead \cite{mohammad2013nrc}, however, it has been proven that noun phrases provide more information and work better than unigrams or bigrams \cite{whitman2002inferring}. Studies also show that unigrams outperform bigrams when doing sentiment analysis \cite{gamon2004sentiment}.
+    \item Finally, all the extracted data has to be put into a feature vector which can then be used in whatever machine learning technique is chosen for the study.
+\end{enumerate}
+
+
 
  
  
