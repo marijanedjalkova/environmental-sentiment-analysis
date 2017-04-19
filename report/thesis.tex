@@ -133,11 +133,13 @@
 \usepackage{longtable,rotating}			%Long tab environments including rotation. 
 \usepackage{colortbl}					%Makes coloured tables
 \usepackage{wasysym}					%More math symbols
-\usepackage{mathrsfs}					%Even more math symbols
+\usepackage{mathrsfs} %Even more math symbols
+\usepackage{mathtools}
 \usepackage{float}						%Helps to place figures, tables, etc. 
 \usepackage{verbatim}					%Permits pre-formated text insertion
 \usepackage{upgreek }					%Calls other kind of greek alphabet
-\usepackage{latexsym}					%Extra symbols
+\usepackage{latexsym}                   %Extra symbols
+\usepackage{pdfpages}
 \usepackage[square,numbers,
 		     sort&compress]{natbib}		%Calls bibliography commands 
 \usepackage{url}						%Supports url commands
@@ -336,7 +338,7 @@
 \appendix
 \import{chapters/appendices/}{testing.tex}
 \import{chapters/appendices/}{manual.tex}
-\import{chapters/appendices/}{app0A.tex}
+\import{chapters/appendices/}{keywords.tex}
 %
 % Apparently the guidelines don't say anything about citations or
 % bibliography styles so I guess we can use anything.
