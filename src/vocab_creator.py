@@ -18,10 +18,15 @@ def read_all_sources(path):
 		vocab.extend(read_csv_into_list(s))
 	return list(set(vocab))
 
+def write_to_file(filename, data):
+	with open(filename, 'w') as output:
+		wr = csv.writer(output)
+		wr.writerows([data])
+
 
 def main():
-	l = read_all_sources('/cs/home/mn39/Documents/MSciDissertation/resources/vocab_sources')
-	print len(l)
+	concepts = read_all_sources('/cs/home/mn39/Documents/MSciDissertation/resources/vocab_sources')
+	write_to_file('/cs/home/mn39/Documents/MSciDissertation/resources/vocab.txt', concepts)
 
 if __name__ == '__main__':
 	main()
