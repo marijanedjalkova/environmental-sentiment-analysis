@@ -19,12 +19,12 @@ def get_real_url(url):
 	return res.geturl()
 
 def write_to_csv(filename, data):
-	""" Writes given list of data to a specofoed file """
+	""" Writes given list of data to a specified file """
 	with open(filename, 'w') as output:
 		wr = csv.writer(output)
 		wr.writerows([data])
 
-def read_in_json(self, filename):
+def read_in_json(filename):
 	""" Reads in json from a file """
 	with open(filename) as json_data:
 		d = json.load(json_data)
@@ -42,7 +42,7 @@ class VocabBuilder():
 		cleaned = [name for [name,_] in filtered]
 		return cleaned
 
-	def read_all_sources(self, path):
+	def all_sources_to_set(self, path):
 		""" Reads all Google-provided csvs from a folder and returns a list or unique words. """
 		extension = 'csv'
 		os.chdir(path)
@@ -54,10 +54,8 @@ class VocabBuilder():
 
 	def create_local_vocab(self):
 		""" This should be done once. Then the resulting vocab should be modified manually."""
-		concepts = self.read_all_sources('/cs/home/mn39/Documents/MSciDissertation/resources/vocab_sources')
+		concepts = self.all_sources_to_set('/cs/home/mn39/Documents/MSciDissertation/resources/vocab_sources')
 		write_to_csv('/cs/home/mn39/Documents/MSciDissertation/resources/election_vocab.txt', concepts)
-
-
 
 	def _initialise_lexicon(self, vocab):
 			""" Finds other forms of the same words and their synonyms and adds to the lexicon """
@@ -76,10 +74,13 @@ class VocabBuilder():
 	def _get_synonyms(self, word):
 		""" Returns a list of synonyms of a word """
 		syns = wordnet.synsets(word)
+		if isinstance(word, list):
+			for w in word:
+				syns.extend(wordnet.synsets(w))
 		return [l.name().encode('utf8') for s in syns for l in s.lemmas()]
 
 	def construct_vocab(self):
-		vocab_raw = self.read_in_json('/cs/home/mn39/Documents/MSciDissertation/resources/election_vocab.txt')
+		vocab_raw = read_in_json('/cs/home/mn39/Documents/MSciDissertation/resources/election_vocab.txt')
 		vocab_more = self._initialise_lexicon(vocab_raw)
 		vocab_raw['stems'] = vocab_more
 		self.vocab = vocab_raw
@@ -88,6 +89,7 @@ class VocabBuilder():
 def main():
 	vb = VocabBuilder()
 	vb.construct_vocab()
+	print vb.vocab
 	
 	
 
