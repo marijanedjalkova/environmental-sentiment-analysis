@@ -1,6 +1,15 @@
 import csv
 import os
 import glob
+import json
+
+class HeadRequest(urllib2.Request):
+	def get_method(self): return "HEAD"
+
+def get_real_url(url):
+	""" In tweets, all links come in a t.co format. This method returns the actual link. """
+	res = urllib2.urlopen(HeadRequest(url))
+	return res.geturl()
 
 
 def read_csv_into_list(filename):
@@ -27,13 +36,16 @@ def write_to_file(filename, data):
 def create_local_vocab():
 	""" This should be done once. Then the resulting vocab should be modified manually."""
 	concepts = read_all_sources('/cs/home/mn39/Documents/MSciDissertation/resources/vocab_sources')
-	write_to_file('/cs/home/mn39/Documents/MSciDissertation/resources/vocab.txt', concepts)
+	write_to_file('/cs/home/mn39/Documents/MSciDissertation/resources/election_vocab.txt', concepts)
 
 def read_in_local_vocab(filename):
-	
+	with open(filename) as json_data:
+		d = json.load(json_data)
+	return d 
 
 def main():
-	create_local_vocab()
+	vocab_raw = read_in_local_vocab('/cs/home/mn39/Documents/MSciDissertation/resources/election_vocab.txt')
+	print vocab_raw.keys()
 
 if __name__ == '__main__':
 	main()
