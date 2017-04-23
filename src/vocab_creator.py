@@ -82,9 +82,6 @@ class VocabBuilder():
 
 	def construct_vocab(self):
 		vocab_raw = read_in_json('/cs/home/mn39/Documents/MSciDissertation/resources/election_vocab.txt')
-		for a in vocab_raw['abbreviations']:
-			print type(a), 'abbreviations'
-			break
 		vocab_more = self._initialise_lexicon(vocab_raw)
 		vocab_raw['stems'] = vocab_more
 		self.vocab = vocab_raw
@@ -94,9 +91,7 @@ class VocabBuilder():
 def main():
 	vb = VocabBuilder()
 	vb.construct_vocab()
-	print vb.vocab
-	
-	
+	print vb.vocab	
 
 if __name__ == '__main__':
 	main()
