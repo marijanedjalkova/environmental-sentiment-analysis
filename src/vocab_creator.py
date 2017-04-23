@@ -84,6 +84,7 @@ class VocabBuilder():
 		vocab_more = self._initialise_lexicon(vocab_raw)
 		vocab_raw['stems'] = vocab_more
 		self.vocab = vocab_raw
+		return self.vocab
 
 
 def main():
