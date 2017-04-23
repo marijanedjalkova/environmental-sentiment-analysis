@@ -49,25 +49,23 @@ class TopicModel:
 			res = self.classify(dct['text'])
 			if res == dct['label']:
 				correct += 1
-		print "{}/{}={}%".format(correct, count, (correct/count*100))
-
+		print "{}/{}={}%".format(correct, count, (correct*100.0/count))
 
 	def set_training_testing_data(self, portion):
 		border_index = int(round(len(self.data)*portion))
-		print border_index
 		self.testing_data = self.data[:border_index]
 		self.training_data = self.data[border_index:]
-		print len(self.testing_data)
 
 	def set_classifier(self):
 		formatted_data = self.get_feature_vectors()
 		self.classifier = SklearnClassifier(LinearSVC()).train(formatted_data)
 
 	def get_feature_vectors(self):
-		vector = []
+		vector_lst = []
 		for dct in self.training_data:
 			features = self.extract_features(dct['text'])
-			vector.append((features, dct['label']))
+			vector_lst.append((features, dct['label']))
+		return vector_lst
 
 	def classify(self, text):
 		vector = self.extract_features(text)
