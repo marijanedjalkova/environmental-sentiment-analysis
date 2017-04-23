@@ -28,7 +28,10 @@ def read_in_json(filename):
 	""" Reads in json from a file """
 	with open(filename) as json_data:
 		d = json.load(json_data)
-	return d 
+	asciid = {}
+	for key in d:
+		asciid[key.encode('ascii')] = [item.encode('ascii') for item in d[key]]
+	return asciid 
 
 class VocabBuilder():
 
@@ -65,22 +68,23 @@ class VocabBuilder():
 				stems.add(stem)
 				synonyms = self._get_synonyms(w)
 				for s in synonyms:
-					if s == "postmortem_examination":
-						print w, " - > postmortem_examination"
 					stem = self.wnl.lemmatize(s)
 					stems.add(stem)
 			return stems
 
 	def _get_synonyms(self, word):
-		""" Returns a list of synonyms of a word """
+		""" Returns a list of synonyms of a word or every word in a list. """
 		syns = wordnet.synsets(word)
 		if isinstance(word, list):
 			for w in word:
 				syns.extend(wordnet.synsets(w))
-		return [l.name().encode('utf8') for s in syns for l in s.lemmas()]
+		return [l.name().encode('ascii').replace("_", " ").lower() for s in syns for l in s.lemmas()]
 
 	def construct_vocab(self):
 		vocab_raw = read_in_json('/cs/home/mn39/Documents/MSciDissertation/resources/election_vocab.txt')
+		for a in vocab_raw['abbreviations']:
+			print type(a), 'abbreviations'
+			break
 		vocab_more = self._initialise_lexicon(vocab_raw)
 		vocab_raw['stems'] = vocab_more
 		self.vocab = vocab_raw
