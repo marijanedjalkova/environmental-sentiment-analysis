@@ -11,6 +11,7 @@ def main():
 	d = read_training_data('/cs/home/mn39/Documents/MSciDissertation/resources/election_tweets.txt')
 	tm = TopicModel(d)
 	tm.set_classifier()
+	tm.test()
 
 def read_training_data(filename):
 	""" Reads in training data. """
@@ -34,10 +35,29 @@ def get_save_tweets(filename):
 
 class TopicModel:
 
-	def __init__(self, training_data):
+	def __init__(self, data):
 		self.vocab = VocabBuilder().construct_vocab()
-		self.training_data = training_data #882 tweets
+		self.data = data #882 tweets
 		self.errors = 0
+		self.set_training_testing_data(0.9)
+
+	def test(self):
+		count = 0
+		correct = 0
+		for dct in self.testing_data:
+			count += 1
+			res = self.classify(dct['text'])
+			if res == dct['label']:
+				correct += 1
+		print "{}/{}={}%".format(correct, count, (correct/count*100))
+
+
+	def set_training_testing_data(self, portion):
+		border_index = int(round(len(self.data)*portion))
+		print border_index
+		self.testing_data = self.data[:border_index]
+		self.training_data = self.data[border_index:]
+		print len(self.testing_data)
 
 	def set_classifier(self):
 		formatted_data = self.get_feature_vectors()
@@ -48,7 +68,10 @@ class TopicModel:
 		for dct in self.training_data:
 			features = self.extract_features(dct['text'])
 			vector.append((features, dct['label']))
-		return vector
+
+	def classify(self, text):
+		vector = self.extract_features(text)
+		return self.classifier.classify(vector)
 
 
 	def extract_features(self, text):
