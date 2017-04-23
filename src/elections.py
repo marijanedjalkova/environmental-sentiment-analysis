@@ -3,12 +3,14 @@ import json
 from vocab_creator import VocabBuilder
 from nltk.tokenize import TweetTokenizer
 import re
+from sklearn.svm import SVC, LinearSVC
+from nltk.classify import SklearnClassifier
 
 
 def main():
 	d = read_training_data('/cs/home/mn39/Documents/MSciDissertation/resources/election_tweets.txt')
 	tm = TopicModel(d)
-	tm.train()
+	tm.set_classifier()
 
 def read_training_data(filename):
 	""" Reads in training data. """
@@ -37,10 +39,17 @@ class TopicModel:
 		self.training_data = training_data #882 tweets
 		self.errors = 0
 
-	def train(self):
-		for t in self.training_data:
-			print self.extract_features(t['text'])
-		print self.errors
+	def set_classifier(self):
+		formatted_data = self.get_feature_vectors()
+		self.classifier = SklearnClassifier(LinearSVC()).train(formatted_data)
+
+	def get_feature_vectors(self):
+		vector = []
+		for dct in self.training_data:
+			features = self.extract_features(dct['text'])
+			vector.append((features, dct['label']))
+		return vector
+
 
 	def extract_features(self, text):
 		res = {}
@@ -49,7 +58,7 @@ class TopicModel:
 			text_str = text.encode('ascii', 'ignore')
 			cleaned, mention_dict = self.process_parsing(text_str)
 			res.update(mention_dict)
-			tokens = TweetTokenizer().tokenize(cleaned)
+			tokens = TweetTokenizer().tokenize(cleaned)			
 			res.update(self.process_tokens(tokens))
 			return res	
 		except (UnicodeDecodeError, UnicodeEncodeError) as e:
