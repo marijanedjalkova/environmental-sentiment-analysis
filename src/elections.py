@@ -33,29 +33,34 @@ class TopicModel:
 
 	def __init__(self, training_data):
 		self.vocab = VocabBuilder().construct_vocab()
-		self.training_data = training_data
+		self.training_data = training_data #882 tweets
+		self.errors = 0
 
 	def train(self):
 		for t in self.training_data:
-			print self.extract_features(t['text'])
+			self.extract_features(t['text'])
+		print self.errors
 
 	def extract_features(self, text):
 		res = {}
 		try:
-			parsed = preprocessor.parse(text)
+			text_str = text.encode('ascii', 'ignore')
+			parsed = preprocessor.parse(text_str)
 			if parsed.mentions:
 				# count how many mentions are known
 				mention_list = [o.match for o in parsed.mentions]
 				res['mentions'] = len(filter(lambda mention: self.mention_known(mention), mention_list))
 			preprocessor.set_options(preprocessor.OPT.URL, preprocessor.OPT.EMOJI, preprocessor.OPT.MENTION)
-			cleaned = preprocessor.clean(text)
+			cleaned = preprocessor.clean(text_str)
 			tokens = TweetTokenizer().tokenize(cleaned)
-			print tokens
 			return res	
 		except (UnicodeDecodeError, UnicodeEncodeError) as e:
 			print text
 			print "--------------------!!!"
+			self.errors += 1
 			return None
+
+
 
 
 	def mention_known(self, mention):
