@@ -32,8 +32,22 @@ class TopicModel:
 	def __init__(self):
 		self.vocab = VocabBuilder().construct_vocab()
 
+	def extract_features(self, text):
+		res = {}
+		try:
+			parsed = preprocessor.parse(text)
+			if parsed.mentions:
+				# count how many mentions are known
+				res['mentions'] = len(filter(lambda mention: self.mention_known(mention), mentions))
+				
+				
+		except (UnicodeDecodeError, UnicodeEncodeError) as e:
+			return None
 
-	
+
+	def mention_known(mention):
+		return mention in self.vocab['mentions']
+
 
 if __name__ == '__main__':
 	main()
