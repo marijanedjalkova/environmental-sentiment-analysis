@@ -2,6 +2,7 @@ from twitter_tool import *
 import json
 from vocab_creator import VocabBuilder
 from nltk.tokenize import TweetTokenizer
+import re
 
 
 def main():
@@ -38,21 +39,18 @@ class TopicModel:
 
 	def train(self):
 		for t in self.training_data:
-			self.extract_features(t['text'])
+			print self.extract_features(t['text'])
 		print self.errors
 
 	def extract_features(self, text):
 		res = {}
 		try:
+			# it's not sentiment analysis so we just need text
 			text_str = text.encode('ascii', 'ignore')
-			parsed = preprocessor.parse(text_str)
-			if parsed.mentions:
-				# count how many mentions are known
-				mention_list = [o.match for o in parsed.mentions]
-				res['mentions'] = len(filter(lambda mention: self.mention_known(mention), mention_list))
-			preprocessor.set_options(preprocessor.OPT.URL, preprocessor.OPT.EMOJI, preprocessor.OPT.MENTION)
-			cleaned = preprocessor.clean(text_str)
+			cleaned, mention_dict = self.process_parsing(text_str)
+			res.update(mention_dict)
 			tokens = TweetTokenizer().tokenize(cleaned)
+			res.update(self.process_tokens(tokens))
 			return res	
 		except (UnicodeDecodeError, UnicodeEncodeError) as e:
 			print text
@@ -60,12 +58,42 @@ class TopicModel:
 			self.errors += 1
 			return None
 
+	def process_tokens(self, tokens):
+		res = {}
+		for t in tokens:
+			for key in self.vocab.keys():
+				if not key in res:
+					res[key] = 0
+				if self.check_vocab(t, self.vocab[key]):
+					res[key]+=1
+		return res
 
+	def check_vocab(self, token, wordlist):
+		""" Token is one word but word can be a concept consisting of 2 wds or 
+		a concept with an underscore"""
+		for word in map(str.lower, wordlist):
+			if " " in word:
+				wds = re.split(' ',word)
+				if token in map(str.lower, wds):
+					return True 
+			else:
+				if token == word.lower:
+					return True 
+		return False
 
+	def process_parsing(self, text_str):
+		res = {'mentions':0}
+		parsed = preprocessor.parse(text_str)
+		if parsed.mentions:
+			# count how many mentions are known
+			mention_list = [o.match for o in parsed.mentions]
+			res['mentions'] = len(filter(lambda mention: self.mention_known(mention), mention_list))
+		preprocessor.set_options(preprocessor.OPT.URL, preprocessor.OPT.EMOJI, preprocessor.OPT.MENTION)
+		cleaned = preprocessor.clean(text_str)
+		return cleaned, res
 
 	def mention_known(self, mention):
 		return mention in self.vocab['mentions']
-
 
 if __name__ == '__main__':
 	main()
