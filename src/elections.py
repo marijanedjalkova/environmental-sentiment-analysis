@@ -1,11 +1,13 @@
 from twitter_tool import * 
 import json
 from vocab_creator import VocabBuilder
+from nltk.tokenize import TweetTokenizer
 
 
 def main():
 	d = read_training_data('/cs/home/mn39/Documents/MSciDissertation/resources/election_tweets.txt')
-	tm = TopicModel()
+	tm = TopicModel(d)
+	tm.train()
 
 def read_training_data(filename):
 	""" Reads in training data. """
@@ -29,8 +31,13 @@ def get_save_tweets(filename):
 
 class TopicModel:
 
-	def __init__(self):
+	def __init__(self, training_data):
 		self.vocab = VocabBuilder().construct_vocab()
+		self.training_data = training_data
+
+	def train(self):
+		for t in self.training_data:
+			print self.extract_features(t['text'])
 
 	def extract_features(self, text):
 		res = {}
@@ -38,14 +45,20 @@ class TopicModel:
 			parsed = preprocessor.parse(text)
 			if parsed.mentions:
 				# count how many mentions are known
-				res['mentions'] = len(filter(lambda mention: self.mention_known(mention), mentions))
-				
-				
+				mention_list = [o.match for o in parsed.mentions]
+				res['mentions'] = len(filter(lambda mention: self.mention_known(mention), mention_list))
+			preprocessor.set_options(preprocessor.OPT.URL, preprocessor.OPT.EMOJI, preprocessor.OPT.MENTION)
+			cleaned = preprocessor.clean(text)
+			tokens = TweetTokenizer().tokenize(cleaned)
+			print tokens
+			return res	
 		except (UnicodeDecodeError, UnicodeEncodeError) as e:
+			print text
+			print "--------------------!!!"
 			return None
 
 
-	def mention_known(mention):
+	def mention_known(self, mention):
 		return mention in self.vocab['mentions']
 
 
