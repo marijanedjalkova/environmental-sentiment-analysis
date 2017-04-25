@@ -92,7 +92,6 @@ class TopicModel:
 			features = self.extract_features(self.extractor_index, dct['text'])
 			if features is not None:
 				vector_lst.append((features, dct['label']))
-			
 		return vector_lst
 
 	def classify(self, text):
@@ -121,8 +120,7 @@ class TopicModel:
 		try:
 			# it's not sentiment analysis so we just need text
 			cleaned, res = self.process_parsing(text.encode('ascii', 'ignore'))
-			tokens = TweetTokenizer().tokenize(cleaned)
-			tokens = self.remove_stopwords(tokens)			
+			tokens = TweetTokenizer().tokenize(cleaned)			
 			res.update(self.tokens_to_vocab_unrecognised_words(tokens))
 			return res	
 		except (UnicodeDecodeError, UnicodeEncodeError) as e:
@@ -152,8 +150,7 @@ class TopicModel:
 		try:
 			# it's not sentiment analysis so we just need text
 			cleaned, res = self.process_parsing(text.encode('ascii', 'ignore'))
-			tokens = TweetTokenizer().tokenize(cleaned)	
-			tokens = self.remove_stopwords(tokens)		
+			tokens = TweetTokenizer().tokenize(cleaned)			
 			res.update(self.tokens_to_vocab_structure(tokens))
 			return res	
 		except (UnicodeDecodeError, UnicodeEncodeError) as e:
@@ -172,7 +169,7 @@ class TopicModel:
 					res[key]+=1
 		return res
 
-	def check_vocab(self, token, wordlist):
+	def check_vocab(self, token, wordlist, isStem = False):
 		""" Token is one word but word can be a concept consisting of 2 wds or 
 		a concept with an underscore"""
 		for word in map(str.lower, wordlist):
@@ -180,6 +177,7 @@ class TopicModel:
 				wds = re.split(' ',word)
 				if token in map(str.lower, wds):
 					return True 
+				if check_stems() # todo stemming check
 			else:
 				if token == word.lower:
 					return True 
