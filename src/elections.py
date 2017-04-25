@@ -9,9 +9,11 @@ from nltk.classify import SklearnClassifier
 
 def main():
 	d = read_training_data('/cs/home/mn39/Documents/MSciDissertation/resources/election_tweets.txt')
-	tm = TopicModel(d, 1)
-	tm.set_classifier()
-	tm.test()
+	for n in range(3,4):
+		print "n={}".format(n)
+		tm = TopicModel(d, n)
+		tm.set_classifier()
+		tm.test()
 
 def read_training_data(filename):
 	""" Reads in training data. """
@@ -42,10 +44,11 @@ class TopicModel:
 		self.errors = 0
 		self.set_training_testing_data(0.9)
 
-	def analyse_training_data(self):
-		""" This just shows how many pos/neg tweets there are in the training set """
+
+	def analyse_dataset(self, dataset):
+		""" This just shows how many pos/neg tweets there are in the set """
 		c = {'p':0, 'n':0}
-		for i in self.training_data:
+		for i in dataset:
 			if i['label'] == 1:
 				c['p']+=1
 			else:
@@ -88,6 +91,7 @@ class TopicModel:
 			features = self.extract_features(self.extractor_index, dct['text'])
 			if features is not None:
 				vector_lst.append((features, dct['label']))
+			
 		return vector_lst
 
 	def classify(self, text):
@@ -96,14 +100,21 @@ class TopicModel:
 
 	def extract_features(self, index, text):
 		if index == 1:
+			# 52%
+			# number of occurences for categories in the vocab are recorded
 			return self.extract_vocab_structure(text)
 		elif index == 2:
+			# 82%
+			# any word that doesn't fall into any known cat, is being recorded separately as a Boolean
 			return self.extract_unrecognised_words(text)
-
+		elif index == 3:
+			# 82%
+			# same as above but names fall into mentions
+			return self.extract_unrecognised_words(text, True)
 		else:
 			return None
 
-	def extract_unrecognised_words(self, text):
+	def extract_unrecognised_words(self, text, namesToMentions=False):
 		""" Does the same as the extractor 1 but saves the unrecognised words, too, as Booleans """
 		try:
 			# it's not sentiment analysis so we just need text
@@ -117,15 +128,18 @@ class TopicModel:
 			self.errors += 1
 			return None
 
-	def tokens_to_vocab_unrecognised_words(self, tokens):
+	def tokens_to_vocab_unrecognised_words(self, tokens, namesToMentions=False):
 		res = {}
 		for t in tokens:
 			done = False
 			for key in self.vocab.keys():
-				if self.check_vocab(t, self.vocab[key]):
-					if not key in res:
-						res[key] = 0
-					res[key]+=1
+				key_m = key
+				if self.check_vocab(t, self.vocab[key_m]):
+					if key_m=='names':
+						key_m = 'mentions'
+					if not key_m in res:
+						res[key_m] = 0
+					res[key_m]+=1
 					done = True 
 			if not done:
 				res[t] = True
@@ -148,9 +162,9 @@ class TopicModel:
 		res = {}
 		for t in tokens:
 			for key in self.vocab.keys():
-				if not key in res:
-					res[key] = 0
 				if self.check_vocab(t, self.vocab[key]):
+					if not key in res:
+						res[key] = 0
 					res[key]+=1
 		return res
 
