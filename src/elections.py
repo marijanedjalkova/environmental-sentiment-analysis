@@ -35,7 +35,8 @@ def get_save_tweets(filename):
 
 class TopicModel:
 
-	def __init__(self, data):
+	def __init__(self, data, extractor_index):
+		self.extractor_index = extractor_index
 		self.vocab = VocabBuilder().construct_vocab()
 		self.data = data #882 tweets
 		self.errors = 0
@@ -63,16 +64,21 @@ class TopicModel:
 	def get_feature_vectors(self):
 		vector_lst = []
 		for dct in self.training_data:
-			features = self.extract_features(dct['text'])
+			features = self.extract_features(self.extractor_index, dct['text'])
 			vector_lst.append((features, dct['label']))
 		return vector_lst
 
 	def classify(self, text):
-		vector = self.extract_features(text)
+		vector = self.extract_features(self.extractor_index, text)
 		return self.classifier.classify(vector)
 
+	def extract_features(self, index, text):
+		if index == 1:
+			return self.extract_vocab_structure(text)
+		else:
+			return None
 
-	def extract_features(self, text):
+	def extract_vocab_structure(self, text):
 		res = {}
 		try:
 			# it's not sentiment analysis so we just need text
