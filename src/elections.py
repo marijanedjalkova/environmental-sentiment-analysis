@@ -41,21 +41,45 @@ class TopicModel:
 		self.data = data #882 tweets
 		self.errors = 0
 		self.set_training_testing_data(0.9)
+		self.analyse_training_data()
+
+	def analyse_training_data(self):
+		""" This just shows how many pos/neg tweets there are in the training set """
+		c = {'p':0, 'n':0}
+		for i in self.training_data:
+			if i['label'] == 1:
+				c['p']+=1
+			else:
+				c['n']+=1
+		print c
 
 	def test(self):
 		count = 0
 		correct = 0
+		conf = {"tp":0, "fp":0, "tn":0, "fn":0}
 		for dct in self.testing_data:
 			count += 1
 			res = self.classify(dct['text'])
 			if res == dct['label']:
 				correct += 1
+				if res == 1:
+					conf["tp"] += 1
+				else:
+					conf["tn"] += 1
+			else:
+				if res == 1:
+					conf["fp"] += 1
+				else:
+					conf["fn"] += 1
 		print "{}/{}={}%".format(correct, count, (correct*100.0/count))
+		print conf
 
 	def set_training_testing_data(self, portion):
 		border_index = int(round(len(self.data)*portion))
-		self.testing_data = self.data[:border_index]
-		self.training_data = self.data[border_index:]
+		self.training_data = self.data[:border_index]
+		self.testing_data = self.data[border_index:]
+		print len(self.training_data)
+		print len(self.testing_data)
 
 	def set_classifier(self):
 		formatted_data = self.get_feature_vectors()
@@ -76,20 +100,19 @@ class TopicModel:
 	def extract_features(self, index, text):
 		if index == 1:
 			return self.extract_vocab_structure(text)
-		if index == 2:
-			return self.extract_summarized_structure(text)
+		elif index == 2:
+			return self.extract_unrecognised_words(text)
+
 		else:
 			return None
 
-	def extract_summarized_structure(self, text):
-		res = {}
+	def extract_unrecognised_words(self, text):
+		""" Does the same as the extractor 1 but saves the unrecognised words, too, as Booleans """
 		try:
 			# it's not sentiment analysis so we just need text
-			text_str = text.encode('ascii', 'ignore')
-			cleaned, mention_dict = self.process_parsing(text_str)
-			res.update(mention_dict)
+			cleaned, res = self.process_parsing(text.encode('ascii', 'ignore'))
 			tokens = TweetTokenizer().tokenize(cleaned)			
-			res.update(self.tokens_to_vocab_structure_summarised(tokens))
+			res.update(self.tokens_to_vocab_unrecognised_words(tokens))
 			return res	
 		except (UnicodeDecodeError, UnicodeEncodeError) as e:
 			print text
@@ -97,7 +120,7 @@ class TopicModel:
 			self.errors += 1
 			return None
 
-	def tokens_to_vocab_structure_summarised(self, tokens):
+	def tokens_to_vocab_unrecognised_words(self, tokens):
 		res = {}
 		for t in tokens:
 			done = False
@@ -112,12 +135,9 @@ class TopicModel:
 		return res
 
 	def extract_vocab_structure(self, text):
-		res = {}
 		try:
 			# it's not sentiment analysis so we just need text
-			text_str = text.encode('ascii', 'ignore')
-			cleaned, mention_dict = self.process_parsing(text_str)
-			res.update(mention_dict)
+			cleaned, res = self.process_parsing(text.encode('ascii', 'ignore'))
 			tokens = TweetTokenizer().tokenize(cleaned)			
 			res.update(self.tokens_to_vocab_structure(tokens))
 			return res	
