@@ -9,7 +9,7 @@ from nltk.classify import SklearnClassifier
 
 def main():
 	d = read_training_data('/cs/home/mn39/Documents/MSciDissertation/resources/election_tweets.txt')
-	tm = TopicModel(d)
+	tm = TopicModel(d, 2)
 	tm.set_classifier()
 	tm.test()
 
@@ -65,7 +65,8 @@ class TopicModel:
 		vector_lst = []
 		for dct in self.training_data:
 			features = self.extract_features(self.extractor_index, dct['text'])
-			vector_lst.append((features, dct['label']))
+			if features is not None:
+				vector_lst.append((features, dct['label']))
 		return vector_lst
 
 	def classify(self, text):
@@ -75,8 +76,40 @@ class TopicModel:
 	def extract_features(self, index, text):
 		if index == 1:
 			return self.extract_vocab_structure(text)
+		if index == 2:
+			return self.extract_summarized_structure(text)
 		else:
 			return None
+
+	def extract_summarized_structure(self, text):
+		res = {}
+		try:
+			# it's not sentiment analysis so we just need text
+			text_str = text.encode('ascii', 'ignore')
+			cleaned, mention_dict = self.process_parsing(text_str)
+			res.update(mention_dict)
+			tokens = TweetTokenizer().tokenize(cleaned)			
+			res.update(self.tokens_to_vocab_structure_summarised(tokens))
+			return res	
+		except (UnicodeDecodeError, UnicodeEncodeError) as e:
+			print text
+			print "--------------------!!!"
+			self.errors += 1
+			return None
+
+	def tokens_to_vocab_structure_summarised(self, tokens):
+		res = {}
+		for t in tokens:
+			done = False
+			for key in self.vocab.keys():
+				if self.check_vocab(t, self.vocab[key]):
+					if not key in res:
+						res[key] = 0
+					res[key]+=1
+					done = True 
+			if not done:
+				res[t] = True
+		return res
 
 	def extract_vocab_structure(self, text):
 		res = {}
@@ -86,7 +119,7 @@ class TopicModel:
 			cleaned, mention_dict = self.process_parsing(text_str)
 			res.update(mention_dict)
 			tokens = TweetTokenizer().tokenize(cleaned)			
-			res.update(self.process_tokens(tokens))
+			res.update(self.tokens_to_vocab_structure(tokens))
 			return res	
 		except (UnicodeDecodeError, UnicodeEncodeError) as e:
 			print text
@@ -94,7 +127,7 @@ class TopicModel:
 			self.errors += 1
 			return None
 
-	def process_tokens(self, tokens):
+	def tokens_to_vocab_structure(self, tokens):
 		res = {}
 		for t in tokens:
 			for key in self.vocab.keys():
