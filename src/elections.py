@@ -9,7 +9,7 @@ from nltk.classify import SklearnClassifier
 
 def main():
 	d = read_training_data('/cs/home/mn39/Documents/MSciDissertation/resources/election_tweets.txt')
-	tm = TopicModel(d, 2)
+	tm = TopicModel(d, 1)
 	tm.set_classifier()
 	tm.test()
 
@@ -41,7 +41,6 @@ class TopicModel:
 		self.data = data #882 tweets
 		self.errors = 0
 		self.set_training_testing_data(0.9)
-		self.analyse_training_data()
 
 	def analyse_training_data(self):
 		""" This just shows how many pos/neg tweets there are in the training set """
@@ -78,8 +77,6 @@ class TopicModel:
 		border_index = int(round(len(self.data)*portion))
 		self.training_data = self.data[:border_index]
 		self.testing_data = self.data[border_index:]
-		print len(self.training_data)
-		print len(self.testing_data)
 
 	def set_classifier(self):
 		formatted_data = self.get_feature_vectors()
