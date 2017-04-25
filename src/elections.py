@@ -5,11 +5,12 @@ from nltk.tokenize import TweetTokenizer
 import re
 from sklearn.svm import SVC, LinearSVC
 from nltk.classify import SklearnClassifier
+from nltk.corpus import stopwords
 
 
 def main():
 	d = read_training_data('/cs/home/mn39/Documents/MSciDissertation/resources/election_tweets.txt')
-	for n in range(3,4):
+	for n in range(1,4):
 		print "n={}".format(n)
 		tm = TopicModel(d, n)
 		tm.set_classifier()
@@ -114,12 +115,14 @@ class TopicModel:
 		else:
 			return None
 
+
 	def extract_unrecognised_words(self, text, namesToMentions=False):
 		""" Does the same as the extractor 1 but saves the unrecognised words, too, as Booleans """
 		try:
 			# it's not sentiment analysis so we just need text
 			cleaned, res = self.process_parsing(text.encode('ascii', 'ignore'))
-			tokens = TweetTokenizer().tokenize(cleaned)			
+			tokens = TweetTokenizer().tokenize(cleaned)
+			tokens = self.remove_stopwords(tokens)			
 			res.update(self.tokens_to_vocab_unrecognised_words(tokens))
 			return res	
 		except (UnicodeDecodeError, UnicodeEncodeError) as e:
@@ -149,7 +152,8 @@ class TopicModel:
 		try:
 			# it's not sentiment analysis so we just need text
 			cleaned, res = self.process_parsing(text.encode('ascii', 'ignore'))
-			tokens = TweetTokenizer().tokenize(cleaned)			
+			tokens = TweetTokenizer().tokenize(cleaned)	
+			tokens = self.remove_stopwords(tokens)		
 			res.update(self.tokens_to_vocab_structure(tokens))
 			return res	
 		except (UnicodeDecodeError, UnicodeEncodeError) as e:
@@ -180,6 +184,12 @@ class TopicModel:
 				if token == word.lower:
 					return True 
 		return False
+
+	def remove_stopwords(self, tokens):
+		stopwds = stopwords.words('english') + list(string.punctuation)
+		tokens = [tok for tok in tokens if tok not in stopwds]
+		tokens = [tok.lower() if not tok.isupper() and not tok.islower() else tok for tok in tokens ]
+		return tokens
 
 	def process_parsing(self, text_str):
 		res = {'mentions':0}
