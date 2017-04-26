@@ -213,16 +213,16 @@ class TopicModel:
 		return tokens
 
 	def process_parsing(self, text_str):
-		res = {'mentions':0}
+		res = {}
 		parsed = preprocessor.parse(text_str)
 		if parsed.mentions:
 			# count how many mentions are known
 			mention_list = [o.match for o in parsed.mentions]
-			res['mentions'] = len(filter(lambda mention: self.mention_known(mention), mention_list))
+			occurrences = len(filter(lambda mention: self.mention_known(mention), mention_list))
+			if occurrences > 0:
+				res['mentions'] = occurrences
 		preprocessor.set_options(preprocessor.OPT.URL, preprocessor.OPT.EMOJI, preprocessor.OPT.MENTION)
 		cleaned = preprocessor.clean(text_str)
-		if res['mentions'] == 0:
-			del res['mentions']
 		return cleaned, res
 
 	def mention_known(self, mention):
