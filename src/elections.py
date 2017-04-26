@@ -10,11 +10,12 @@ from nltk.corpus import stopwords
 
 def main():
 	d = read_training_data('/cs/home/mn39/Documents/MSciDissertation/resources/election_tweets.txt')
-	for n in range(1,4):
+	for n in range(1,3):
 		print "n={}".format(n)
 		tm = TopicModel(d, n)
-		tm.set_classifier()
-		tm.test()
+		#tm.set_classifier()
+		#tm.test()
+		tm.kfold_validation(10)
 
 def read_training_data(filename):
 	""" Reads in training data. """
@@ -43,9 +44,8 @@ class TopicModel:
 		self.vocab = VocabBuilder().construct_vocab()
 		self.data = data #882 tweets
 		self.errors = 0
-		self.set_training_testing_data(0.9)
 		self.wnl = WordNetLemmatizer()
-
+		self.set_training_testing_data(0.9)
 
 	def analyse_dataset(self, dataset):
 		""" This just shows how many pos/neg tweets there are in the set """
@@ -56,6 +56,27 @@ class TopicModel:
 			else:
 				c['n']+=1
 		print c
+
+	def get_data_chunks(self, n):
+		""" Produces equaly sized chunks. Throws away the remainder. """
+		for i in range(0, len(self.data), n):
+			if len(self.data[i:i + n]) == n:
+				yield self.data[i:i + n]
+
+	def kfold_validation(self, k):
+		size = len(self.data) / k 
+		chunks = list(self.get_data_chunks(size))
+		accuracies = []
+		for i in range(k):
+			print "i = {}".format(i)
+			self.training_data = []
+			[self.training_data.extend(el) for el in chunks[:i]] 
+			[self.training_data.extend(el) for el in chunks[(i+1):]] 
+			self.testing_data = chunks[i]
+			self.set_classifier()
+			accuracies.append(self.test())
+		print reduce(lambda x, y: x + y, accuracies) / len(accuracies), "AVERAGE"
+			
 
 	def test(self):
 		count = 0
@@ -73,13 +94,18 @@ class TopicModel:
 			else:
 				if res == 1:
 					conf["fp"] += 1
+					print dct['text']
+					print vct
+					print "FALSE POSITIVE --------------------------------------"
 				else:
 					conf["fn"] += 1
 					print dct['text']
 					print vct
-					print "--------------------------------------"
-		print "{}/{}={}%".format(correct, count, (correct*100.0/count))
+					print "FALSE NEGATIVE --------------------------------------"
+		accuracy = (correct*100.0/count)
+		print "{}/{}={}%".format(correct, count, accuracy)
 		print conf
+		return accuracy
 
 	def set_training_testing_data(self, portion):
 		border_index = int(round(len(self.data)*portion))
@@ -155,13 +181,9 @@ class TopicModel:
 		try:
 			# it's not sentiment analysis so we just need text
 			cleaned, res = self.process_parsing(text.encode('ascii', 'ignore'))
-			if 'mentions' in res and res['mentions'] == 0:
-				raise Exception
 			tokens = TweetTokenizer().tokenize(cleaned)	
 			tokens = self.remove_stopwords(tokens)		
 			res.update(self.tokens_to_vocab_structure(tokens))
-			if 'mentions' in res and res['mentions'] == 0:
-				raise Exception
 			return res	
 		except (UnicodeDecodeError, UnicodeEncodeError) as e:
 			print text
@@ -217,7 +239,7 @@ class TopicModel:
 		parsed = preprocessor.parse(text_str)
 		if parsed.mentions:
 			# count how many mentions are known
-			mention_list = [o.match for o in parsed.mentions]
+			mention_list = [o.match.lower() for o in parsed.mentions]
 			occurrences = len(filter(lambda mention: self.mention_known(mention), mention_list))
 			if occurrences > 0:
 				res['mentions'] = occurrences
