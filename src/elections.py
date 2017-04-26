@@ -44,6 +44,7 @@ class TopicModel:
 		self.data = data #882 tweets
 		self.errors = 0
 		self.set_training_testing_data(0.9)
+		self.wnl = WordNetLemmatizer()
 
 
 	def analyse_dataset(self, dataset):
@@ -135,7 +136,7 @@ class TopicModel:
 			done = False
 			for key in self.vocab.keys():
 				key_m = key
-				if self.check_vocab(t, self.vocab[key_m]):
+				if self.check_vocab(t, self.vocab[key_m], key_m):
 					if key_m=='names':
 						key_m = 'mentions'
 					if not key_m in res:
@@ -163,21 +164,22 @@ class TopicModel:
 		res = {}
 		for t in tokens:
 			for key in self.vocab.keys():
-				if self.check_vocab(t, self.vocab[key]):
+				if self.check_vocab(t, self.vocab[key], key):
 					if not key in res:
 						res[key] = 0
 					res[key]+=1
-		return res
+		return res 
 
-	def check_vocab(self, token, wordlist, isStem = False):
+	def check_vocab(self, token, wordlist, categoryName):
 		""" Token is one word but word can be a concept consisting of 2 wds or 
 		a concept with an underscore"""
+		if categoryName == 'stems':
+			return self.wnl.lemmatize(token) in wordlist
 		for word in map(str.lower, wordlist):
 			if " " in word:
 				wds = re.split(' ',word)
 				if token in map(str.lower, wds):
 					return True 
-				if check_stems() # todo stemming check
 			else:
 				if token == word.lower:
 					return True 
