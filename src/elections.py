@@ -64,6 +64,7 @@ class TopicModel:
 				yield self.data[i:i + n]
 
 	def kfold_validation(self, k):
+		""" Prints accuracy and recall at the end """
 		size = len(self.data) / k 
 		chunks = list(self.get_data_chunks(size))
 		accuracies = []
@@ -83,6 +84,7 @@ class TopicModel:
 			
 
 	def test(self, debug=False):
+		""" Runs through testing data once, returns accuracy and recall """
 		count = 0
 		correct = 0
 		conf = {"tp":0, "fp":0, "tn":0, "fn":0}
@@ -115,15 +117,18 @@ class TopicModel:
 		return accuracy, recall
 
 	def set_training_testing_data(self, portion):
+		""" Splits data into two parts depending on the portion parameter """
 		border_index = int(round(len(self.data)*portion))
 		self.training_data = self.data[:border_index]
 		self.testing_data = self.data[border_index:]
 
 	def set_classifier(self):
+		""" Converts data to feature vectors, trains the model. """
 		formatted_data = self.get_feature_vectors()
 		self.classifier = SklearnClassifier(LinearSVC()).train(formatted_data)
 
 	def get_feature_vectors(self):
+		""" Returns a list of feature vectors for training data """
 		vector_lst = []
 		for dct in self.training_data:
 			features = self.extract_features(self.extractor_index, dct['text'])
@@ -132,10 +137,12 @@ class TopicModel:
 		return vector_lst
 
 	def classify(self, text):
+		""" Classifies one tweet """
 		vector = self.extract_features(self.extractor_index, text)
 		return self.classifier.classify(vector), vector
 
 	def extract_features(self, index, text):
+		""" Returns a vector """
 		if index == 1:
 			# 52%
 			# number of occurences for categories in the vocab are recorded
@@ -143,23 +150,23 @@ class TopicModel:
 		elif index == 2:
 			# 82%
 			# any word that doesn't fall into any known cat, is being recorded separately as a Boolean
-			return self.extract_unrecognised_words(text)
+			return self.extract_vocab_structure(text, record_unrecognized=True)
 		elif index == 3:
 			# 82%
 			# same as above but names fall into mentions
-			return self.extract_unrecognised_words(text, True)
+			return self.extract_vocab_structure(text, namesToMentions=True, record_unrecognized=True)
 		else:
 			return None
 
 
-	def extract_unrecognised_words(self, text, namesToMentions=False):
+	def extract_vocab_structure(self, text, namesToMentions=False, record_unrecognized=True):
 		""" Does the same as the extractor 1 but saves the unrecognised words, too, as Booleans """
 		try:
 			# it's not sentiment analysis so we just need text
 			cleaned, res = self.process_parsing(text.encode('ascii', 'ignore'))
 			tokens = TweetTokenizer().tokenize(cleaned)	
 			tokens = self.remove_stopwords(tokens)		
-			res.update(self.tokens_to_vocab_unrecognised_words(tokens))
+			res.update(self.tokens_to_vocab(tokens, record_unrecognized=record_unrecognized))
 			return res	
 		except (UnicodeDecodeError, UnicodeEncodeError) as e:
 			print text
@@ -167,7 +174,9 @@ class TopicModel:
 			self.errors += 1
 			return None
 
-	def tokens_to_vocab_unrecognised_words(self, tokens, namesToMentions=False):
+	def tokens_to_vocab(self, tokens, namesToMentions=False, record_unrecognized=False):
+		""" Checks if every token falls into a vocab structure. Retuns a
+		dict of a format {category:numOfOccurrences} """
 		res = {}
 		for t in tokens:
 			done = False
@@ -179,33 +188,9 @@ class TopicModel:
 					if not key_m in res:
 						res[key_m] = 0
 					res[key_m]+=1
-					done = True 
-			if not done:
+					done = True
+			if not done and record_unrecognized:
 				res[t] = True
-		return res
-
-	def extract_vocab_structure(self, text):
-		try:
-			# it's not sentiment analysis so we just need text
-			cleaned, res = self.process_parsing(text.encode('ascii', 'ignore'))
-			tokens = TweetTokenizer().tokenize(cleaned)	
-			tokens = self.remove_stopwords(tokens)		
-			res.update(self.tokens_to_vocab_structure(tokens))
-			return res	
-		except (UnicodeDecodeError, UnicodeEncodeError) as e:
-			print text
-			print "--------------------!!!"
-			self.errors += 1
-			return None
-
-	def tokens_to_vocab_structure(self, tokens):
-		res = {}
-		for t in tokens:
-			for key in self.vocab.keys():
-				if self.check_vocab(t, self.vocab[key], key):
-					if not key in res:
-						res[key] = 0
-					res[key]+=1
 		return res 
 
 	def check_vocab(self, token, wordlist, categoryName):
@@ -229,7 +214,7 @@ class TopicModel:
 		return False
 
 	def remove_stopwords(self, tokens):
-
+		""" Removes all sorts of words that do not hold meaning """
 		twitter_specific = ["RT"]
 		tokens = [tok for tok in tokens if tok not in twitter_specific]
 		tokens = [tok[:-2] if tok.endswith("'s") else tok for tok in tokens]
@@ -242,6 +227,8 @@ class TopicModel:
 		return tokens
 
 	def process_parsing(self, text_str):
+		""" Takes text, extracts mentions, checks if these are knows.
+		Returns a dict of a format {mentions:numOfOccurrences} """
 		res = {}
 		parsed = preprocessor.parse(text_str)
 		if parsed.mentions:
@@ -255,6 +242,7 @@ class TopicModel:
 		return cleaned, res
 
 	def mention_known(self, mention):
+		""" Checks if a mention is known """
 		return mention in self.vocab['mentions']
 
 if __name__ == '__main__':
