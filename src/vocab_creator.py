@@ -85,6 +85,7 @@ class VocabBuilder():
 		return [l.name().encode('ascii').replace("_", " ").lower() for s in syns for l in s.lemmas()]
 
 	def construct_vocab(self):
+		""" This should be done after the vocab has been edited manually """
 		vocab_raw = read_in_json('/cs/home/mn39/Documents/MSciDissertation/resources/election_vocab.txt')
 		vocab_more = self._initialise_lexicon(vocab_raw)
 		vocab_raw['stems'] = vocab_more
