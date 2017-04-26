@@ -67,6 +67,7 @@ class TopicModel:
 		size = len(self.data) / k 
 		chunks = list(self.get_data_chunks(size))
 		accuracies = []
+		recalls = []
 		for i in range(k):
 			print "i = {}".format(i)
 			self.training_data = []
@@ -74,11 +75,14 @@ class TopicModel:
 			[self.training_data.extend(el) for el in chunks[(i+1):]] 
 			self.testing_data = chunks[i]
 			self.set_classifier()
-			accuracies.append(self.test())
+			acc, rec = self.test()
+			accuracies.append(acc)
+			recalls.append(rec)
 		print reduce(lambda x, y: x + y, accuracies) / len(accuracies), "AVERAGE"
+		print reduce(lambda x, y: x + y, recalls) / len(recalls), "RECALLS"
 			
 
-	def test(self):
+	def test(self, debug=False):
 		count = 0
 		correct = 0
 		conf = {"tp":0, "fp":0, "tn":0, "fn":0}
@@ -94,18 +98,21 @@ class TopicModel:
 			else:
 				if res == 1:
 					conf["fp"] += 1
-					print dct['text']
-					print vct
-					print "FALSE POSITIVE --------------------------------------"
+					if debug:
+						print dct['text']
+						print vct
+						print "FALSE POSITIVE --------------------------------------"
 				else:
 					conf["fn"] += 1
-					print dct['text']
-					print vct
-					print "FALSE NEGATIVE --------------------------------------"
+					if debug:
+						print dct['text']
+						print vct
+						print "FALSE NEGATIVE --------------------------------------"
 		accuracy = (correct*100.0/count)
+		recall = conf['tp']*100.0/(conf['tp']+conf['fn'])
 		print "{}/{}={}%".format(correct, count, accuracy)
 		print conf
-		return accuracy
+		return accuracy, recall
 
 	def set_training_testing_data(self, portion):
 		border_index = int(round(len(self.data)*portion))
