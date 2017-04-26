@@ -155,9 +155,13 @@ class TopicModel:
 		try:
 			# it's not sentiment analysis so we just need text
 			cleaned, res = self.process_parsing(text.encode('ascii', 'ignore'))
+			if 'mentions' in res and res['mentions'] == 0:
+				raise Exception
 			tokens = TweetTokenizer().tokenize(cleaned)	
 			tokens = self.remove_stopwords(tokens)		
 			res.update(self.tokens_to_vocab_structure(tokens))
+			if 'mentions' in res and res['mentions'] == 0:
+				raise Exception
 			return res	
 		except (UnicodeDecodeError, UnicodeEncodeError) as e:
 			print text
@@ -179,20 +183,27 @@ class TopicModel:
 		""" Token is one word but word can be a concept consisting of 2 wds or 
 		a concept with an underscore"""
 		if categoryName == 'stems':
-			return self.wnl.lemmatize(token) in wordlist
+			if self.wnl.lemmatize(token.lower()) in wordlist:
+				#print "found {} in {}".format(token, categoryName)
+				return True
+			return False
 		for word in map(str.lower, wordlist):
 			if " " in word:
-				wds = re.split(' ',word)
-				if token in map(str.lower, wds):
+				wds = re.split(' ', word)
+				if token.lower() in map(str.lower, wds):
+					#print "found {} in {}".format(token, categoryName)
 					return True 
 			else:
-				if token == word.lower:
+				if token.lower() == word.lower():
+					#print "found {} in {}".format(token, categoryName)
 					return True 
 		return False
 
 	def remove_stopwords(self, tokens):
+
 		twitter_specific = ["RT"]
 		tokens = [tok for tok in tokens if tok not in twitter_specific]
+		tokens = [tok[:-2] if tok.endswith("'s") else tok for tok in tokens]
 		return tokens
 		stopwds = stopwords.words('english')
 		punct =  list(string.punctuation)
@@ -210,6 +221,8 @@ class TopicModel:
 			res['mentions'] = len(filter(lambda mention: self.mention_known(mention), mention_list))
 		preprocessor.set_options(preprocessor.OPT.URL, preprocessor.OPT.EMOJI, preprocessor.OPT.MENTION)
 		cleaned = preprocessor.clean(text_str)
+		if res['mentions'] == 0:
+			del res['mentions']
 		return cleaned, res
 
 	def mention_known(self, mention):
