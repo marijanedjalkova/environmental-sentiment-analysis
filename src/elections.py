@@ -166,7 +166,7 @@ class TopicModel:
 			cleaned, res = self.process_parsing(text.encode('ascii', 'ignore'))
 			tokens = TweetTokenizer().tokenize(cleaned)	
 			tokens = self.remove_stopwords(tokens)		
-			res.update(self.tokens_to_vocab(tokens, record_unrecognized=record_unrecognized))
+			res.update(self.tokens_to_vocab(tokens, namesToMentions=namesToMentions, record_unrecognized=record_unrecognized))
 			return res	
 		except (UnicodeDecodeError, UnicodeEncodeError) as e:
 			print text
