@@ -63,7 +63,7 @@ class TopicModel:
 		conf = {"tp":0, "fp":0, "tn":0, "fn":0}
 		for dct in self.testing_data:
 			count += 1
-			res = self.classify(dct['text'])
+			res, vct = self.classify(dct['text'])
 			if res == dct['label']:
 				correct += 1
 				if res == 1:
@@ -75,6 +75,9 @@ class TopicModel:
 					conf["fp"] += 1
 				else:
 					conf["fn"] += 1
+					print dct['text']
+					print vct
+					print "--------------------------------------"
 		print "{}/{}={}%".format(correct, count, (correct*100.0/count))
 		print conf
 
@@ -97,7 +100,7 @@ class TopicModel:
 
 	def classify(self, text):
 		vector = self.extract_features(self.extractor_index, text)
-		return self.classifier.classify(vector)
+		return self.classifier.classify(vector), vector
 
 	def extract_features(self, index, text):
 		if index == 1:
@@ -121,7 +124,8 @@ class TopicModel:
 		try:
 			# it's not sentiment analysis so we just need text
 			cleaned, res = self.process_parsing(text.encode('ascii', 'ignore'))
-			tokens = TweetTokenizer().tokenize(cleaned)			
+			tokens = TweetTokenizer().tokenize(cleaned)	
+			tokens = self.remove_stopwords(tokens)		
 			res.update(self.tokens_to_vocab_unrecognised_words(tokens))
 			return res	
 		except (UnicodeDecodeError, UnicodeEncodeError) as e:
@@ -151,7 +155,8 @@ class TopicModel:
 		try:
 			# it's not sentiment analysis so we just need text
 			cleaned, res = self.process_parsing(text.encode('ascii', 'ignore'))
-			tokens = TweetTokenizer().tokenize(cleaned)			
+			tokens = TweetTokenizer().tokenize(cleaned)	
+			tokens = self.remove_stopwords(tokens)		
 			res.update(self.tokens_to_vocab_structure(tokens))
 			return res	
 		except (UnicodeDecodeError, UnicodeEncodeError) as e:
@@ -186,7 +191,12 @@ class TopicModel:
 		return False
 
 	def remove_stopwords(self, tokens):
-		stopwds = stopwords.words('english') + list(string.punctuation)
+		twitter_specific = ["RT"]
+		tokens = [tok for tok in tokens if tok not in twitter_specific]
+		return tokens
+		stopwds = stopwords.words('english')
+		punct =  list(string.punctuation)
+		tokens = [tok for tok in tokens if tok not in punct]
 		tokens = [tok for tok in tokens if tok not in stopwds]
 		tokens = [tok.lower() if not tok.isupper() and not tok.islower() else tok for tok in tokens ]
 		return tokens
