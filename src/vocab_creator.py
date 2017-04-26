@@ -64,12 +64,16 @@ class VocabBuilder():
 			""" Finds other forms of the same words and their synonyms and adds to the lexicon """
 			stems = set()
 			for w in vocab['nouns']:
-				stem = self.wnl.lemmatize(w)
-				stems.add(stem)
-				synonyms = self._get_synonyms(w)
-				for s in synonyms:
-					stem = self.wnl.lemmatize(s)
+				wds = re.split(' ', w.lower())
+				for wd in wds:
+					stem = self.wnl.lemmatize(wd)
 					stems.add(stem)
+				synonyms = self._get_synonyms(w.lower())
+				for s in synonyms:
+					wds = re.split(' ', s)
+					for wd in wds:
+						stem = self.wnl.lemmatize(wd)
+						stems.add(stem)
 			return stems
 
 	def _get_synonyms(self, word):
