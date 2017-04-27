@@ -58,22 +58,23 @@ class VocabBuilder():
 	def create_local_vocab(self):
 		""" This should be done once. Then the resulting vocab should be modified manually."""
 		concepts = self.all_sources_to_set('/cs/home/mn39/Documents/MSciDissertation/resources/vocab_sources')
-		write_to_csv('/cs/home/mn39/Documents/MSciDissertation/resources/election_vocab.txt', concepts)
+		write_to_csv('/cs/home/mn39/Documents/MSciDissertation/resources/election_vocab_test.txt', concepts)
 
 	def _initialise_lexicon(self, vocab):
 			""" Finds other forms of the same words and their synonyms and adds to the lexicon """
 			stems = set()
-			for w in vocab['nouns']:
-				wds = re.split(' ', w.lower())
-				for wd in wds:
-					stem = self.wnl.lemmatize(wd)
-					stems.add(stem)
-				synonyms = self._get_synonyms(w.lower())
-				for s in synonyms:
-					wds = re.split(' ', s)
+			if 'nouns' in vocab:
+				for w in vocab['nouns']:
+					wds = re.split(' ', w.lower())
 					for wd in wds:
 						stem = self.wnl.lemmatize(wd)
 						stems.add(stem)
+					synonyms = self._get_synonyms(w.lower())
+					for s in synonyms:
+						wds = re.split(' ', s)
+						for wd in wds:
+							stem = self.wnl.lemmatize(wd)
+							stems.add(stem)
 			return stems
 
 	def _get_synonyms(self, word):
