@@ -29,6 +29,12 @@ class TestVocabCreator(unittest.TestCase):
 		stems = self.vb._initialise_lexicon({'nouns':['one','two','three']})
 		self.assertFalse(not stems)
 
+	def test_get_synonyms(self):
+		synonyms = self.vb._get_synonyms("frjkefhlweurfywe")
+		self.assertEquals(len(synonyms), 0)
+		synonyms = self.vb._get_synonyms("love")
+		self.assertNotEquals(len(synonyms), 0)
+
 
 
 if __name__ == '__main__':
