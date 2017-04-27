@@ -35,7 +35,14 @@ class TestVocabCreator(unittest.TestCase):
 		synonyms = self.vb._get_synonyms("love")
 		self.assertNotEquals(len(synonyms), 0)
 
-
+	def test_construct_vocab(self):
+		vocab = self.vb.construct_vocab()
+		self.assertIsNotNone(vocab)
+		self.assertTrue('stems' in vocab) 
+		self.assertTrue('hashtags' in vocab) 
+		self.assertTrue('titles' in vocab) 
+		self.assertTrue('nouns' in vocab) 
+		self.assertTrue('mentions' in vocab) 
 
 if __name__ == '__main__':
     unittest.main()
