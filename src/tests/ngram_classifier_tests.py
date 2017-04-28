@@ -97,5 +97,11 @@ class TestNgramClassifier(unittest.TestCase):
 		self.assertTrue(self.nc.can_add(1,100,100,202,1,0))
 		self.assertTrue(self.nc.can_add(0.5,100,100,200,1,0))
 
+	def test_data_ready(self):
+		self.assertFalse(self.nc.data_ready(80,200,10,10))
+		self.assertTrue(self.nc.data_ready(800,200,10,10))
+		self.assertFalse(self.nc.data_ready(80,200,1,10))
+		self.assertTrue(self.nc.data_ready(800,200,10,10))
+
 if __name__ == '__main__':
     unittest.main()
