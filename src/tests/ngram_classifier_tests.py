@@ -84,5 +84,11 @@ class TestNgramClassifier(unittest.TestCase):
 			self.nc.get_feature_extractor()
 		self.nc.ft_extractor_name = "preprocessing_extractor"
 
+	def test_pass_filter(self):
+		self.assertFalse(self.nc.pass_filter([None,None,'Kaggle',"RT blah"]))
+		self.assertFalse(self.nc.pass_filter([None,None,'Kaggle',"Not RT blah"]))
+		self.assertFalse(self.nc.pass_filter([None,None,'NotKaggle',"RT blah"]))
+		self.assertTrue(self.nc.pass_filter([None,None,'NotKaggle',"Not RT blah"]))
+
 if __name__ == '__main__':
     unittest.main()
