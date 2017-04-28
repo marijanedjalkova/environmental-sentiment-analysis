@@ -103,5 +103,14 @@ class TestNgramClassifier(unittest.TestCase):
 		self.assertFalse(self.nc.data_ready(80,200,1,10))
 		self.assertTrue(self.nc.data_ready(800,200,10,10))
 
+	def test_set_data(self):
+		self.assertFalse(hasattr(self.nc,"training_data"))
+		self.assertFalse(hasattr(self.nc,"testing_data"))
+		self.nc.set_data([1,2,3],[4,5])
+		self.assertListEqual(self.nc.training_data, [1,2,3])
+		self.assertListEqual(self.nc.testing_data, [4,5])
+
+
+
 if __name__ == '__main__':
     unittest.main()
