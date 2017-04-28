@@ -46,5 +46,13 @@ class TestNgramClassifier(unittest.TestCase):
 		with self.assertRaises(Exception):
 			self.nc.get_classifier("someotherclassifier")
 
+	def test_preprocess_tweets(self):
+		tweet = unicode("@masha is writing her #dissertation http://google.com")
+		toks = self.nc.preprocess_tweet(tweet)
+		self.assertNotIn("$MENTION$", toks)
+		self.assertIn("$URL$", toks)
+		self.assertNotIn("is", toks)
+
+
 if __name__ == '__main__':
     unittest.main()
