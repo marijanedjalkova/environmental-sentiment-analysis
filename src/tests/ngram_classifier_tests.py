@@ -90,5 +90,12 @@ class TestNgramClassifier(unittest.TestCase):
 		self.assertFalse(self.nc.pass_filter([None,None,'NotKaggle',"RT blah"]))
 		self.assertTrue(self.nc.pass_filter([None,None,'NotKaggle',"Not RT blah"]))
 
+	def test_can_add(self):
+		self.assertFalse(self.nc.can_add(0,100,100,201,1,0))
+		self.assertTrue(self.nc.can_add(0,100,100,202,1,0))
+		self.assertFalse(self.nc.can_add(1,100,100,201,1,0))
+		self.assertTrue(self.nc.can_add(1,100,100,202,1,0))
+		self.assertTrue(self.nc.can_add(0.5,100,100,200,1,0))
+
 if __name__ == '__main__':
     unittest.main()
