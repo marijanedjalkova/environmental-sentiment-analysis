@@ -10,7 +10,6 @@ class TestNgramClassifier(unittest.TestCase):
 		""" Run before every test"""
 		self.nc = Ngram_Classifier("SVM", 1, 1000, 20, "preprocessing_extractor")
 
-
 	def test_constructor(self):
 		self.assertIsNotNone(self.nc.classifier)
 		self.assertIsNotNone(self.nc.n)
@@ -47,12 +46,43 @@ class TestNgramClassifier(unittest.TestCase):
 			self.nc.get_classifier("someotherclassifier")
 
 	def test_preprocess_tweets(self):
-		tweet = unicode("@masha is writing her #dissertation http://google.com")
+		tweet = unicode("@masha is writing her #dissertation http://awesome.com")
 		toks = self.nc.preprocess_tweet(tweet)
 		self.assertNotIn("$MENTION$", toks)
 		self.assertIn("$URL$", toks)
 		self.assertNotIn("is", toks)
 
+	def test_ngram_extractor_empty(self):
+		tweet = unicode("")
+		extr = self.nc.ngram_extractor(tweet)
+		self.assertIsNone(extr)
+
+	def test_ngram_extractor_not_empty(self):
+		tweet = unicode("@masha is writing her #dissertation http://awesome.com")
+		extr = self.nc.ngram_extractor(tweet)
+		self.assertIsNotNone(extr)
+		self.assertIn((unicode("writing"),), extr)
+		for k in extr:
+			self.assertTrue(extr[k])
+
+	def test_preprocessing_extractor_empty(self):
+		tweet = unicode("")
+		extr = self.nc.ngram_extractor(tweet)
+		self.assertIsNone(extr)
+
+	def test_preprocessing_extractor_not_empty(self):
+		tweet = unicode("@masha is writing her #dissertation http://awesome.com")
+		extr = self.nc.ngram_extractor(tweet)
+		self.assertIsNotNone(extr)
+		self.assertIn((unicode("writing"),), extr)
+		for k in extr:
+			self.assertTrue(extr[k])
+
+	def test_get_feature_extractor(self):
+		self.nc.ft_extractor_name = "something_unrealistic"
+		with self.assertRaises(Exception):
+			self.nc.get_feature_extractor()
+		self.nc.ft_extractor_name = "preprocessing_extractor"
 
 if __name__ == '__main__':
     unittest.main()
