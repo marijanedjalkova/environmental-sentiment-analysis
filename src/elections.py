@@ -58,7 +58,9 @@ class TopicModel:
 		print c
 
 	def get_data_chunks(self, n):
-		""" Produces equaly sized chunks. Throws away the remainder. """
+		""" Produces equaly sized chunks of size n. Throws away the remainder. """
+		if n == 0:
+			n = len(self.data)
 		for i in range(0, len(self.data), n):
 			if len(self.data[i:i + n]) == n:
 				yield self.data[i:i + n]
@@ -66,6 +68,9 @@ class TopicModel:
 	def kfold_validation(self, k):
 		""" Prints accuracy and recall at the end """
 		size = len(self.data) / k 
+		if size <= 0:
+			k = 1
+			size = len(self.data)
 		chunks = list(self.get_data_chunks(size))
 		accuracies = []
 		recalls = []
