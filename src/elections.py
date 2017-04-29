@@ -123,6 +123,8 @@ class TopicModel:
 
 	def set_training_testing_data(self, portion):
 		""" Splits data into two parts depending on the portion parameter """
+		if portion <= 0 or portion >= 1:
+			portion = 0.9
 		border_index = int(round(len(self.data)*portion))
 		self.training_data = self.data[:border_index]
 		self.testing_data = self.data[border_index:]
@@ -149,15 +151,15 @@ class TopicModel:
 	def extract_features(self, index, text):
 		""" Returns a vector """
 		if index == 1:
-			# 52%
+			# 65%
 			# number of occurences for categories in the vocab are recorded
 			return self.extract_vocab_structure(text)
 		elif index == 2:
-			# 82%
+			# 88%
 			# any word that doesn't fall into any known cat, is being recorded separately as a Boolean
 			return self.extract_vocab_structure(text, record_unrecognized=True)
 		elif index == 3:
-			# 82%
+			# 88%
 			# same as above but names fall into mentions
 			return self.extract_vocab_structure(text, namesToMentions=True, record_unrecognized=True)
 		else:
