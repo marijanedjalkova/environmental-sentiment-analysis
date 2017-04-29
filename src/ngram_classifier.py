@@ -21,8 +21,9 @@ class Ngram_Classifier:
 		self.n = n
 		self.train_limit = train_length
 		self.test_limit = test_length
-		self.ft_extractor_name = ft_extractor	
-	
+		self.ft_extractor_name = ft_extractor
+		self.training_data = None 
+		self.testing_data = None		
 
 	def get_classifier(self, classifier_name):
 		if classifier_name == "NaiveBayes":
@@ -54,9 +55,10 @@ class Ngram_Classifier:
 			if not decoded:
 				return None
 			tokens = tokenizer.tokenize(decoded)
-
+		
 		tokens = [tok for tok in tokens if tok not in stopwds]
-		tokens = [tok for tok in tokens if tok not in weird_unicode_chars]
+		tokens = [tok for tok in tokens if tok not in weird_chars]
+
 		#tokens = [tok for tok in tokens if not tok.startswith("@")]
 		#tokens = [tok for tok in tokens if not url_pattern.match(tok)]
 		tokens = [unicode("$MENTION$") if tok.startswith("@") else tok for tok in tokens ]
@@ -114,6 +116,7 @@ class Ngram_Classifier:
 					else:
 						res["$EMOJI$"] = s
 		if parsed.hashtags:
+			#this is actually nonexistent
 			for h in parsed.hashtags:
 				word = h.match[1:]
 				if not "$HASHTAG$" in res:
@@ -219,7 +222,6 @@ class Ngram_Classifier:
 		""" Checks if we have reached our goals in both training and testing sets """
 		return trP + trN >= self.train_limit and teP + teN >= self.test_limit
 
-
 	def set_data(self, training_data, testing_data):
 		self.training_data = training_data
 		self.testing_data = testing_data
@@ -272,9 +274,9 @@ class Ngram_Classifier:
 				print "------------------------------------------------"
 
 	def classify_one(self, tweet, toDecode=False):
-		""" No validation, just returns the result """
+		""" No validation, just returns the result. Should not use with SVC """
 		featureset = self.extract_features(tweet)
-		if featureset:
+		if featureset and not self.classifier == SVC:
 			return self.classifier.classify(featureset)
 		return Ngram_Classifier.ERROR		
 
