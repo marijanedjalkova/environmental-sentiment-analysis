@@ -15,6 +15,12 @@ class TestElections(unittest.TestCase):
 		self.assertIsNotNone(self.tm.wnl)
 		self.assertEquals(self.tm.extractor_index, 2)
 
+	def test_get_data_chunks(self):
+		ch = list(self.tm.get_data_chunks(0))
+		self.assertEquals(len(ch),1)
+		ch = list(self.tm.get_data_chunks(1))
+		self.assertEquals(len(ch),len(self.tm.data))
+
 
 
 if __name__ == '__main__':
