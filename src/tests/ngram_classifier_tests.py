@@ -110,6 +110,18 @@ class TestNgramClassifier(unittest.TestCase):
 		self.assertListEqual(self.nc.training_data, [1,2,3])
 		self.assertListEqual(self.nc.testing_data, [4,5])
 
+	def test_to_featureset(self):
+		tweets = [(unicode("Wallace feeds Gromit"), 0), (unicode("@masha is writing her #dissertation http://awesome.com"), 1)]
+		f = self.nc.to_featureset(tweets)
+		self.assertEquals(len(f),2)
+		for t in f:
+			self.assertIsInstance(t, tuple)
+			self.assertIsInstance(t[0], dict)
+			self.assertIsInstance(t[1], int)
+		tweets = []
+		f = self.nc.to_featureset(tweets)
+		self.assertEquals(len(f),0)
+
 
 
 if __name__ == '__main__':
