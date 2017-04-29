@@ -6,7 +6,7 @@ import os
 class EmojiSentiment():
 
 	def __init__(self, ):
-		if os.path.isfile("../resources/emoji_sentiment.txt"):
+		if os.path.isfile("/cs/home/mn39/Documents/MSciDissertation/resources/emoji_sentiment.txt"):
 			self.sentiment = self.get_data_locally()
 		else:
 			self.sentiment = self.get_data_online()
@@ -20,10 +20,10 @@ class EmojiSentiment():
 
 	def write_out(self):
 		if self.sentiment:
-			json.dump(self.sentiment, open("../resources/emoji_sentiment.txt",'w'))
+			json.dump(self.sentiment, open("/cs/home/mn39/Documents/MSciDissertation/resources/emoji_sentiment.txt",'w'))
 
 	def get_data_locally(self):
-		return json.load(open("../resources/emoji_sentiment.txt"))
+		return json.load(open("/cs/home/mn39/Documents/MSciDissertation/resources/emoji_sentiment.txt"))
 
 	def get_data_online(self):
 		res = {}
