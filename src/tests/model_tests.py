@@ -57,10 +57,8 @@ class TestElections(unittest.TestCase):
 		v = self.tm.tokens_to_vocab(tokens)
 		self.assertEquals({'mentions': 1, 'names': 1, 'nouns': 1, 'stems': 2}, v)
 
-
-
 	def test_check_vocab(self):
-		self.fail()
+		self.assertTrue(self.tm.check_vocab("vote", ["Vote"], "catname"))
 		
 
 if __name__ == '__main__':
