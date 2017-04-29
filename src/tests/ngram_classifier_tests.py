@@ -104,8 +104,8 @@ class TestNgramClassifier(unittest.TestCase):
 		self.assertTrue(self.nc.data_ready(800,200,10,10))
 
 	def test_set_data(self):
-		self.assertFalse(hasattr(self.nc,"training_data"))
-		self.assertFalse(hasattr(self.nc,"testing_data"))
+		self.assertIsNone(self.nc.training_data)
+		self.assertIsNone(self.nc.testing_data)
 		self.nc.set_data([1,2,3],[4,5])
 		self.assertListEqual(self.nc.training_data, [1,2,3])
 		self.assertListEqual(self.nc.testing_data, [4,5])
@@ -122,7 +122,13 @@ class TestNgramClassifier(unittest.TestCase):
 		f = self.nc.to_featureset(tweets)
 		self.assertEquals(len(f),0)
 
-
+	def test_classify_one(self):
+		training_data = [(unicode("blah"), 0),(unicode("testing this thing"), 1),(unicode("another tweet sample"), 1)]
+		features = self.nc.to_featureset(training_data)
+		self.nc.set_data(features,[])
+		self.nc.train()
+		self.assertEquals(self.nc.classify_one(unicode("")), self.nc.ERROR)
+		self.assertNotEquals(self.nc.classify_one(unicode("@masha is writing her #dissertation http://awesome.com")), self.nc.ERROR)
 
 if __name__ == '__main__':
     unittest.main()
