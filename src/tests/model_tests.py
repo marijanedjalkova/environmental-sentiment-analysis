@@ -46,16 +46,20 @@ class TestElections(unittest.TestCase):
 			self.assertIsInstance(v[1], int)
 			self.assertEquals(len(v), 2)
 
-	def test_extract_vocab_structure(self):
-		self.fail()
-
 	def test_tokens_to_vocab(self):
-		self.fail()
+		tokens = ["here", "it", "goes"]
+		v = self.tm.tokens_to_vocab(tokens)
+		self.assertIsInstance(v, dict)
+		tokens = ["Jeremy", "is", "politician"]
+		v = self.tm.tokens_to_vocab(tokens)
+		self.assertTrue('names' in v and v['names'] == 1)
+		tokens = ["Jeremy", "is", "politician", "election", "vote", "@thegreenparty"]
+		v = self.tm.tokens_to_vocab(tokens)
+		self.assertEquals({'mentions': 1, 'names': 1, 'nouns': 1, 'stems': 2}, v)
+
+
 
 	def test_check_vocab(self):
-		self.fail()
-
-	def test_remove_stopwords(self):
 		self.fail()
 		
 
