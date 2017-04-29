@@ -36,6 +36,15 @@ class TestElections(unittest.TestCase):
 		c, v = self.tm.classify(unicode("@masha is writing her #dissertation #cslife http://amazing.net"))
 		self.assertIsInstance(c, int)
 		self.assertIsInstance(v, dict)
+
+	def test_get_feature_vector(self):
+		vs = self.tm.get_feature_vectors()
+		self.assertIsInstance(vs, list)
+		for v in vs:
+			self.assertIsInstance(v, tuple)
+			self.assertIsInstance(v[0], dict)
+			self.assertIsInstance(v[1], int)
+			self.assertEquals(len(v), 2)
 		
 
 if __name__ == '__main__':
