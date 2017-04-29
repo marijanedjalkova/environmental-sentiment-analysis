@@ -45,6 +45,18 @@ class TestElections(unittest.TestCase):
 			self.assertIsInstance(v[0], dict)
 			self.assertIsInstance(v[1], int)
 			self.assertEquals(len(v), 2)
+
+	def test_extract_vocab_structure(self):
+		self.fail()
+
+	def test_tokens_to_vocab(self):
+		self.fail()
+
+	def test_check_vocab(self):
+		self.fail()
+
+	def test_remove_stopwords(self):
+		self.fail()
 		
 
 if __name__ == '__main__':
