@@ -276,7 +276,7 @@ class Ngram_Classifier:
 	def classify_one(self, tweet, toDecode=False):
 		""" No validation, just returns the result. Should not use with SVC """
 		featureset = self.extract_features(tweet)
-		if featureset and not self.classifier == SVC:
+		if featureset:
 			return self.classifier.classify(featureset)
 		return Ngram_Classifier.ERROR		
 
