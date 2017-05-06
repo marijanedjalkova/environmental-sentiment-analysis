@@ -45,3 +45,10 @@ class TextBlobClassifier:
 					print accuracy * 100 , "%"
 					return accuracy
 
+def main():
+	tbc = TextBlobClassifier()
+	print tbc.test()
+
+if __name__ == '__main__':
+	main()
+
