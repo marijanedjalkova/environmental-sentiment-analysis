@@ -2,8 +2,13 @@
 \chapter{Evaluation}
 \label{chap:evaluation}
 
-\initial{B}egins a chapter. 
+\initial{I}n this chapter most of attention will be given to evaluating the results of both sentiment analysis and topic modelling parts of the project, and also testing results will be discussed here.
 
 %=======
-\section{Section}
-\label{sec:eval}
+\section{Testing}
+\label{sec:testing}
+
+The main parts of the project have been tested both manually and using unit tests. 
+Since the implementation involves classification using classifiers implemented by NLTK (Natural Language Toolkit) and other APIs and libraries, it is impossible to test certain parts of the implementation using unit tests. Such parts of the program are, for example, streaming tweets using Twitter API, searching tweets using the same library, processing the tweet using preprocessor library, text classification using NLTK's classifiers. These parts have been tested manually under a number of different conditions and different user inputs, and, in some cases, the methods test() remain in the code and can be called from the main methods of the corresponding modules. 
+
+The unit tests can be found in the src/tests folder and run individually using the command \\ \texttt{python <filename.py>}. \\ They check a large amount of input types for methods that perform preprocessing on data that is being used for classifier training, testing and validation. All the unit tests pass. 
