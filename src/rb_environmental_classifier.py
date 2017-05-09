@@ -140,8 +140,6 @@ class RB_classifier(object):
 				res += self.check_urls(parsed.urls)
 			if parsed.mentions:
 				res += self.check_names(parsed.mentions)
-			if parsed.emojis:
-				res += self.check_emojis(parsed.emojis)
 			return res
 		except (UnicodeDecodeError, UnicodeEncodeError) as e:
 			return 0
@@ -158,13 +156,6 @@ class RB_classifier(object):
 					res -= 0.25
 			except urllib2.HTTPError:
 				continue
-		return res
-
-	def check_emojis(self, emojis):
-		""" Processes emojis from a tweet. Not implemented yet. """
-		res = 0
-		for em in emojis:
-			continue
 		return res
 
 	def check_names(self, mentions):
