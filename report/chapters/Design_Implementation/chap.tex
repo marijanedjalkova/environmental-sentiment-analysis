@@ -55,7 +55,7 @@ Unfortunately, the rest of the datasets available would either not be large enou
 When the main objective is to work with the human-created data, it is not easy to generalise the behaviour of different language models. A model might work well on some data but perform much worse on another data set. That is why throughout this project, the evaluation of the model consisted not only of the statistical evaluation based on testing data but also of manual evaluation based on the `live' data coming directly from Twitter. When creating the model, the main ideas have been based on the results of the most recent research, which has been discussed in the Context Survey chapter, however, in some cases, certain changes have been made due to, for example, better performance of such modified models. Overall, the workflow of the model creation has been following an Expectation-Maximisation process: a model was created, tested, evaluated, and then the loop would start again, with modifications.
 
 \subsection{Feature Vector Extraction}
-In order to train a classifier, the input data has to be represented as a feature vector. The success of the entire model depends on the structure of the vector, and it is up to the researcher to design it. In Python, a feature vector is usually a dictionary where the keys are the names of the properties and the values are usually numeric or Boolean values of those properties. For example, it could look like this: \\ \texttt{\{`Length':139, `hasHashtags':True, `containsNegativeWords':False\}}. \\Alternatively, a typical unigram model will look somewhat like this:\\ \texttt{\{`I':True, `am':True, `happy':True, `today':True\}}.\\Nothe that while in the first case, the vector will always be of the constant size, the latter structure will have a variable number of key-value pairs. 
+In order to train a classifier, the input data has to be represented as a feature vector. The success of the entire model depends on the structure of the vector, and it is up to the researcher to design it. In Python, a feature vector is usually a dictionary where the keys are the names of the properties and the values are usually numeric or Boolean values of those properties. For example, it could look like this: \\ \texttt{\{`Length':139, `hasHashtags':True, `containsNegativeWords':False\}}. \\Alternatively, a typical unigram model will look somewhat like this:\\ \texttt{\{`I':True, `am':True, `happy':True, `today':True\}}.\\Note that while in the first case, the vector will always be of the constant size, the latter structure will have a variable number of key-value pairs. Also, since the approaches create a dictionary, which is an unsorted data structure in Python, the order of the words appearing in the input does not matter. Such an approach is called the ``bag-of-words'' approach and is one of the basic feature extraction techniques in Natural Language Processing.  
 
  A lot of models created for research working with the natural language data use the unigram model \cite{agarwal2011sentiment}. It performs well when the researcher initially does not have a lot of knowledge about the training data, or when it is too vast (like anything concerning natural language) to be summarised in several fields. Also, there is not enough research looking into how different structures of the feature vector affect the performance of the sentiment analysis model and how to best design a feature vector for an input consisting of natural language. It would be interesting to look at this problem, but it is a case for the future studies and does not lie in the scope of this project. In this project, the unigram model is the basis model of the feature vector.  
 
@@ -177,12 +177,12 @@ Later the default methods of obtaining feature vectors were replaced by more eff
 The Support Vector Machine instance is based on the \texttt{LinearSVC} implementation by the \texttt{sklearn} library. 
 Ultimately it was the fastest one to train and the most precise one on terms of the results. The model would accept a large number of tweets as a training set. Empirically, the training size of 300 000 tweets was found to be the best for the purpose of training this sentiment analysis model. The model is used later throughout the project.
 
-\paragraph{Other classifiers}
+\paragraph{Other classifiers}\mbox{}\\
 The other two classifiers available in the NLTK library are the Maximum Entropy Classifier and the Decision Tree Classifier.
 
-Unlike the Naive Bayes model, the Maximum Entropy model does not make the independence assumption. From all the models that fit the training data, the Maximum Entropy approach selects the one which has the largest entropy. Intuitively, the model should perform well on the tasks involving Natural Language Processing. However, its current implementation in NLTK did not produce good results. The model was too slow during training and was not memory-efficient (would constantly cause the program to run out of memory). At the same time, the existing SVM and Naive Bayes classifiers performed on a high enough level, so it was decided not to use the Maximum Entropy model. Finally, the results received from that model were significantly lower than the ones returned by the previous models. With 6000 tweets as a training set, the final accuracy was 63\%. 
+Unlike the Naive Bayes model, the Maximum Entropy model does not make the independence assumption. From all the models that fit the training data, the Maximum Entropy approach selects the one which has the largest entropy. Intuitively, the model should perform well on the tasks involving Natural Language Processing. However, its current implementation in NLTK did not produce good results. The model was too slow during training and was not memory-efficient (would constantly cause the program to run out of memory). At the same time, the existing SVM and Naive Bayes classifiers performed on a high enough level, so it was decided not to use the Maximum Entropy model. Finally, the results received from that model were significantly lower than the ones returned by the previous models. With 6000 tweets as a training set, the final accuracy was 63\%, which was lower than the Naive Bayes Model or the Support Vector Machine. 
 
-The Decision Tree classifier was the slowest yet. The execution time of training a model on just 1800 tweets exceeded twelve minutes and even though it produced a high accuracy of 80\%, the result was comparable to the one produced by the previous models, so it was decided not to use it either.
+The Decision Tree classifier was the slowest yet. The execution time of training a model on just 1800 tweets exceeded twelve minutes and even though it produced a high accuracy of 80\%, the result was comparable to the one produced by the previous faster models, so it was decided not to use it either.
 
 \paragraph{Resulting platform}\mbox{}\\
 The resulting application that performs the sentiment analysis training can be seen as a platform. The main method accepts a number of parameters such as the name of the classifier to use, how many items there should be in an n-gram, the length of training and testing sets, and the name of the feature extractor, because several test ones were written throughout the project. The program can train four different classifiers on custom-defined training and testing data, use three different feature extractors (a simple n-gram extractor that does almost no pre-processing, a noun phrase extractor that tries extracting noun phrases using library methods --- rather unsuccessfully --- and the pre-processing extractor, the most developed feature extractor that does all of pre-processing described above and then extracts n-grams ). This allows to create and compare different models, makes the application scalable and maintainable. It could later be used in other Natural Language Processing-related work.
@@ -191,24 +191,125 @@ The resulting application that performs the sentiment analysis training can be s
 \section{Topic Modelling}
 \label{sec:tm}
 
-twitter has limits for tweets
-https://dev.twitter.com/rest/public/rate-limits
+For the topic modelling, the Falkirk Council provided a list of concepts they would like to trace. The first step in designing a model is similar to the sentiment model and requires obtaining enough training data. However, unlike the previous case where the training data could be obtained online, the training data for such specific topic as this could not possibly be found online. There was only one way to form training data: to request a certain amount of tweets using Twitter API and to label them manually or in a semi-automatic way. 
 
+However, it was impossible to get any training data for this topic at all. Most of the concepts have never been mentioned in any tweets mentioning Grangemouth, and the ones that were mentioned did not have enough occurrences to form a plausible training set. 
 
-Getting keywords:
+In addition, Twitter API has certain limits on both number and age of tweets that could possibly be requested \footnote{\url{https://dev.twitter.com/rest/public/rate-limits}}. Currently, the search function allows to make  requests per time window bounded by 15 minutes through the user authentication and 450 requests for the same time window through the application authentication. For this project, application authentication was used. However, there is also a time limit for the tweets that could be requested. Twitter API only allows to request tweets from last several days (the exact number of days has been changing frequently throughout Twitter history). Due to the low Twitter activity around the Grangemouth area and the fact that the tweets mention environmental issues quite rarely, none of the relevant tweets could have possibly gotten into the required time window. Hence, the training data could not have possibly been obtained.
 
-http://www.niemanlab.org/2015/07/the-new-york-times-built-a-robot-to-help-making-article-tagging-easier/
-article tagging 
+\subsection{Rule-Based Model}
+As discussed in the Context Survey, most of the existing topic modelling techniques are based on statistical models, and, hence, all of them require labelled data, even when it comes to unsupervised learning techniques. Thus, none of them could have been used for this task. 
 
-Google AdWords:
-not relevant, can see in googleads.png
+At this point it was clear that any model created could not be possibly made scientifically sound. Introducing sample training data would require a lot of time and effort. However, the biggest problem with this approach is that it would have been impossible to introduce data that would have been purely ``natural'' and not biased, even if the data was created in the process of a user study. 
 
-GoogleCorrelate:
-not too good, but could work, I guess
-googlecorrelation.png 
+Therefore, it was decided to create a small manual filter for the given topic which would work with a decent accuracy and could be showed to the client and then change the topic in order to keep the scientific side of this project sound. 
 
+The so-called rule-based model is contained in the \texttt{src/rb\_environmental\_classifier.py} file. The pre-processing methods used in this module was later re-used in the creation of a statistical model. The main approach to this classifier was taken from ``VADER: A Parsimonious Rule-based Model for Sentiment Analysis of Social Media Text'', a paper on sentiment analysis which also used a rule-based approach and claimed that the resulting model outperformed the most common sentiment analysis models \cite{hutto2014vader}. Hutto, the author of the paper, also provides implementation of the classifier\footnote{\url{https://github.com/cjhutto/vaderSentiment}}. 
 
-Google trends seems the best
+\paragraph{VADER}\mbox{}\\
+The VADER tool is based on the generalizable rules which were created and validated using qualitative
+and quantitative methods. The implementation uses constants such as booster word coefficient increase \texttt{B\_INCR = 0.293} and an ALLCAPs increase \texttt{C\_INCR = 0.733}. In every such case, the number is said to have been obtained empirically. The tool uses a list of punctuation, a pre-defined list of negations, some of which are not just the usual negations such as ``couldn't'' but also the less obvious options such as ``uh-uh''. The authors also used a list of degree adverbs, but it was never specified where the list was taken from, and it can be clearly seen that the list only contains a small part of all the degree modifiers used in the English language. Finally, a local vocabulary is also used, which contains words together with their individual sentiment scores.
 
-synonyms, stemming etc, bag of words!!!!
+The processing the VADER uses is based on a single coefficient that is increased or decreased depending on the appearance of different features. First, sentiment score is extracted for every word or emoticon and stored in a list. Then, every word is checked for ALLCAPs and, if the it is written in all uppercase letters, the valence for that word is increased by \texttt{C\_INCR = 0.733}. Similar slight modifications happen for cases such as negation, idioms, and others. Finally, the list of individual scores is summed up and, in case of special punctuation appearing in the input, ``amplified''. The resulting score is then returned.
+
+\paragraph{Grangemouth topic classifier}
+The Grangemouth rule-based classifier tried to follow the same approach, however, it was clear from the beginning that it would not be very successful. In the case of VADER, the rules --- of the format \texttt{ condition -> modify(coefficient)} --- were carefully designed using both qualitative and quantitative methods. All of these methods require an immense amount of time and need users to label statements manually. Such project could not possibly fit as a part of this project, hence all the coefficients, constants and rules are based on what seemed to be common sense, but obviously none of them were based on scientific results. 
+
+The classifier uses the given list of keywords provided by the Falkirk Council as well as some other pre-defined lists such as a list of mentions which could be relevant to environmental issues. For example, the user names of the Falkirk Council Twitter account (falkirkcouncil), the INEOS and BP Twitter user names. The latter two companies have a number of accounts each all starting with ``INEOS\_'' or ``BP\_'', so regular expressions were constructed for these cases. Also names of the companies were added as well, because some users might not know that the companies have presence on Twitter, and SEPA (Scottish Environment Protection Agency) was included, too. Another list was constructed for anti-mentions since the initial analysis of typical tweets mentioning Grangemouth showed that some accounts will almost exclusively specialise in one topic. For example, \texttt{MadrasRugby} mentions Grangemouth in a lot of its tweets, however, the account only ever talks about rugby.
+
+Overall, the \textbf{initial lexicon} was defined as a collection of groups of words of different parts of speech (e.g. nouns, adjectives). 
+
+As the first step, the lexicon is initialised for the classifier. In order to do that, the program goes through the initial lexicon and, for every word, performs the following:
+\begin{enumerate}
+    \item The word is \textbf{stemmed} using the \texttt{WordNetLemmatizer} provided by \texttt{NLTK}. Stemming involves removing any morphemes of a word that are not in the core of a word. For example the word ``unbelievable'' should return ``believe'' as a stem. Stemming allows to recognise groups of words regardless of their form. For example, we would usually want to recognise words ``burn'' and ``burning'' as one without having to store both words in the vocabulary and without having to generate all possible forms of the same word since every stem can be involved in the creation of quite a large list of words. Hence, it seemed reasonable to store stems rather than full words. One could argue that other morphemes also carry some amount of information, however, they are not useful when it comes to topic modelling. For example, the form ``cats'' has an affix `-s' which carries a meaning of plurality, however, it does not change the topic itself. So does the suffix `over-' in the word ``overachiever''. When expressed in terms of the First-Order Logic, it can be seen that the affixes provide the functions rather than the arguments. Hence, for the purpose of topic modelling, stems are sufficient sources of information about meaning.
+    \item Stem is added to a list of stems of the derived lexicon.
+    \item Synonyms of the word are found using the \texttt{wordnet.synsets(word)} function. Potentially, the word network could be grown further by finding synonyms of every synonym. Every synonym is then also stemmed, and the new stems are also added to the dictionary. 
+\end{enumerate}
+\paragraph{}
+At this point the lexicon is considered finalised, and the classification can begin. Again, the classifier works with a single number which is modified slightly depending on appearance of different features in a tweet. The amount of change is a guess based on the knowledge of the data and the fact that all the tweets about Grangemouth going back to as far as 2009 were read.
+The classification procedure follows the following approach:
+\begin{enumerate}
+    \item First, the input is checked for special characters. A horizontal ellipsis is mostly used in tweets containing links, which are mostly news tweets. Currency symbols are usually used in economical news and almost never is complaints about environment. Hence, both types of special character reduce the coefficient.
+    \item The tweet is parsed using the \texttt{preprocessor} library. URLs generally reduce the chance that a tweet talks about environment, especially if they are not links to Instagram or Twitter internal links (usually link posts together). All the links on Twitter are currently shortened with the \texttt{t.co} domain, however it is possible to extract the actual URL using \texttt{urllib2} library. Seeing a name mentioned in names or mentions increased the coefficient, whereas seeing a name from the ``anti-mention'' list decreases it.
+    \item The tweet is stripped off URLs and mentions.
+    \item The tweet is tokenized using \texttt{TweetTokenizer}. Every token is stemmed and the stem is then looked up in the dictionary. Known stems increase the coefficient.
+    \item The tweet is checked for idioms. Some tweets have been seen mentioning expressions ``smell a rat'' and ``under fire'' (for example, ``the plan to start fracking is under fire''). The words ``smell'' and ``fire'' are in the list of the initial keywords provided by the Falkirk Council, so the classifier is biased when it notices the words. Hence, when these expressions appear in the tweet, the coefficient is decreased. 
+\end{enumerate}
+
+A positive coefficient means that the tweet does, indeed, talk about environmental issues. 
+\paragraph{}
+Since this was a rule-based approach and none of the data was labelled, the only way to test a model was to do it manually. Several examples were copied from the existing Twitter history and some more examples were hand-written. The only result that could possibly be given by such not precise evaluation is that the classifier seemed to perform reasonably well. The model gave no false negatives and several false positives. At this point it was decided that the result was good enough to show to the client, and the topic was changed.
+
+\subsection{SVM Topic Model}
+
+\paragraph{Topic Selection}\mbox{}\\
+A new topic that was supposed to be chosen for the model had to satisfy the following criteria:
+\begin{itemize}
+    \item It had to have enough accessible samples to train a model.
+    \item The topic had to be a sub-topic of a larger topic such that the larger topic was represented by a set of tweets roughly twice as large as the set represented by the sub-topic. 
+\end{itemize}
+As a result, the larger topic was chosen to be ``Elections'' and the sub-topic was chosen to be ``UK General Elections 2017''. At the time when the topic was chosen, the UK General Election had just been announced. At the same time, when searching for the keyword ``election'', the search also returned a lot of tweets about the investigations concerning the US Presidential Election, the at that time upcoming French Election as well as some other elections in other countries and organisations.
+
+The tweets were collected and saved in a JSON file (\texttt{resources/election\_tweets.txt}) as a list of entries of the following format: \texttt{\{"text": "What should the world expect if Marine Le Pen takes power? https://t.co/ZLRufRmkDW", "label": 0\}}. The `label' value is 1 if the tweets is related to the UK General Election of 2017 and 0 otherwise. The tweets were labelled manually. There are 870 tweets in the dataset, out of which 405 are positive and 465 are negative.
+
+\paragraph{Vocabulary}\mbox{}\\
+In order to create a successful model, instead of using simply a bag-of-words approach, it seemed to make sense to use an approach that is a little more complicated. Twitter API does not let access tweets that are older than several days. In addition, Twitter search by keyword returns every tweet containing that keyword, among which are also retweets, re-postings of the original tweets starting with an ``RT'' sign, if requested via the Twitter API. When it comes to popular topics and popular accounts, some tweets become `viral' and get retweeted thousands of times within a time frame of just several hours. This makes the sample of tweets obtained from the Twitter API biased because it might focus on smaller topics that become very popular for a short amount of time and would bias the classifier in the long run.
+
+So, in order to avoid creating this bias, it was necessary to create a basic vocabulary similar to the one provided by the Falkirk Council for the initial task. It was important to generate a vocabulary that would not introduce bias itself. One of the proposed approaches was to generate the dictionary from the news article tags taken from most popular newspapers available in the United Kingdom. Article tagging helps create hierarchy for the publishers, thus introducing opportunities for additional automatic tools such as filtering of search results. Article tagging can, in fact, be an example of a task involving topic modelling, since today the largest publishers who have a large amount of new material published every day do it automatically. For example, Nieman Lab published an article in 2015 that described how New York Times uses machine learning to achieve that goal \cite{niemanlab}.
+
+However, there is no tool that would allow to grow such a network of tags automatically and extract it from a publisher's website. In addition, the tags observed on different websites were too ambiguous and there were simply not enough of them to start a dictionary. For example, figure \ref{fig:guardianTags} shows how Guardian\footnote{\url{https://www.theguardian.com/uk}} tags its articles. The network obtained from it would be quite small and only mostly mention the names of parties and people involved. The figure \ref{fig:indyTags} shows the same problem with the tags used on the Independent website\footnote{\url{http://www.independent.co.uk/}}.
+
+\begin{figure}[ht]
+\includegraphics[width=\textwidth]{guardianTags}
+\caption{Topics of an article on Guardian}
+\label{fig:guardianTags}
+\end{figure}
+
+\begin{figure}[ht]
+\includegraphics[width=\textwidth]{indyTags}
+\caption{Topics of an article on Independent}
+\label{fig:indyTags}
+\end{figure}
+
+Because of this, it was decided to look into other tools that would help grow the network.
+
+\paragraph{Google Tools}
+Some of the products created by Google are not well known but can be extremely useful when it is necessary to process immense amount of data. Three Google products provide functionality that allows to extract networks of related words, with different contexts and fir different reasons.
+
+First such tool is Google AdWords \footnote{\url{https://adwords.google.com/}}, which allows creating advertisements and promoting them through the Google platform. As a part of the functionality provided by platform, Google offers to create a set of keywords that would be associated with the advertisement. Figure \ref{fig:googleads} shows the keywords found for ``general election'' combination. 
+
+\begin{figure}[ht]
+\includegraphics[]{googleads}
+\caption{Related keywords from GoogleAdWords}
+\label{fig:googleads}
+\end{figure}
+
+As it can be seen, most of the keywords are not relevant to the 2017 UK General Election specifically, and the list is too small to operate on.
+
+Another Google-provided tool that focuses on finding related keywords is Google Correlate\footnote{\url{https://www.google.com/trends/correlate}}. The tool searches through the search patterns of people from the specific period of time and detects common patterns. Figure \ref{fig:googlecorrelation} shows the searches correlated with ``UK general election''. It can be seen that this result is also not perfect despite being far better than the one obtained from GoogleAdWords. The first two results are simply combinations of words from the request, and four other results are different forms of the same word. At the same time, the correlation with one party was found, and with one UK region, too.
+
+\begin{figure}[ht]
+\includegraphics[]{googlecorrelation}
+\caption{Related keywords from Google Correlate}
+\label{fig:googlecorrelation}
+\end{figure}
+
+Finally, the tool that returned the best results for the initial vocabulary was Google Trends\footnote{\url{https://trends.google.co.uk/trends/}}. Google Trends is a tool that also processes the searches to detect trends and is, in fact, at the core of the Google Correlate. The tool started as a mechanism to create a flu surveillance system based on the symptoms searched on Google by people at different locations. Now the tool provides similar functionality of detecting different trends about any topic requested by the user. When ``2017 UK general election'' was requested, the tool provided useful and interesting data summary including two sections which were later used as a basis for the initial vocabulary. The two sections are Related Topics and Related Queries, two lists of up to 25 entries. A list of related topics provides a list of topics that users searching for the original query (in our case, 2017 UK General Election) search for, too. The second list, related queries, is a list of unprocessed queries that people who search for the original topic search for, too. Both of these lists could be exported as CSV files. Additionally, the network could be grown by expanding topics exported in the Related Topics list.
+
+After all the necessary CSV files had been saved, they could be used in the topic model. First, however, the dictionary had to be finalised. The \texttt{src/vocab\_creator.py} deals with this. First, the CSV files are all read in and a common list of concepts is then written out to one CSV file. This file is the first draft of the vocabulary. Then the vocabulary was modified manually: names of some leaders of the existing UK parties were added, for example. In addition, names, nicknames and Twitter account names were added for every existing UK party. 
+
+After the initial version of the vocabulary has been finalised, it could be expanded in the same way as it was done for the rule-based classifier: by adding stemming the existing words and adding stems of their synonyms.
+
+\paragraph{The Support Vector Machine}
+As it was discussed in the Context Survey, most of the existing topic classifiers use the usual machine learning techniques including the Support Vector Machine approach and Naive Bayes classification. For this project, it was decided to use the SVM approach. 
+
+There were two feature vectors attempted:
+\begin{enumerate}
+    \item The first extractor summarises the tweet into a vector of a small size and that looks like this: \texttt{\{`titles': 1, `names': 1, `nouns': 2, `stems': 3, `abbreviations': 2,\\ `mentions': 1\}}. The extractor uses all of the pre-processing described for the rule-based classifier. Its main advantage is that is allows the vector to be very compact. At the same time, it throws away all the information that does not fall into any of the known categories. 
+    \item This extractor does not throw away the unknown words. Instead, it adds them to the feature vector with a True Boolean value: \texttt{\{`unknown': True\}}. This allows the SVM to learn more about the text itself, however, might also introduce bias and makes the vector much less compact.
+    \item Finally, the third extractor is very similar to the second one, except it also combines names and mentions into one category instead of two. In fact, this model produces almost the same results as the second feature extractor, so later in this chapter we will not mention this extractor and will focus on the other two.
+\end{enumerate}
+
+After that, k-fold validation was performed on the existing model, for all feature extractors. The results show that the models produce very similar results and it will be discussed in more details in the next chapter.
+
 
