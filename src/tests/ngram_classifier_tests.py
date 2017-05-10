@@ -122,13 +122,5 @@ class TestNgramClassifier(unittest.TestCase):
 		f = self.nc.to_featureset(tweets)
 		self.assertEquals(len(f),0)
 
-	def test_classify_one(self):
-		training_data = [(unicode("blah"), 0),(unicode("testing this thing"), 1),(unicode("another tweet sample"), 1)]
-		features = self.nc.to_featureset(training_data)
-		self.nc.set_data(features,[])
-		self.nc.train()
-		self.assertEquals(self.nc.classify_one(unicode("")), self.nc.ERROR)
-		self.assertNotEquals(self.nc.classify_one(unicode("@masha is writing her #dissertation http://awesome.com")), self.nc.ERROR)
-
 if __name__ == '__main__':
     unittest.main()
