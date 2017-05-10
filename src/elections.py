@@ -6,6 +6,7 @@ import re
 from sklearn.svm import SVC, LinearSVC
 from nltk.classify import SklearnClassifier
 from nltk.corpus import stopwords
+from KFoldValidator import *
 
 
 def main():
@@ -43,6 +44,7 @@ class TopicModel:
 		self.extractor_index = extractor_index
 		self.vocab = VocabBuilder().construct_vocab()
 		self.data = data #882 tweets
+
 		self.errors = 0
 		self.wnl = WordNetLemmatizer()
 		self.set_training_testing_data(0.9)
@@ -57,21 +59,14 @@ class TopicModel:
 				c['n']+=1
 		print c
 
-	def get_data_chunks(self, n):
-		""" Produces equaly sized chunks of size n. Throws away the remainder. """
-		if n == 0:
-			n = len(self.data)
-		for i in range(0, len(self.data), n):
-			if len(self.data[i:i + n]) == n:
-				yield self.data[i:i + n]
-
 	def kfold_validation(self, k):
 		""" Prints accuracy and recall at the end """
-		size = len(self.data) / k 
-		if size <= 0:
+		data_size = len(self.data)
+		chunk_size = data_size / k 
+		if chunk_size <= 0:
 			k = 1
-			size = len(self.data)
-		chunks = list(self.get_data_chunks(size))
+			chunk_size = data_size
+		chunks = list(get_data_chunks(self.data, data_size, chunk_size))
 		accuracies = []
 		recalls = []
 		for i in range(k):
@@ -96,6 +91,7 @@ class TopicModel:
 		for dct in self.testing_data:
 			count += 1
 			res, vct = self.classify(dct['text'])
+			print vct
 			if res == dct['label']:
 				correct += 1
 				if res == 1:
