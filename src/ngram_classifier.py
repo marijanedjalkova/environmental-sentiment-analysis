@@ -12,6 +12,8 @@ import csv
 import time
 import string
 import preprocessor 
+import random
+from KFoldValidator import *
 
 class Ngram_Classifier:
 	ERROR = -2
@@ -189,7 +191,7 @@ class Ngram_Classifier:
 					print round(((index * 1.0)/to_collect * 100), 4), "%"
 					changed = False
 				if self.pass_filter(row):
-					polarity = int(row[polarity_index]) # 0 or 1
+					polarity = int(row[polarity_index]) 
 					if self.can_add(polarity, trainingPositives, trainingNegatives, self.train_limit, positive_value, negative_value):
 						featureset = self.extract_features(row[tweet_index])
 						if featureset:
@@ -199,16 +201,43 @@ class Ngram_Classifier:
 							if polarity == positive_value: trainingPositives += 1
 							else: trainingNegatives += 1
 					elif self.can_add(polarity, testingPositives, testingNegatives, self.test_limit, positive_value, negative_value):
-						index += 1
-						changed = True
-						testing_data.append(row)
-						if polarity == positive_value: testingPositives += 1
-						else: testingNegatives += 1
+						featureset = self.extract_features(row[tweet_index])
+						if featureset:
+							index += 1
+							changed = True
+							testing_data.append(row)
+							if polarity == positive_value: testingPositives += 1
+							else: testingNegatives += 1
 						continue
 					else:
 						if self.data_ready(trainingPositives, trainingNegatives, testingPositives, testingNegatives):
 							break
 		return training_data, testing_data
+
+	def get_all_data(self, filename, polarity_index, tweet_index, positive_value, negative_value, skip_header=False):
+		""" Returns all data, shuffled, that can later be split into chunks for k-fold validation """
+		result = []
+		to_collect = self.train_limit + self.test_limit
+		with open(filename) as csvfile:
+			data = csv.reader(csvfile) 
+			if skip_header:
+				next(data, None) # skip headers
+
+			counters = {str(positive_value):0, str(negative_value):0}
+			for row in data:
+				if self.pass_filter(row) and sum(counters.values())<to_collect:
+					polarity = int(row[polarity_index]) 
+					if counters[str(polarity)] <= to_collect/2:
+						featureset = self.extract_features(row[tweet_index])
+						if featureset:
+							result.append((featureset, polarity))
+							counters[str(polarity)] += 1
+				else:
+					if sum(counters.values())>=to_collect:
+						break
+			random.shuffle(result)
+			return result
+
 
 	def can_add(self, polarity, positives, negatives, goal, positive_value, negative_value):
 		""" This is necessary to make training and testing data uniform when it is not sorted automatically. """
@@ -252,11 +281,9 @@ class Ngram_Classifier:
 			index += 1
 			if ( (index * 1.0) / to_test * 100) % 25 == 0:
 				print ( (index * 1.0) / to_test * 100), "%"
-			polarity = int(row[polarity_index])
-			tweet = row[tweet_index]
-			predicted = self.classify_one(tweet, True)
-			if predicted == Ngram_Classifier.ERROR:
-				error += 1
+			polarity = row[1]
+			tweet = row[0]
+			predicted = self.classify_one(tweet)
 			if predicted == polarity:
 				correct += 1
 		accuracy = correct * 1.0/(to_test - error) 
@@ -264,22 +291,16 @@ class Ngram_Classifier:
 		print "Errors: ", error
 		return accuracy
 
-	def classify_all(self, toDecode):
-		""" Does not validate, just prints out the results """
-		for tweet in self.testing_data:
-			if not tweet.startswith("RT"):
-				predicted = self.classify_one(tweet, toDecode)
-				print " - predicted ", predicted
-				print tweet
-				print "------------------------------------------------"
+	def classify_one(self, tweet):
+		""" No validation, just returns the result. """
+		return self.classifier.classify(tweet)		
 
-	def classify_one(self, tweet, toDecode=False):
-		""" No validation, just returns the result. Should not use with SVC """
-		featureset = self.extract_features(tweet)
-		if featureset:
-			return self.classifier.classify(featureset)
-		return Ngram_Classifier.ERROR		
-
+def test_classifier(classifier, n, learn, test, ft_extractor):
+	nb = Ngram_Classifier(classifier, n, learn, test, ft_extractor)
+	tr, te = nb.get_train_test_sets("/cs/home/mn39/Documents/MSciDissertation/resources/training.1600000.processed.noemoticon.csv", 0, 5, 4, 0)
+	nb.set_data(tr, te)
+	nb.train()
+	nb.test(0, 5)
 
 def main(argv):
 	classifier = argv[0]
@@ -287,13 +308,27 @@ def main(argv):
 	learn = int(argv[2])
 	test = int(argv[3])
 	ft_extractor = argv[4]
-	s = time.time()
+	validate(classifier, n, learn, test, ft_extractor)
+	
+
+def validate(classifier, n, learn, test, ft_extractor):
+	"""k-fold validation"""
+	k = 10
+	all_size = learn + test 
 	nb = Ngram_Classifier(classifier, n, learn, test, ft_extractor)
-	tr, te = nb.get_train_test_sets("/cs/home/mn39/Documents/MSciDissertation/resources/training.1600000.processed.noemoticon.csv", 0, 5, 4, 0)
-	nb.set_data(tr, te)
-	nb.train()
-	nb.test(0, 5)
-	print "Total time: ",  time.time() - s
+	data = nb.get_all_data("/cs/home/mn39/Documents/MSciDissertation/resources/training.1600000.processed.noemoticon.csv", 0, 5, 4, 0)
+	chunks = list(get_data_chunks(data, all_size, k))
+	for i in range(0,k):
+		print "i = {}".format(i)
+		tr = []
+		te = []
+ 		[tr.extend(el) for el in chunks[:i]] 
+		[tr.extend(el) for el in chunks[(i+1):]] 
+		te = chunks[i]
+		nb.set_data(tr, te)
+		nb.train()
+		nb.test(0, 5)
+
 
 if __name__=="__main__":
 	main(sys.argv[1:])
