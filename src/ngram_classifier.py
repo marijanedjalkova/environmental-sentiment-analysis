@@ -289,7 +289,10 @@ def main(argv):
 	ft_extractor = argv[4]
 	s = time.time()
 	nb = Ngram_Classifier(classifier, n, learn, test, ft_extractor)
-	nb.test()
+	tr, te = nb.get_train_test_sets("/cs/home/mn39/Documents/MSciDissertation/resources/training.1600000.processed.noemoticon.csv", 0, 5, 4, 0)
+	nb.set_data(tr, te)
+	nb.train()
+	nb.test(0, 5)
 	print "Total time: ",  time.time() - s
 
 if __name__=="__main__":
