@@ -212,7 +212,7 @@ and quantitative methods. The implementation uses constants such as booster word
 
 The processing the VADER uses is based on a single coefficient that is increased or decreased depending on the appearance of different features. First, sentiment score is extracted for every word or emoticon and stored in a list. Then, every word is checked for ALLCAPs and, if the it is written in all uppercase letters, the valence for that word is increased by \texttt{C\_INCR = 0.733}. Similar slight modifications happen for cases such as negation, idioms, and others. Finally, the list of individual scores is summed up and, in case of special punctuation appearing in the input, ``amplified''. The resulting score is then returned.
 
-\paragraph{Grangemouth topic classifier}
+\paragraph{Grangemouth topic classifier}\mbox{}\\
 The Grangemouth rule-based classifier tried to follow the same approach, however, it was clear from the beginning that it would not be very successful. In the case of VADER, the rules --- of the format \texttt{ condition -> modify(coefficient)} --- were carefully designed using both qualitative and quantitative methods. All of these methods require an immense amount of time and need users to label statements manually. Such project could not possibly fit as a part of this project, hence all the coefficients, constants and rules are based on what seemed to be common sense, but obviously none of them were based on scientific results. 
 
 The classifier uses the given list of keywords provided by the Falkirk Council as well as some other pre-defined lists such as a list of mentions which could be relevant to environmental issues. For example, the user names of the Falkirk Council Twitter account (falkirkcouncil), the INEOS and BP Twitter user names. The latter two companies have a number of accounts each all starting with ``INEOS\_'' or ``BP\_'', so regular expressions were constructed for these cases. Also names of the companies were added as well, because some users might not know that the companies have presence on Twitter, and SEPA (Scottish Environment Protection Agency) was included, too. Another list was constructed for anti-mentions since the initial analysis of typical tweets mentioning Grangemouth showed that some accounts will almost exclusively specialise in one topic. For example, \texttt{MadrasRugby} mentions Grangemouth in a lot of its tweets, however, the account only ever talks about rugby.
@@ -273,13 +273,13 @@ However, there is no tool that would allow to grow such a network of tags automa
 
 Because of this, it was decided to look into other tools that would help grow the network.
 
-\paragraph{Google Tools}
+\paragraph{Google Tools}\mbox{}\\
 Some of the products created by Google are not well known but can be extremely useful when it is necessary to process immense amount of data. Three Google products provide functionality that allows to extract networks of related words, with different contexts and fir different reasons.
 
 First such tool is Google AdWords \footnote{\url{https://adwords.google.com/}}, which allows creating advertisements and promoting them through the Google platform. As a part of the functionality provided by platform, Google offers to create a set of keywords that would be associated with the advertisement. Figure \ref{fig:googleads} shows the keywords found for ``general election'' combination. 
 
 \begin{figure}[ht]
-\includegraphics[]{googleads}
+\includegraphics[width=0.7\textwidth]{googleads}
 \caption{Related keywords from GoogleAdWords}
 \label{fig:googleads}
 \end{figure}
@@ -289,7 +289,7 @@ As it can be seen, most of the keywords are not relevant to the 2017 UK General 
 Another Google-provided tool that focuses on finding related keywords is Google Correlate\footnote{\url{https://www.google.com/trends/correlate}}. The tool searches through the search patterns of people from the specific period of time and detects common patterns. Figure \ref{fig:googlecorrelation} shows the searches correlated with ``UK general election''. It can be seen that this result is also not perfect despite being far better than the one obtained from GoogleAdWords. The first two results are simply combinations of words from the request, and four other results are different forms of the same word. At the same time, the correlation with one party was found, and with one UK region, too.
 
 \begin{figure}[ht]
-\includegraphics[]{googlecorrelation}
+\includegraphics[width=0.7\textwidth]{googlecorrelation}
 \caption{Related keywords from Google Correlate}
 \label{fig:googlecorrelation}
 \end{figure}
@@ -300,16 +300,98 @@ After all the necessary CSV files had been saved, they could be used in the topi
 
 After the initial version of the vocabulary has been finalised, it could be expanded in the same way as it was done for the rule-based classifier: by adding stemming the existing words and adding stems of their synonyms.
 
-\paragraph{The Support Vector Machine}
+\paragraph{The Support Vector Machine}\mbox{}\\
 As it was discussed in the Context Survey, most of the existing topic classifiers use the usual machine learning techniques including the Support Vector Machine approach and Naive Bayes classification. For this project, it was decided to use the SVM approach. 
 
-There were two feature vectors attempted:
+There were four feature vectors attempted:
 \begin{enumerate}
     \item The first extractor summarises the tweet into a vector of a small size and that looks like this: \texttt{\{`titles': 1, `names': 1, `nouns': 2, `stems': 3, `abbreviations': 2,\\ `mentions': 1\}}. The extractor uses all of the pre-processing described for the rule-based classifier. Its main advantage is that is allows the vector to be very compact. At the same time, it throws away all the information that does not fall into any of the known categories. 
-    \item This extractor does not throw away the unknown words. Instead, it adds them to the feature vector with a True Boolean value: \texttt{\{`unknown': True\}}. This allows the SVM to learn more about the text itself, however, might also introduce bias and makes the vector much less compact.
-    \item Finally, the third extractor is very similar to the second one, except it also combines names and mentions into one category instead of two. In fact, this model produces almost the same results as the second feature extractor, so later in this chapter we will not mention this extractor and will focus on the other two.
+    \item This extractor does not throw away the unknown words. Instead, it adds them to the feature vector with a True Boolean value: \texttt{\{`unknown': True\}}. This allows the SVM to learn more about the text itself, however, might also introduce bias and makes the vector much less compact. Overall, it is hybrid approach which uses a combination of human-defined categories and the Bag of Words approach.
+    \item The third extractor is very similar to the second one, except it also combines names and mentions into one category instead of two. This model produces almost the same results as the second feature extractor.
+    \item Finally, the fourth extractor is based purely on the Bag of Words approach. This extractor does not need the vocabulary at all and only learns from words seen before. 
 \end{enumerate}
 
-After that, k-fold validation was performed on the existing model, for all feature extractors. The results show that the models produce very similar results and it will be discussed in more details in the next chapter.
+After that, k-fold validation was performed on the existing model, for all feature extractors. The results show that the models produce very similar results and it will be discussed in more details in the next section.
 
+\section{Analysis of Results}
+\label{sec:analysis}
 
+The models can be evaluated both separately and together. Let's start with the sentiment analysis model.
+
+The platform created allows for easy comparison of different models. The results of the SVM and Naive Bayes models for unigrams, bigrams and trigrams and for training sets of different sizes were obtained using 10-fold validation. For each model, we were interested in both accuracy and recall, since the combination of both describes a model best, and the best model will produce high results in terms of both accuracy and recall.
+
+The model was trained using sets of different sizes: 20000 tweets, 50000, 75000, 100000, 200000 and 300000 tweets.  After the series of experiments was run, the \texttt{matplotlib} library was used to plot the results on a graph.
+
+Figure \ref{fig:nbacc} shows accuracy results obtained in a series of experiments. The model based on unigrams performs best throughout the series. It also plateaus faster than the models based on bigrams and trigrams, but the difference in accuracy is also quite high. 
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.8\textwidth]{NaiveBayesacc}
+    \caption{Accuracy of Naive Bayes model}
+    \label{fig:nbacc}
+\end{figure}
+
+Figure \ref{fig:nbrec} shows that, for trigrams, the recall is the highest. On average, the recall for trigrams is about 5\% higher than for bigrams and unigrams. The recall for unigrams and bigrams is similar for unigrams and bigrams, however, unigrams perform slightly better in almost all cases apart from the smallest training set.
+
+Overall, it would be safe to say that the unigrams perform best of all the other architectures. Even though the recall is best for trigrams, the results for trigrams are also quite inconsistent and it falls when the dataset is large.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.8\textwidth]{NaiveBayesrec}
+    \caption{Recall of Naive Bayes model}
+    \label{fig:nbrec}
+\end{figure}
+
+Figure \ref{fig:svmacc} shows the accuracy analysis for the SVM model. In the cae of this model, unigrams perform best, too, and the figure \ref{fig:svmrec} shows that its recall is also better than for any other models. Another thing that could be noticed is that the values for accuracy and recall are pretty similar and that also recall grows as the accuracy grows. 
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.8\textwidth]{SVMacc}
+    \caption{Accuracy of SVM model}
+    \label{fig:svmacc}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.8\textwidth]{SVMrec}
+    \caption{Recall of SVM model}
+    \label{fig:svmrec}
+\end{figure}
+
+Figures \ref{fig:acccomp} and \ref{fig:reccomp} compare unigram-based SVM and Naive Bayes models in terms of their accuracy and recall. The accuracy comparison shows that, for smaller datasets, Naive Bayes performs slightly better. The difference between the models is below 2\%. For the largest tested dataset consisting of 300000 tweets, the SVM model performs better than the Naive Bayes. Another interesting fact that could be noticed is that neither of the models could be seen plateauing, so the accuracy is likely to grow even more for larger training sets.
+
+The recall comparison shows that SVM is performs better than Naive Bayes, especially when it is trained using the largest training set. The recall for the SVM is just below 78\%, whereas the same property for the Naive Bayes model is just above 73\%. Moreover, it can be seen that the Naive Bayes model plateaus and might be prone to over-fitting if a larger dataset is used.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.8\textwidth]{classACCComp}
+    \caption{Comparison of accuracy results}
+    \label{fig:acccomp}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.8\textwidth]{classRECComp}
+    \caption{Comparison of recall results}
+    \label{fig:reccomp}
+\end{figure}
+
+Overall, it can be concluded that the unigram-based SVM performs the best sentiment analysis. 
+
+Next, it is useful to talk about the topic model. In this case, the dataset was initially quite small (less than 900 tweets) since it had to be labelled manually. In this case, we can compare the performance of the models based on four different feature extractors. 
+The first extractor summarised the data into a small dictionary which mentioned several word categories and the number of occurrences of words in a tweet. The second extractor also used the Bag Of Words approach for words that did not fall into any of the categories above. The third extractor also combined the mentions ans names into one category. The final, fourth extractor, only uses the Bag of Words approach and does not consult the vocabulary at any point.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.8\textwidth]{topic}
+    \caption{Comparison of feature extractors of the topic model}
+    \label{fig:topicm}
+\end{figure}
+
+Figure \ref{fig:topicm} shows the results for different extractors. One important result here is that the extractors using the Bag of Word approach in addition to the human-defined categories --- extractors 2 and 3 ---  perform better than the one using only categories. This shows that humans might not, in fact, be very good at identifying important features which help classify text. The first extractor was based on few intuitive human-created categories. In theory, a text talks about elections if it mentions words from the defined vocabulary and mentions people and parties specified in the vocabulary as well. In reality, the fact that the Bag of Words approach works better means that it is very hard to create a perfect vocabulary. The given vocabulary is not a perfect one and maybe does not mention some of the words which would help in the classification. However, in addition to that, a possible reason Bag of Words approach performs better could be that the words that are not directly related to elections might also carry additional meaning which, combined together in a certain pattern, also helps classify text correctly. Identifying such patterns is quite hard and adding them to the vocabulary is quite complicated, too, because they should not be treated on the same scale as the main words in the vocabulary. For example, a phrase ``promised to'' might theoretically be related to the elections and increase the chances of a tweet being about the UK general elections. However, adding it to the same list as the main words such as ``Brexit'' and ``snap election'' would bias the vocabulary. Instead, it might then be useful to determine the `weight' of every word in the vocabulary. This, however, is hard to calculate manually. This means that the Bag of Words approach has an advantage when used with existing Machine Learning Techniques.
+
+At the same time, extractor 4, which is only based on the Bag Of Words approach, performs worse than the extractors 2 and 3. This means that the categories do help the model perform better, and knowing the structure and main features of the data given helps classify the unseen data.
+
+Of the extractors 2 and 3, the one where the Twitter mentions and names are combined into one category performs slightly better. The difference in the accuracy and recall is very small, but so is the difference in the feature vectors. This difference, again, means that sometimes it is hard to come up with meaningful categories by hand. The tweets usually do not use a lot of mentions or names in one tweet. This means that usually most of them will have values 0 or 1 for either of the categories. Combining the categories into one means that instead of having two small numbers, there is one larger number (usually up to 4). This changes the shape of the feature vector and, hence, changes the results of the model.
+
+Overall, the best topic model is a hybrid one, one based on the combination of human-defined categories for an existing lexicon and the Bag of Words approach. The accuracy for this model obtained using 10-fold validation is 88\% and the recall is 85\%. 
