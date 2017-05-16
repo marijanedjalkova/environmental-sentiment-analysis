@@ -7,16 +7,23 @@ from sklearn.svm import SVC, LinearSVC
 from nltk.classify import SklearnClassifier
 from nltk.corpus import stopwords
 from KFoldValidator import *
+import csv
 
 
 def main():
 	d = read_training_data('/cs/home/mn39/Documents/MSciDissertation/resources/election_tweets.txt')
-	for n in range(1,4):
-		print "n={}".format(n)
-		tm = TopicModel(d, n)
-		#tm.set_classifier()
-		#tm.test()
-		tm.kfold_validation(10)
+	with open("topickfoldoutput.csv", "wb") as csvfile:
+		csv_out=csv.writer(csvfile)
+		csv_out.writerow(['n', 'accuracy', 'recall'])
+		for n in range(1,5):
+			print "n={}".format(n)
+			tm = TopicModel(d, n)
+			#tm.set_classifier()
+			#tm.test()
+			acc, rec = tm.kfold_validation(10)
+			csv_out.writerow([n,acc,rec])
+			
+
 
 def read_training_data(filename):
 	""" Reads in training data. """
@@ -79,8 +86,11 @@ class TopicModel:
 			acc, rec = self.test()
 			accuracies.append(acc)
 			recalls.append(rec)
-		print reduce(lambda x, y: x + y, accuracies) / len(accuracies), "AVERAGE"
-		print reduce(lambda x, y: x + y, recalls) / len(recalls), "RECALLS"
+		accuracy = reduce(lambda x, y: x + y, accuracies) / len(accuracies)
+		recall = reduce(lambda x, y: x + y, recalls) / len(recalls)
+		print accuracy, "AVERAGE"
+		print recall, "RECALLS"
+		return accuracy, recall
 			
 
 	def test(self, debug=False):
@@ -91,7 +101,6 @@ class TopicModel:
 		for dct in self.testing_data:
 			count += 1
 			res, vct = self.classify(dct['text'])
-			print vct
 			if res == dct['label']:
 				correct += 1
 				if res == 1:
@@ -153,46 +162,50 @@ class TopicModel:
 		elif index == 2:
 			# 88%
 			# any word that doesn't fall into any known cat, is being recorded separately as a Boolean
-			return self.extract_vocab_structure(text, record_unrecognized=True)
+			return self.extract_vocab_structure(text, bagofwords=True)
 		elif index == 3:
 			# 88%
 			# same as above but names fall into mentions
-			return self.extract_vocab_structure(text, namesToMentions=True, record_unrecognized=True)
+			return self.extract_vocab_structure(text, namesToMentions=True, bagofwords=True)
+		elif index == 4:
+			# 88%
+			# same as above but names fall into mentions
+			return self.extract_vocab_structure(text, onlybagofwords=True)
 		else:
 			return None
 
-
-	def extract_vocab_structure(self, text, namesToMentions=False, record_unrecognized=False):
+	def extract_vocab_structure(self, text, namesToMentions=False, bagofwords=False, onlybagofwords=False):
 		""" Does the same as the extractor 1 but saves the unrecognised words, too, as Booleans """
 		try:
 			# it's not sentiment analysis so we just need text
 			cleaned, res = self.process_parsing(text.encode('ascii', 'ignore'))
 			tokens = TweetTokenizer().tokenize(cleaned)	
 			tokens = self.remove_stopwords(tokens)		
-			res.update(self.tokens_to_vocab(tokens, namesToMentions=namesToMentions, record_unrecognized=record_unrecognized))
+			res.update(self.tokens_to_vocab(tokens, namesToMentions=namesToMentions, bagofwords=bagofwords, onlybagofwords=onlybagofwords))
 			return res	
 		except (UnicodeDecodeError, UnicodeEncodeError) as e:
 			print "Unicode Error"
 			self.errors += 1
 			return None
 
-	def tokens_to_vocab(self, tokens, namesToMentions=False, record_unrecognized=False):
+	def tokens_to_vocab(self, tokens, namesToMentions=False, bagofwords=False, onlybagofwords=False):
 		""" Checks if every token falls into a vocab structure. Retuns a
 		dict of a format {category:numOfOccurrences} """
 		
 		res = {}
 		for t in tokens:
 			done = False
-			for key in self.vocab.keys():
-				key_m = key
-				if self.check_vocab(t, self.vocab[key_m], key_m):
-					if key_m=='names' and namesToMentions:
-						key_m = 'mentions'
-					if not key_m in res:
-						res[key_m] = 0
-					res[key_m]+=1
-					done = True
-			if (not done) and record_unrecognized:
+			if not onlybagofwords:
+				for key in self.vocab.keys():
+					key_m = key
+					if self.check_vocab(t, self.vocab[key_m], key_m):
+						if key_m=='names' and namesToMentions:
+							key_m = 'mentions'
+						if not key_m in res:
+							res[key_m] = 0
+						res[key_m]+=1
+						done = True
+			if (not done) and bagofwords or onlybagofwords:
 				res[t] = True
 		return res 
 
