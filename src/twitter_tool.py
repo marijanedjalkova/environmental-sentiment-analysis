@@ -12,6 +12,7 @@ import unidecode
 import string
 from emojiSentiment import *
 from rb_environmental_classifier import *
+from dataset import DataSet
 
 class TwitterTool:
 
@@ -65,10 +66,11 @@ def main():
 	csv_filename2 = "/cs/home/mn39/Documents/MSciDissertation/resources/training.1600000.processed.noemoticon.csv"
 
 	nc1 = Ngram_Classifier("SVM", 1, 5000, 3000, "preprocessing_extractor")
-	training, testing = nc1.get_train_test_sets(csv_filename2, 0, 5, 4, 0)
+	nc1.dataset = DataSet(csv_filename2, 0, 5, 4, 0)
+	training, testing = nc1.get_train_test_sets()
 	nc1.set_data(training, testing)
 	nc1.train()
-	nc1.test(0, 5)
+	nc1.test()
 
 	tt = TwitterTool()
 	tweets = tt.search_tweets("grangemouth", 100)
