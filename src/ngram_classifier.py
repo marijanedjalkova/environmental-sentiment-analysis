@@ -14,12 +14,17 @@ import string
 import preprocessor 
 import random
 from KFoldValidator import *
+from dataset import DataSet
+
+def empty_extractor(document):
+	return document
 
 class Ngram_Classifier:
 	ERROR = -2
 
 	def __init__(self, classifier_name, n, train_length, test_length, ft_extractor):
-		self.classifier = self.get_classifier(classifier_name)
+		self.classifier_name = classifier_name 
+		self.classifier = self.get_classifier(self.classifier_name)
 		self.n = n
 		self.train_limit = train_length
 		self.test_limit = test_length
@@ -145,6 +150,8 @@ class Ngram_Classifier:
 		blob = TextBlob(document, np_extractor=ConllExtractor())
 		return {np: True for np in blob.noun_phrases}
 
+
+
 	def extract_features(self, document):
 		extractor = self.get_feature_extractor()
 		return extractor(document)
@@ -168,16 +175,16 @@ class Ngram_Classifier:
 		text = tweet_row[3]
 		return source != "Kaggle" and not text.startswith("RT")
 
-	def get_train_test_sets(self, filename, polarity_index, tweet_index, positive_value, negative_value, skip_header=False):
+	def get_train_test_sets(self):
 		""" Works with the first dataset - Sentiment-Analysis-Dataset.csv. The data here is already shuffled. """
 		training_data = []
 		testing_data = []
 		file_length = 0
 		to_collect = self.train_limit + self.test_limit
 
-		with open(filename) as csvfile:
+		with open(self.dataset.filename) as csvfile:
 			data = csv.reader(csvfile) 
-			if skip_header:
+			if self.dataset.skip_header:
 				next(data, None) # skip headers
 
 			index = 0
@@ -191,22 +198,22 @@ class Ngram_Classifier:
 					print round(((index * 1.0)/to_collect * 100), 4), "%"
 					changed = False
 				if self.pass_filter(row):
-					polarity = int(row[polarity_index]) 
-					if self.can_add(polarity, trainingPositives, trainingNegatives, self.train_limit, positive_value, negative_value):
-						featureset = self.extract_features(row[tweet_index])
+					polarity = int(row[self.dataset.polarity_index]) 
+					if self.can_add(polarity, trainingPositives, trainingNegatives, self.train_limit):
+						featureset = self.extract_features(row[self.dataset.tweet_index])
 						if featureset:
 							index += 1
 							changed = True
 							training_data.append((featureset, polarity))
-							if polarity == positive_value: trainingPositives += 1
+							if polarity == self.dataset.positive_value: trainingPositives += 1
 							else: trainingNegatives += 1
-					elif self.can_add(polarity, testingPositives, testingNegatives, self.test_limit, positive_value, negative_value):
-						featureset = self.extract_features(row[tweet_index])
+					elif self.can_add(polarity, testingPositives, testingNegatives, self.test_limit):
+						featureset = self.extract_features(row[self.dataset.tweet_index])
 						if featureset:
 							index += 1
 							changed = True
-							testing_data.append(row)
-							if polarity == positive_value: testingPositives += 1
+							testing_data.append((featureset, polarity))
+							if polarity == self.dataset.positive_value: testingPositives += 1
 							else: testingNegatives += 1
 						continue
 					else:
@@ -214,24 +221,27 @@ class Ngram_Classifier:
 							break
 		return training_data, testing_data
 
-	def get_all_data(self, filename, polarity_index, tweet_index, positive_value, negative_value, skip_header=False):
+	def get_all_data(self):
 		""" Returns all data, shuffled, that can later be split into chunks for k-fold validation """
 		result = []
 		to_collect = self.train_limit + self.test_limit
-		with open(filename) as csvfile:
+		with open(self.dataset.filename) as csvfile:
 			data = csv.reader(csvfile) 
-			if skip_header:
+			if self.dataset.skip_header:
 				next(data, None) # skip headers
-
-			counters = {str(positive_value):0, str(negative_value):0}
+			counters = {str(self.dataset.positive_value):0, str(self.dataset.negative_value):0}
+			index = 0
 			for row in data:
+				if ( (index * 100.0) / to_collect) % 25 == 0:
+					print ((index * 100.0) / to_collect), "%"
 				if self.pass_filter(row) and sum(counters.values())<to_collect:
-					polarity = int(row[polarity_index]) 
+					polarity = int(row[self.dataset.polarity_index]) 
 					if counters[str(polarity)] <= to_collect/2:
-						featureset = self.extract_features(row[tweet_index])
+						featureset = self.extract_features(row[self.dataset.tweet_index])
 						if featureset:
 							result.append((featureset, polarity))
 							counters[str(polarity)] += 1
+							index += 1
 				else:
 					if sum(counters.values())>=to_collect:
 						break
@@ -239,11 +249,11 @@ class Ngram_Classifier:
 			return result
 
 
-	def can_add(self, polarity, positives, negatives, goal, positive_value, negative_value):
+	def can_add(self, polarity, positives, negatives, goal):
 		""" This is necessary to make training and testing data uniform when it is not sorted automatically. """
-		if polarity == negative_value and negatives >= goal / 2: 
+		if polarity == self.dataset.negative_value and negatives >= goal / 2: 
 			return False
-		if polarity == positive_value and positives >= goal / 2:
+		if polarity == self.dataset.positive_value and positives >= goal / 2:
 			return False
 		return True
 
@@ -257,11 +267,15 @@ class Ngram_Classifier:
 
 	def train(self):
 		from nltk.classify import SklearnClassifier
+		from textblob.classifiers import NaiveBayesClassifier
 		if self.training_data is None:
 			s, t = self.get_train_test_sets()
 			self.set_data(s, t)
+		self.classifier = self.get_classifier(self.classifier_name)
 		if self.classifier != SVC and not isinstance(self.classifier, SklearnClassifier):
-			self.classifier = self.classifier(self.training_data, feature_extractor = self.get_feature_extractor())
+			print self.classifier
+			print "-----------------"
+			self.classifier = self.classifier(self.training_data, feature_extractor = empty_extractor)
 		else:
 			self.classifier = SklearnClassifier(LinearSVC()).train(self.training_data)
 		print "trained"
@@ -271,25 +285,28 @@ class Ngram_Classifier:
 		ft_ex = self.get_feature_extractor()
 		return [(ft_ex(tw), v) for tw, v in training_data if ft_ex(tw)]
 
-	def test(self, polarity_index, tweet_index):
+	def test(self):
 		""" This is for any dataset. """
-		correct = 0
-		error = 0
-		index = 0
 		to_test = len(self.testing_data)
+		conf = {"tp":0, "fp":0, "tn":0, "fn":0}
 		for row in self.testing_data:
-			index += 1
-			if ( (index * 1.0) / to_test * 100) % 25 == 0:
-				print ( (index * 1.0) / to_test * 100), "%"
 			polarity = row[1]
 			tweet = row[0]
 			predicted = self.classify_one(tweet)
 			if predicted == polarity:
-				correct += 1
-		accuracy = correct * 1.0/(to_test - error) 
-		print accuracy * 100 , "% : ", correct, "/", (to_test - error)
-		print "Errors: ", error
-		return accuracy
+				if predicted == self.dataset.positive_value:
+					conf["tp"]+=1
+				else:
+					conf["tn"] += 1
+			else:
+				if predicted == self.dataset.positive_value:
+					conf["fp"]+=1
+				else:
+					conf["fn"] += 1
+		correct = conf["tp"] + conf["tn"]
+		accuracy = correct * 100.0/to_test
+		recall = conf['tp']*100.0/(conf['tp']+conf['fn'])
+		return accuracy, recall
 
 	def classify_one(self, tweet):
 		""" No validation, just returns the result. """
@@ -297,10 +314,11 @@ class Ngram_Classifier:
 
 def test_classifier(classifier, n, learn, test, ft_extractor):
 	nb = Ngram_Classifier(classifier, n, learn, test, ft_extractor)
-	tr, te = nb.get_train_test_sets("/cs/home/mn39/Documents/MSciDissertation/resources/training.1600000.processed.noemoticon.csv", 0, 5, 4, 0)
+	nb.dataset = DataSet("/cs/home/mn39/Documents/MSciDissertation/resources/training.1600000.processed.noemoticon.csv", 0, 5, 4, 0)
+	tr, te = nb.get_train_test_sets()
 	nb.set_data(tr, te)
 	nb.train()
-	nb.test(0, 5)
+	print nb.test()
 
 def main(argv):
 	classifier = argv[0]
@@ -308,7 +326,25 @@ def main(argv):
 	learn = int(argv[2])
 	test = int(argv[3])
 	ft_extractor = argv[4]
-	validate(classifier, n, learn, test, ft_extractor)
+	test_classifier(classifier, n, learn, test, ft_extractor)
+	#validate(classifier, n, learn, test, ft_extractor)
+
+def validate_all():
+	res = []
+	ns = [1, 2, 3]
+	learns = [20000, 50000, 75000, 100000, 200000, 300000]
+	for n in ns:
+		print "N = {}".format(n)
+		for learn in learns:
+			print "LEARN = {}".format(learn)
+			ac, re = validate("NaiveBayes", n, learn, learn/10, "preprocessing_extractor")
+			res.append(("NaiveBayes", n, learn, learn/10, "preprocessing_extractor", ac, re))
+	with open('sentimentvalidationoutputNB.csv','wb') as out:
+		csv_out=csv.writer(out)
+		csv_out.writerow(['Classifier','n','training','testing','extractor','accuracy','recall'])
+		for row in res:
+			csv_out.writerow(row)
+
 	
 
 def validate(classifier, n, learn, test, ft_extractor):
@@ -316,8 +352,11 @@ def validate(classifier, n, learn, test, ft_extractor):
 	k = 10
 	all_size = learn + test 
 	nb = Ngram_Classifier(classifier, n, learn, test, ft_extractor)
-	data = nb.get_all_data("/cs/home/mn39/Documents/MSciDissertation/resources/training.1600000.processed.noemoticon.csv", 0, 5, 4, 0)
-	chunks = list(get_data_chunks(data, all_size, k))
+	nb.dataset = DataSet("/cs/home/mn39/Documents/MSciDissertation/resources/training.1600000.processed.noemoticon.csv", 0, 5, 4, 0)
+	data = nb.get_all_data()
+	chunks = list(get_data_chunks(data, all_size, all_size/k))
+	accuracies = []
+	recalls = []
 	for i in range(0,k):
 		print "i = {}".format(i)
 		tr = []
@@ -327,9 +366,16 @@ def validate(classifier, n, learn, test, ft_extractor):
 		te = chunks[i]
 		nb.set_data(tr, te)
 		nb.train()
-		nb.test(0, 5)
+		acc, rec = nb.test()
+		accuracies.append(acc)
+		recalls.append(rec)
+	accuracy = reduce(lambda x, y: x + y, accuracies) / len(accuracies)
+	recall = reduce(lambda x, y: x + y, recalls) / len(recalls)
+	print accuracy, recall
+	return accuracy, recall
 
 
 if __name__=="__main__":
-	main(sys.argv[1:])
+	#main(sys.argv[1:])
+	validate_all()
 
