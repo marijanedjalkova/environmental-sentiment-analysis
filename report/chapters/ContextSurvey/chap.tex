@@ -92,7 +92,7 @@ Naive Bayes is a statistical method for classifying which uses the Bayes' theore
      This assumption allows for complex models to be maintainable and scalable, but, at the same time, this is considered a rather daring assumption since, in real life, it is almost impossible to have a model where the events would be completely independent of each other. However, the classifier is considered by the researchers to perform well in text classification tasks such as sentiment analysis and spam filtering.
      To create a classification model, the formula above needs to be combined with a decision rule, which, in this case, is pretty simple as the model simply chooses the largest probability:
      \begin{align}
-         \hat{y} = \underset{k \in \{1,...,K\}} {argmax} p(C_k) \prod_{i=1}^{n} p(x_i \mid C_k)
+         \hat{y} =  \argmax_{k \in \{1,...,K\}} p(C_k) \prod_{i=1}^{n} p(x_i \mid C_k)
      \end{align}
      
 \subsection{Support Vector Machine}
