@@ -57,8 +57,8 @@ class VocabBuilder():
 
 	def create_local_vocab(self):
 		""" This should be done once. Then the resulting vocab should be modified manually."""
-		concepts = self.all_sources_to_set('/cs/home/mn39/Documents/MSciDissertation/resources/vocab_sources')
-		write_to_csv('/cs/home/mn39/Documents/MSciDissertation/resources/election_vocab_test.txt', concepts)
+		concepts = self.all_sources_to_set('../resources/vocab_sources')
+		write_to_csv('../resources/election_vocab_test.txt', concepts)
 
 	def _initialise_lexicon(self, vocab):
 			""" Finds other forms of the same words and their synonyms and adds to the lexicon """
@@ -87,7 +87,7 @@ class VocabBuilder():
 
 	def construct_vocab(self):
 		""" This should be done after the vocab has been edited manually """
-		vocab_raw = read_in_json('/cs/home/mn39/Documents/MSciDissertation/resources/election_vocab.txt')
+		vocab_raw = read_in_json('../resources/election_vocab.txt')
 		vocab_more = self._initialise_lexicon(vocab_raw)
 		vocab_raw['stems'] = vocab_more
 		self.vocab = vocab_raw

@@ -33,7 +33,7 @@ def get_col(data_from_csv, col):
 	return res_set
 
 def plot_experiment(classifier, x_axis_name, y_axis_name, x_label, y_label, fname):
-	data_from_csv = read_data('/cs/home/mn39/Documents/MSciDissertation/src/sentimentvalidationoutput.csv')
+	data_from_csv = read_data('sentimentvalidationoutput.csv')
 	data = extract_data(data_from_csv, classifier, y_axis_name)
 	x_axis = get_col(data_from_csv, x_axis_name)
 
@@ -54,11 +54,11 @@ def compare_all():
 	ys = ["accuracy", "recall"]
 	for c in classifiers:
 		for y in ys:
-			fname = "/cs/home/mn39/Documents/MSciDissertation/docs/{}{}.png".format(c, y[:3])
+			fname = "../docs/{}{}.png".format(c, y[:3])
 			plot_experiment(c, "training", y, "Training set size", y, fname)
 
 def cmp_class_unigrams(field):
-	data_from_csv = read_data('/cs/home/mn39/Documents/MSciDissertation/src/sentimentvalidationoutput.csv')
+	data_from_csv = read_data('sentimentvalidationoutput.csv')
 	SVMdata = extract_data(data_from_csv, "SVM", field)['1']
 	x_axis = get_col(data_from_csv, 'training')
 	NBdata = extract_data(data_from_csv, "NaiveBayes", field)['1']
@@ -69,7 +69,7 @@ def cmp_class_unigrams(field):
 	ax1.set_xlabel("Training data")
 	l_parts = [line1, line2]
 	plt.legend(l_parts, ('SVM unigrams', 'Naive Bayes unigrams'), loc='best')
-	plt.savefig("/cs/home/mn39/Documents/MSciDissertation/docs/class{}Comp.png".format(field[:3].upper()))
+	plt.savefig("../docs/class{}Comp.png".format(field[:3].upper()))
 
 def autolabel(rects, ax):
     """
@@ -82,7 +82,7 @@ def autolabel(rects, ax):
                 ha='center', va='bottom')
 
 def topic_experiments():
-	d = read_data('/cs/home/mn39/Documents/MSciDissertation/src/topickfoldoutput.csv')
+	d = read_data('topickfoldoutput.csv')
 	recs = [float(i) for i in d['recall']]
 	accs = [float(i) for i in d['accuracy']]
 	x_axis = np.array(range(0,4))
@@ -95,7 +95,7 @@ def topic_experiments():
 	plt.tight_layout()
 	autolabel(rects1, ax1)
 	autolabel(rects2, ax1)
-	plt.savefig("/cs/home/mn39/Documents/MSciDissertation/docs/topic.png")
+	plt.savefig("../docs/topic.png")
 
 def main():
 	#cmp_class_unigrams('accuracy')

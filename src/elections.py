@@ -11,7 +11,7 @@ import csv
 
 
 def main():
-	d = read_training_data('/cs/home/mn39/Documents/MSciDissertation/resources/election_tweets.txt')
+	d = read_training_data('../resources/election_tweets.txt')
 	with open("topickfoldoutput.csv", "wb") as csvfile:
 		csv_out=csv.writer(csvfile)
 		csv_out.writerow(['n', 'accuracy', 'recall'])
@@ -138,6 +138,7 @@ class TopicModel:
 		""" Converts data to feature vectors, trains the model. """
 		formatted_data = self.get_feature_vectors()
 		self.classifier = SklearnClassifier(LinearSVC()).train(formatted_data)
+		print "Topic model trained."
 
 	def get_feature_vectors(self):
 		""" Returns a list of feature vectors for training data """

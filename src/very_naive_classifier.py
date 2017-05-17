@@ -1,4 +1,3 @@
-from nltk import word_tokenize
 import csv
 from nltk.tokenize import TweetTokenizer
 
@@ -25,7 +24,7 @@ class SimpleClassifier:
 
 	def train_and_test(self):
 		dataset_len = 1578615 
-		with open("/cs/home/mn39/Documents/MSciDissertation/resources/Sentiment-Analysis-Dataset.csv") as csvfile:
+		with open("../resources/Sentiment-Analysis-Dataset.csv") as csvfile:
 			data = csv.reader(csvfile) # 1578615 
 			next(data, None) # skip headers
 			# format ItemID, Sentiment, SentimentSource, SentimentText

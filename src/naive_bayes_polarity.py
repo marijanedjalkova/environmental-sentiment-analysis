@@ -1,4 +1,3 @@
-from nltk import word_tokenize
 from nltk.tokenize import TweetTokenizer
 import csv
 from textblob.classifiers import NaiveBayesClassifier
@@ -34,7 +33,7 @@ class NBClassifier:
 	def train(self):
 
 		training_data = []
-		with open("/cs/home/mn39/Documents/MSciDissertation/resources/Sentiment-Analysis-Dataset.csv") as csvfile:
+		with open("../resources/Sentiment-Analysis-Dataset.csv") as csvfile:
 			data = csv.reader(csvfile) # 1578615 
 			next(data, None) # skip headers
 			# format ItemID, Sentiment, SentimentSource, SentimentText
@@ -58,7 +57,7 @@ class NBClassifier:
 
 	def test(self):
                 self.cl.show_informative_features(15)
-		with open("/cs/home/mn39/Documents/MSciDissertation/resources/Sentiment-Analysis-Dataset.csv") as csvfile:
+		with open("../resources/Sentiment-Analysis-Dataset.csv") as csvfile:
 			data = csv.reader(csvfile) # 1578615 
 			next(data, None) # skip headers
 			correct = 0

@@ -96,7 +96,7 @@ class Ngram_Classifier:
 	def preprocessing_extractor(self, document):
 		""" Takes a raw tweet. Uses preprocessor. """
 		res = {}
-		# take out weird stuff 
+		# take out weird characters 
 		try:
 			parsed = preprocessor.parse(document)
 		except (UnicodeDecodeError, UnicodeEncodeError) as e:
@@ -278,7 +278,7 @@ class Ngram_Classifier:
 			self.classifier = self.classifier(self.training_data, feature_extractor = empty_extractor)
 		else:
 			self.classifier = SklearnClassifier(LinearSVC()).train(self.training_data)
-		print "trained"
+		print "Sentiment model trained."
 
 	def to_featureset(self, training_data):
 		""" Uses feature extractor to convert a tweet to a dictionary of features. """
@@ -314,7 +314,7 @@ class Ngram_Classifier:
 
 def test_classifier(classifier, n, learn, test, ft_extractor):
 	nb = Ngram_Classifier(classifier, n, learn, test, ft_extractor)
-	nb.dataset = DataSet("/cs/home/mn39/Documents/MSciDissertation/resources/training.1600000.processed.noemoticon.csv", 0, 5, 4, 0)
+	nb.dataset = DataSet("../resources/training.1600000.processed.noemoticon.csv", 0, 5, 4, 0)
 	tr, te = nb.get_train_test_sets()
 	nb.set_data(tr, te)
 	nb.train()
@@ -352,7 +352,7 @@ def validate(classifier, n, learn, test, ft_extractor):
 	k = 10
 	all_size = learn + test 
 	nb = Ngram_Classifier(classifier, n, learn, test, ft_extractor)
-	nb.dataset = DataSet("/cs/home/mn39/Documents/MSciDissertation/resources/training.1600000.processed.noemoticon.csv", 0, 5, 4, 0)
+	nb.dataset = DataSet("../resources/training.1600000.processed.noemoticon.csv", 0, 5, 4, 0)
 	data = nb.get_all_data()
 	chunks = list(get_data_chunks(data, all_size, all_size/k))
 	accuracies = []
